@@ -157,6 +157,49 @@ def get_projected_scoreboard(league, week=None):
     text = ['**Approximate Projected Scores** '] + score
     return '\n'.join(text)
 
+def get_standings(league, top_half_scoring, week=None):
+    standings_txt = ''
+    teams = league.teams
+    standings = []
+    if not top_half_scoring:
+        for t in teams:
+            standings.append((t.wins, t.losses, t.team_name))
+
+        standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
+        standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses})" for \
+            pos, (wins, losses, team_name) in enumerate(standings)]
+    else:
+        top_half_totals = {t.team_name: 0 for t in teams}
+        if not week:
+            week = league.current_week
+        for w in range(1, week):
+            top_half_totals = top_half_wins(league, top_half_totals, w)
+
+        for t in teams:
+            wins = top_half_totals[t.team_name] + t.wins
+            standings.append((wins, t.losses, t.team_name))
+
+        standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
+        standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses}) (+{top_half_totals[team_name]})" for \
+            pos, (wins, losses, team_name) in enumerate(standings)]
+    text = ["**Current Standings:**"] + standings_txt
+
+    return "\n".join(text)
+
+def top_half_wins(league, top_half_totals, week):
+    box_scores = league.box_scores(week=week)
+
+    scores = [(i.home_score, i.home_team.team_name) for i in box_scores] + \
+            [(i.away_score, i.away_team.team_name) for i in box_scores if i.away_team]
+
+    scores = sorted(scores, key=lambda tup: tup[0], reverse=True)
+
+    for i in range(0, len(scores)//2):
+        points, team_name = scores[i]
+        top_half_totals[team_name] += 1
+
+    return top_half_totals
+
 def get_projected_total(lineup):
     total_projected = 0
     for i in lineup:
@@ -431,12 +474,20 @@ def bot_main(function):
     except KeyError:
         discord_webhook_url = 1
 
+    if (len(str(bot_id)) <= 1 and
+        len(str(slack_webhook_url)) <= 1 and
+        len(str(discord_webhook_url)) <= 1):
+        #Ensure that there's info for at least one messaging platform,
+        #use length of str in case of blank but non null env variable
+        raise Exception("No messaging platform info provided. Be sure one of BOT_ID,\
+                        SLACK_WEBHOOK_URL, or DISCORD_WEBHOOK_URL env variables are set")
+
     league_id = os.environ["LEAGUE_ID"]
 
     try:
         year = int(os.environ["LEAGUE_YEAR"])
     except KeyError:
-        year=2020
+        year=2021
 
     try:
         swid = os.environ["SWID"]
@@ -468,6 +519,16 @@ def bot_main(function):
     except KeyError:
         test = False
 
+    try:
+        top_half_scoring = os.environ["TOP_HALF_SCORING"]
+    except KeyError:
+        top_half_scoring = False
+
+    try:
+        random_phrase = os.environ["RANDOM_PHRASE"]
+    except KeyError:
+        random_phrase = False
+
     bot = GroupMeBot(bot_id)
     slack_bot = SlackBot(slack_webhook_url)
     discord_bot = DiscordBot(discord_webhook_url)
@@ -480,23 +541,21 @@ def bot_main(function):
 #        league = League(league_id=league_id, year=year, username=espn_username, password=espn_password)
 
     if test:
-        # print(get_matchups(league))
-        # print(get_scoreboard_short(league))
-        # print(get_projected_scoreboard(league))
-        # print(get_close_scores(league))
-        # print(get_power_rankings(league))
-        # print(get_scoreboard_short(league))
-        # print(get_waiver_report(league))
-        # function="get_final"
-        # bot.send_message("Testing")
-        # slack_bot.send_message("Testing")
-        # print(test_emotes(league))
-        # discord_bot.send_message(test_emotes(league))
-        # discord_bot.send_message("Testing")
+        print(get_matchups(league,random_phrase))
+        print(get_scoreboard_short(league))
+        print(get_projected_scoreboard(league))
+        print(get_close_scores(league))
+        print(get_power_rankings(league))
+        print(get_scoreboard_short(league))
+        print(get_standings(league, top_half_scoring))
+        function="get_final"
+        bot.send_message("Testing")
+        slack_bot.send_message("Testing")
+        discord_bot.send_message("Testing")
 
     text = ''
     if function=="get_matchups":
-        text = get_matchups(league)
+        text = get_matchups(league,random_phrase)
         text = text + "\n\n" + get_projected_scoreboard(league)
     elif function=="get_inactives":
         text = get_inactives(league)
@@ -515,6 +574,8 @@ def bot_main(function):
         text = get_waiver_report(league)
     elif function=="get_trophies":
         text = get_trophies(league)
+    elif function=="get_standings":
+        text = get_standings(league, top_half_scoring)
     elif function=="get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
@@ -543,12 +604,12 @@ if __name__ == '__main__':
     try:
         ff_start_date = os.environ["START_DATE"]
     except KeyError:
-        ff_start_date='2020-09-10'
+        ff_start_date='2021-09-09'
 
     try:
         ff_end_date = os.environ["END_DATE"]
     except KeyError:
-        ff_end_date='2020-12-30'
+        ff_end_date='2022-01-04'
 
     try:
         my_timezone = os.environ["TIMEZONE"]
@@ -563,6 +624,7 @@ if __name__ == '__main__':
     #matchups:                           thursday evening at 7:30pm east coast time.
     #close scores (within 15.99 points): monday evening at 6:30pm east coast time.
     #trophies:                           tuesday morning at 7:30am local time.
+    #standings:                          wednesday morning at 7:30am local time.
     #score update:                       friday, monday, and tuesday morning at 7:30am local time.
     #score update:                       sunday at 4pm, 8pm east coast time.
     #waiver report:                      wednesday morning at 8am local time.
@@ -584,6 +646,9 @@ if __name__ == '__main__':
         timezone=game_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_final'], id='final',
         day_of_week='tue', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=my_timezone, replace_existing=True)
+    sched.add_job(bot_main, 'cron', ['get_standings'], id='standings',
+        day_of_week='wed', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard1',
         day_of_week='fri,mon', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
