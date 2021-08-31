@@ -165,7 +165,7 @@ def get_standings(league, top_half_scoring, week=None):
             standings.append((t.wins, t.losses, t.team_name))
 
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses})" for \
+        standings_txt = [f"{pos + 1}: {'**'+team_name+'**'} ({wins} - {losses})" for \
             pos, (wins, losses, team_name) in enumerate(standings)]
     else:
         top_half_totals = {t.team_name: 0 for t in teams}
@@ -181,8 +181,8 @@ def get_standings(league, top_half_scoring, week=None):
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
         standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name) in enumerate(standings)]
-    text = ['**Current Standings:** '] + standings_txt
 
+    text = ['**Current Standings:** '] + standings_txt
     return "\n".join(text)
 
 def top_half_wins(league, top_half_totals, week):
@@ -236,14 +236,14 @@ def scan_inactives(lineup, team_id):
         if i.slot_position != 'BE' and i.slot_position != 'IR':
             if i.projected_points <= 0:
                 inactive_count += 1
-                inactive_players += ['%s' % (i.name)]
+                inactive_players += ['%s %s' % (i.position, i.name)]
 
     inactive_list = ""
     inactives = ""
     for s in inactive_players:
         inactive_list += s + ", "
     if inactive_count > 0:
-        inactives = ['%s has %d active player(s) with 0 projected points: %s' % (users[team_id], inactive_count, inactive_list[:-2])]
+        inactives = ['%s has **%d** active player(s) with 0 projected points: %s' % (users[team_id], inactive_count, inactive_list[:-2])]
 
     return inactives
 
@@ -266,7 +266,7 @@ def get_close_scores(league, week=None):
         if i.away_team:
             diffScore = i.away_score - i.home_score
             if ( -16 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 16 and not all_played(i.home_lineup)):
-                score += ['%s %.2f - %.2f %s' % (i.home_team.team_abbrev, i.home_score,
+                score += ['**%s** %.2f - %.2f **%s**' % (i.home_team.team_abbrev, i.home_score,
                         i.away_score, i.away_team.team_abbrev)]
     if not score:
         return('')
@@ -284,14 +284,14 @@ def get_waiver_report(league):
         if d2 == date:
             if len(actions) == 1:
                 if actions[0][1] == 'WAIVER ADDED':
-                    str = ['%s ADDED %s' % (actions[0][0].team_name, actions[0][2].name)]
+                    str = ['**%s** ADDED %s %s' % (actions[0][0].team_name, actions[0][2].position, actions[0][2].name)]
                     report += str
             elif len(actions) > 1:
                 if actions[0][1] == 'WAIVER ADDED' or  actions[1][1] == 'WAIVER ADDED':
                     if actions[0][1] == 'WAIVER ADDED':
-                        str = ['%s ADDED %s, DROPPED %s' % (actions[0][0].team_name, actions[0][2].name, actions[1][2].name)]
+                        str = ['**%s** ADDED %s %s, DROPPED %s %s' % (actions[0][0].team_name, actions[0][2].position, actions[0][2].name, actions[1][2].position, actions[1][2].name)]
                     else:
-                        str = ['%s ADDED %s, DROPPED %s' % (actions[0][0].team_name, actions[1][2].name, actions[0][2].name)]
+                        str = ['**%s** ADDED %s %s, DROPPED %s %s' % (actions[0][0].team_name, actions[1][2].position, actions[1][2].name, actions[0][2].position, actions[0][2].name)]
                     report += str
 
     report.reverse()
@@ -312,7 +312,7 @@ def get_power_rankings(league, week=None):
     #It's weighted 80/15/5 respectively
     power_rankings = league.power_rankings(week=week)
 
-    ranks = ['%s - %s' % (i[0], i[1].team_name) for i in power_rankings
+    ranks = ['%s - **%s**' % (i[0], i[1].team_name) for i in power_rankings
              if i]
 
     text = ['**Power Rankings:** '] + ranks
@@ -325,7 +325,7 @@ def get_expected_win(league, week=None):
 
     win_percent = expected_win_percent(league, week=week)
 
-    wins = ['%s - %s' % (i[0], i[1].team_name) for i in win_percent
+    wins = ['%s - **%s**' % (i[0], i[1].team_name) for i in win_percent
              if i]
 
     text = ['**Expected Win %:** '] + wins + [' '] + random_phrase()
@@ -540,6 +540,7 @@ def bot_main(function):
         print(get_standings(league, top_half_scoring))
         print(get_inactives(league))
         print(test_users(league))
+        print(get_waiver_report(league))
         function="get_final"
         # bot.send_message("Testing")
         # slack_bot.send_message("Testing")
