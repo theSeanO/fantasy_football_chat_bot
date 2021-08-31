@@ -348,7 +348,6 @@ def expected_win_percent(league, week):
     #initialize the dictionary for the final power ranking
     powerRankingDict = {x: 0. for x in league.teams}
 
-
     for i in range(lastWeek): #for each week that has been played
         weekNumber = i+1      #set the week
         boxes = league.box_scores(weekNumber)	#pull box scores from that week
@@ -445,7 +444,7 @@ def test_users(league):
     for t in league.teams:
         message += ['%s %s' % (t.team_name, users[t.team_id])]
 
-    text = ['**Users** '] + message + [' '] + random_phrase()
+    text = ['**Users:** '] + message + [' '] + random_phrase()
     return '\n'.join(text)
 
 def bot_main(function):
@@ -592,7 +591,6 @@ def bot_main(function):
     if test:
         #print "get_final" function
         print(text)
-
 
 if __name__ == '__main__':
     try:
