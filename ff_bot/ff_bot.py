@@ -136,7 +136,8 @@ def random_phrase():
                'Behold! Corn!',
                'If you\'re reading this, it\'s too late. Get out now.',
                'I for one welcome our new robot overlords',
-               'What is my purpose?']
+               'What is my purpose?',
+               'The Shadow Man is coming for you',]
     return ['`' + random.choice(phrases) + '`']
 
 def get_scoreboard_short(league, week=None):
@@ -163,11 +164,11 @@ def get_standings(league, top_half_scoring, week=None):
     standings = []
     if not top_half_scoring:
         for t in teams:
-            standings.append((t.wins, t.losses, t.team_name))
+            standings.append((t.wins, t.losses, t.team_name, emotes[t.team_id]))
 
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses})" for \
-            pos, (wins, losses, team_name) in enumerate(standings)]
+        standings_txt = [f"{pos + 1}: {emote} {'**'+team_name+'**'} ({wins} - {losses})" for \
+            pos, (wins, losses, team_name, emote) in enumerate(standings)]
     else:
         top_half_totals = {t.team_name: 0 for t in teams}
         if not week:
@@ -182,8 +183,8 @@ def get_standings(league, top_half_scoring, week=None):
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
         standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name) in enumerate(standings)]
-    text = ["**Current Standings:**"] + standings_txt
 
+    text = ["**Current Standings:**"] + standings_txt
     return "\n".join(text)
 
 def top_half_wins(league, top_half_totals, week):
@@ -237,14 +238,14 @@ def scan_inactives(lineup, team_id):
         if i.slot_position != 'BE' and i.slot_position != 'IR':
             if i.projected_points <= 0:
                 inactive_count += 1
-                inactive_players += ['%s' % (i.name)]
+                inactive_players += ['%s %s' % (i.position, i.name)]
 
     inactive_list = ""
     inactives = ""
     for s in inactive_players:
         inactive_list += s + ", "
     if inactive_count > 0:
-        inactives = ['%s has %d active player(s) with 0 projected points: %s' % (users[team_id], inactive_count, inactive_list[:-2])]
+        inactives = ['%s has **%d** active player(s) with 0 projected points: %s' % (users[team_id], inactive_count, inactive_list[:-2])]
 
     return inactives
 
@@ -285,14 +286,14 @@ def get_waiver_report(league):
         if d2 == date:
             if len(actions) == 1:
                 if actions[0][1] == 'WAIVER ADDED':
-                    str = ['%s ADDED %s' % (actions[0][0].team_name, actions[0][2].name)]
+                    str = ['%s **%s** ADDED %s %s' % (emotes[actions[0][0].team_id], actions[0][0].team_name, actions[0][2].position, actions[0][2].name)]
                     report += str
             elif len(actions) > 1:
                 if actions[0][1] == 'WAIVER ADDED' or  actions[1][1] == 'WAIVER ADDED':
                     if actions[0][1] == 'WAIVER ADDED':
-                        str = ['%s ADDED %s, DROPPED %s' % (actions[0][0].team_name, actions[0][2].name, actions[1][2].name)]
+                        str = ['%s **%s** ADDED %s %s, DROPPED %s %s' % (emotes[actions[0][0].team_id], actions[0][0].team_name, actions[0][2].position, actions[0][2].name, actions[1][2].position, actions[1][2].name)]
                     else:
-                        str = ['%s ADDED %s, DROPPED %s' % (actions[0][0].team_name, actions[1][2].name, actions[0][2].name)]
+                        str = ['%s **%s** ADDED %s %s, DROPPED %s %s' % (emotes[actions[0][0].team_id], actions[0][0].team_name, actions[1][2].position, actions[1][2].name, actions[0][2].position, actions[0][2].name)]
                     report += str
 
     report.reverse()
@@ -313,7 +314,7 @@ def get_power_rankings(league, week=None):
     #It's weighted 80/15/5 respectively
     power_rankings = league.power_rankings(week=week)
 
-    ranks = ['%s - %s' % (i[0], i[1].team_name) for i in power_rankings
+    ranks = ['%s - %s **%s**' % (i[0], emotes[i[1].team_id], i[1].team_name) for i in power_rankings
              if i]
 
     text = ['**Power Rankings:** '] + ranks
@@ -326,7 +327,7 @@ def get_expected_win(league, week=None):
 
     win_percent = expected_win_percent(league, week=week)
 
-    wins = ['%s - %s' % (i[0], i[1].team_name) for i in win_percent
+    wins = ['%s - %s **%s**' % (i[0], emotes[i[1].team_id], i[1].team_name) for i in win_percent
              if i]
 
     text = ['**Expected Win %:** '] + wins + [' '] + random_phrase()
@@ -554,6 +555,7 @@ def bot_main(function):
         print(get_standings(league, top_half_scoring))
         print(get_inactives(league))
         print(test_users(league))
+        print(get_waiver_report(league))
         function="get_final"
         # bot.send_message("Testing")
         # slack_bot.send_message("Testing")
