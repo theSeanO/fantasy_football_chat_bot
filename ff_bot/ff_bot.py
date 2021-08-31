@@ -248,7 +248,6 @@ def scan_inactives(lineup, team_id):
 
     return inactives
 
-
 def get_matchups(league, week=None):
     #Gets current week's Matchups
     matchups = league.box_scores(week=week)
@@ -272,7 +271,7 @@ def get_close_scores(league, week=None):
                         i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
     if not score:
         return('')
-    text = ['**Close Scores** '] + score
+    text = ['**Close Scores:** '] + score
     return '\n'.join(text)
 
 def get_waiver_report(league):
@@ -299,9 +298,9 @@ def get_waiver_report(league):
     report.reverse()
 
     if not report:
-        text = ['**Waiver Report %s** ' % date] + ['No waiver transactions today'] + [' '] + random_phrase()
+        text = ['**Waiver Report %s:** ' % date] + ['No waiver transactions today'] + [' '] + random_phrase()
     else:
-        text = ['**Waiver Report %s** ' % date] + report + [' '] + random_phrase()
+        text = ['**Waiver Report %s:** ' % date] + report + [' '] + random_phrase()
 
     return '\n'.join(text)
 
@@ -545,7 +544,7 @@ def bot_main(function):
 #        league = League(league_id=league_id, year=year, username=espn_username, password=espn_password)
 
     if test:
-        # print(get_matchups(league,random_phrase))
+        print(get_matchups(league,random_phrase))
         print(get_scoreboard_short(league))
         print(get_projected_scoreboard(league))
         print(get_close_scores(league))
