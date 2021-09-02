@@ -165,7 +165,7 @@ def get_standings(league, top_half_scoring, week=None):
             standings.append((t.wins, t.losses, t.team_name))
 
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {'**'+team_name+'**'} ({wins} - {losses})" for \
+        standings_txt = [f"{pos + 1}: {team_name} ({wins} - {losses})" for \
             pos, (wins, losses, team_name) in enumerate(standings)]
     else:
         top_half_totals = {t.team_name: 0 for t in teams}
@@ -337,9 +337,9 @@ def get_waiver_report(league):
     report.reverse()
 
     if not report:
-        text = ['__**Waiver Report %s:**__ ' % date] + ['No waiver transactions today'] + [' '] + random_phrase()
-    else:
-        text = ['__**Waiver Report %s:**__ ' % date] + report + [' '] + random_phrase()
+        report += ['No waiver transactions today']
+
+    text = ['__**Waiver Report %s:**__ ' % date] + report + [' '] + random_phrase()
 
     return '\n'.join(text)
 
@@ -352,7 +352,7 @@ def get_power_rankings(league, week=None):
     #It's weighted 80/15/5 respectively
     power_rankings = league.power_rankings(week=week)
 
-    ranks = ['%s - **%s**' % (i[0], i[1].team_name) for i in power_rankings
+    ranks = ['%s - %s' % (i[0], i[1].team_name) for i in power_rankings
              if i]
 
     text = ['**Power Rankings:** '] + ranks
@@ -365,7 +365,7 @@ def get_expected_win(league, week=None):
 
     win_percent = expected_win_percent(league, week=week)
 
-    wins = ['%s - **%s**' % (i[0], i[1].team_name) for i in win_percent
+    wins = ['%s - %s' % (i[0], i[1].team_name) for i in win_percent
              if i]
 
     text = ['**Expected Win %:** '] + wins + [' '] + random_phrase()
