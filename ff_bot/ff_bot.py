@@ -167,7 +167,7 @@ def get_standings(league, top_half_scoring, week=None):
             standings.append((t.wins, t.losses, t.team_name, emotes[t.team_id]))
 
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {emote} {'**'+team_name+'**'} ({wins} - {losses})" for \
+        standings_txt = [f"{pos + 1}: {emote} {team_name} ({wins} - {losses})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
     else:
         top_half_totals = {t.team_name: 0 for t in teams}
@@ -256,7 +256,7 @@ def scan_roster(lineup, team):
                 if i.projected_points <= 4:
                     player += '**' + str(i.projected_points) + ' pts**'
                 else:
-                    player += '**' + i.injuryStatus.title() + '**'
+                    player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
                 players += [player]
 
     list = ""
@@ -266,7 +266,7 @@ def scan_roster(lineup, team):
         list += p + "\n"
 
     if count > 0:
-        report =  ['%s **%s** has **%d** starting player(s) to look at: \n%s \n' % (users[team.team_id], team.team_name, count, list[:-1])]
+        report =  ['%s **%s** has **%d** starting player(s) to look at: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])]
 
     return report
 
@@ -278,14 +278,14 @@ def scan_inactives(lineup, team):
             if i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0:
                 if i.game_played == 0:
                     count += 1
-                    players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title(), i.projected_points)]
+                    players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
 
     inactive_list = ""
     inactives = ""
     for p in players:
         inactive_list += p + "\n"
     if count > 0:
-        inactives = ['%s **%s** has **%d** likely inactive starting player(s): \n%s \n' % (users[team.team_id], team.team_name, count, inactive_list[:-1])]
+        inactives = ['%s **[%s]** has **%d** likely inactive starting player(s): \n%s \n' % (users[team.team_id], team.team_abbrev, count, inactive_list[:-1])]
 
     return inactives
 
@@ -339,9 +339,9 @@ def get_waiver_report(league):
     report.reverse()
 
     if not report:
-        text = ['__**Waiver Report %s:**__ ' % date] + ['No waiver transactions today'] + [' '] + random_phrase()
-    else:
-        text = ['__**Waiver Report %s:**__ ' % date] + report + [' '] + random_phrase()
+        report += ['No waiver transactions today']
+
+    text = ['__**Waiver Report %s:**__ ' % date] + report + [' '] + random_phrase()
 
     return '\n'.join(text)
 
@@ -354,7 +354,7 @@ def get_power_rankings(league, week=None):
     #It's weighted 80/15/5 respectively
     power_rankings = league.power_rankings(week=week)
 
-    ranks = ['%s - %s **%s**' % (i[0], emotes[i[1].team_id], i[1].team_name) for i in power_rankings
+    ranks = ['%s - %s %s' % (i[0], emotes[i[1].team_id], i[1].team_name) for i in power_rankings
              if i]
 
     text = ['__**Power Rankings:**__ '] + ranks
@@ -367,7 +367,7 @@ def get_expected_win(league, week=None):
 
     win_percent = expected_win_percent(league, week=week)
 
-    wins = ['%s - %s **%s**' % (i[0], emotes[i[1].team_id], i[1].team_name) for i in win_percent
+    wins = ['%s - %s %s' % (i[0], emotes[i[1].team_id], i[1].team_name) for i in win_percent
              if i]
 
     text = ['__**Expected Win %:**__ '] + wins + [' '] + random_phrase()
