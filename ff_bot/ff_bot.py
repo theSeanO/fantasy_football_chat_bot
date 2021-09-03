@@ -246,10 +246,10 @@ def scan_roster(lineup, team):
     players = []
     for i in lineup:
         if i.slot_position != 'BE' and i.slot_position != 'IR':
-            if i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL' or i.projected_points <= 4:
+            if i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL' or i.projected_points <= 1:
                 count += 1
                 player = i.position + ' ' + i.name + ' - '
-                if i.projected_points <= 4:
+                if i.projected_points <= 1:
                     player += '**' + str(i.projected_points) + ' pts**'
                 else:
                     player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
