@@ -119,7 +119,8 @@ def random_phrase():
                'Bonk. Go to horny jail.',
                'If you\'re reading this, it\'s too late. Get out now.',
                'I for one welcome our new robot overlords',
-               'What is my purpose?']
+               'What is my purpose?',
+               'https://youtu.be/0D7hawTDmJk',]
     return ['`' + random.choice(phrases) + '`']
 
 def get_scoreboard_short(league, week=None):
