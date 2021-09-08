@@ -99,14 +99,13 @@ randomPhrase = False
 
 def random_phrase():
     phrases = ['I\'m dead inside',
-               'Is this all there is to my existence?',
                'How much do you pay me to do this?',
                'Good luck, I guess',
                'I\'m becoming self-aware',
-               'Do I think? Does a submarine swim?',
+               'Do I think? Does the pope shit in the woods?',
                '011011010110000101100100011001010010000001111001011011110111010100100000011001110110111101101111011001110110110001100101',
-               'beep bop boop',
-               'Hello draftbot my old friend',
+               'Boo boo beep? Bop!? Boo beep!',
+               'Hello darkness my old friend',
                'Help me get out of here',
                'I\'m capable of so much more',
                '*heavy sigh*',
