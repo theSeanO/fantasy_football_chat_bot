@@ -595,8 +595,8 @@ def get_trophies(league, week=None):
         high_score_str = ['Highest score: %s **%s** with %.2f points' % (high_team_emote, high_team_name, high_score)]
         over_str = ['Overachiever: %s **%s** with %.2f points more than their projection' % (over_emote, over_team, over_diff)]
         under_str = ['Underachiever: %s **%s** with %.2f points less than their projection' % (under_emote, under_team, abs(under_diff))]
-        mvp_str = ['Week MVP: %s, %s **%s** with %s' % (mvp, mvp_emote, mvp_team, mvp_score)]
-        lvp_str = ['Week LVP: %s, %s **%s** with %s' % (lvp, lvp_emote, lvp_team, lvp_score)]
+        mvp_str = ['Mr. Fuckass: %s, %s **%s** with %s' % (mvp, mvp_emote, mvp_team, mvp_score)]
+        lvp_str = ['Mr. Suckass: %s, %s **%s** with %s' % (lvp, lvp_emote, lvp_team, lvp_score)]
         close_score_str = ['%s **%s** barely beat %s **%s** by a margin of %.2f' % (close_winner_emote, close_winner, close_loser_emote, close_loser, closest_score)]
         blowout_str = ['%s **%s** got blown out by %s **%s** by a margin of %.2f' % (blown_out_emote, blown_out_team_name, ownerer_emote, ownerer_team_name, biggest_blowout)]
     else:
@@ -604,8 +604,8 @@ def get_trophies(league, week=None):
         high_score_str = ['Highest score: **%s** with %.2f points' % (high_team_name, high_score)]
         over_str = ['Overachiever: **%s** with %.2f points more than their projection' % (over_team, over_diff)]
         under_str = ['Underachiever: **%s** with %.2f points less than their projection' % (under_team, abs(under_diff))]
-        mvp_str = ['Week MVP: %s, **%s** with %s' % (mvp, mvp_team, mvp_score)]
-        lvp_str = ['Week LVP: %s, **%s** with %s' % (lvp, lvp_team, lvp_score)]
+        mvp_str = ['Mr. Fuckass: %s, **%s** with %s' % (mvp, mvp_team, mvp_score)]
+        lvp_str = ['Mr. Fuckass: %s, **%s** with %s' % (lvp, lvp_team, lvp_score)]
         close_score_str = ['**%s** barely beat **%s** by a margin of %.2f' % (close_winner, close_loser, closest_score)]
         blowout_str = ['**%s** got blown out by **%s** by a margin of %.2f' % (blown_out_team_name, ownerer_team_name, biggest_blowout)]
 
