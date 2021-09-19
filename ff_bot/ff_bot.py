@@ -6,66 +6,8 @@ from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from espn_api.football import League
 
-class GroupMeException(Exception):
-    pass
-
-class SlackException(Exception):
-    pass
-
 class DiscordException(Exception):
     pass
-
-class GroupMeBot(object):
-    #Creates GroupMe Bot to send messages
-    def __init__(self, bot_id):
-        self.bot_id = bot_id
-
-    def __repr__(self):
-        return "GroupMeBot(%s)" % self.bot_id
-
-    def send_message(self, text):
-        #Sends a message to the chatroom
-        template = {
-                    "bot_id": self.bot_id,
-                    "text": text,
-                    "attachments": []
-                    }
-
-        headers = {'content-type': 'application/json'}
-
-        if self.bot_id not in (1, "1", ''):
-            r = requests.post("https://api.groupme.com/v3/bots/post",
-                              data=json.dumps(template), headers=headers)
-            if r.status_code != 202:
-                raise GroupMeException('Invalid BOT_ID')
-
-            return r
-
-class SlackBot(object):
-    #Creates GroupMe Bot to send messages
-    def __init__(self, webhook_url):
-        self.webhook_url = webhook_url
-
-    def __repr__(self):
-        return "Slack Webhook Url(%s)" % self.webhook_url
-
-    def send_message(self, text):
-        #Sends a message to the chatroom
-        message = "```{0}```".format(text)
-        template = {
-                    "text":message
-                    }
-
-        headers = {'content-type': 'application/json'}
-
-        if self.webhook_url not in (1, "1", ''):
-            r = requests.post(self.webhook_url,
-                              data=json.dumps(template), headers=headers)
-
-            if r.status_code != 200:
-                raise SlackException('WEBHOOK_URL')
-
-            return r
 
 class DiscordBot(object):
     #Creates Discord Bot to send messages
@@ -163,12 +105,9 @@ def get_standings(league, top_half_scoring, week=None):
     teams = league.teams
     standings = []
     if not top_half_scoring:
-        for t in teams:
-            standings.append((t.wins, t.losses, t.team_name, emotes[t.team_id]))
-
-        standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {emote} {team_name} ({wins} - {losses})" for \
-            pos, (wins, losses, team_name, emote) in enumerate(standings)]
+        standings = league.standings()
+        standings_txt = [f"{pos + 1}: {emotes[team.team_id]} {team.team_name} ({team.wins} - {team.losses})" for \
+            pos, team in enumerate(standings)]
     else:
         top_half_totals = {t.team_name: 0 for t in teams}
         if not week:
@@ -265,7 +204,7 @@ def scan_roster(lineup, team):
         if i.slot_position != 'BE' and i.slot_position != 'IR':
             if i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL' or i.projected_points <= 1:
                 count += 1
-                player = i.position + ' ' + i.name + ' - '
+                player = (i.position + ' ' if i.position != 'D/ST' else '') + i.name + ' - '
                 if i.projected_points <= 1:
                     player += '**' + str(i.projected_points) + ' pts**'
                 else:
@@ -380,6 +319,47 @@ def get_waiver_report(league):
     except KeyError:
         return ('')
 
+def combined_power_rankings(league, week=None):
+    if not week:
+        week = league.current_week
+
+    pr = league.power_rankings(week=week)
+    ew = expected_win_percent(league, week=week)
+
+    combRankingDict = {x: 0. for x in league.teams}
+
+    for team in combRankingDict.keys():			#for each team
+        for i in pr:
+            fpr = float(i[0])
+            for j in ew:
+                few = float(j[0])
+                if i[1].team_id == j[1].team_id and i[1].team_id == team.team_id:
+                    com = round(fpr+(few*10)+(team.points_for), 3)
+                    combRankingDict[team] = com/10
+
+
+    combRankingDictSortedTemp = {k: v for k, v in sorted(combRankingDict.items(), key=lambda item: item[1],reverse=True)} #sort for presentation purposes
+    combRankingDictSorted = {x: ('{:.2f}'.format(combRankingDictSortedTemp[x])) for x in combRankingDictSortedTemp.keys()}  #put into a prettier format
+
+    combined_power_rankings = [(combRankingDictSorted[x],x) for x in combRankingDictSorted.keys()]
+
+    ranks = []
+    pos = 1
+
+    for i in combined_power_rankings:
+        if i:
+            if emotes[i[1].team_id] != '':
+                ranks += ['%s: %s %s' % (pos, emotes[i[1].team_id], i[1].team_name)]
+            else:
+                ranks += ['%s: %s' % (pos, i[1].team_name)]
+        pos += 1
+
+    text = ['__**Power Rankings:**__ '] + ranks
+    if randomPhrase == True:
+        text += [' '] + random_phrase()
+
+    return '\n'.join(text)
+
 def get_power_rankings(league, week=None):
     # power rankings requires an integer value, so this grabs the current week for that
     if not week:
@@ -423,7 +403,6 @@ def get_expected_win(league, week=None):
 
 def expected_win_percent(league, week):
     #This script gets power rankings, given an already-connected league and a week to look at. Requires espn_api
-
     #Get what week most recently passed
     lastWeek = league.current_week
 
@@ -658,25 +637,16 @@ def test_users(league):
     text = ['**Users:** '] + message + [' '] + random_phrase()
     return '\n'.join(text)
 
+def str_to_bool(check):
+  return check.lower() in ("yes", "true", "t", "1")
+
 def bot_main(function):
-    try:
-        bot_id = os.environ["BOT_ID"]
-    except KeyError:
-        bot_id = 1
-
-    try:
-        slack_webhook_url = os.environ["SLACK_WEBHOOK_URL"]
-    except KeyError:
-        slack_webhook_url = 1
-
     try:
         discord_webhook_url = os.environ["DISCORD_WEBHOOK_URL"]
     except KeyError:
         discord_webhook_url = 1
 
-    if (len(str(bot_id)) <= 1 and
-        len(str(slack_webhook_url)) <= 1 and
-        len(str(discord_webhook_url)) <= 1):
+    if len(str(discord_webhook_url)) <= 1:
         #Ensure that there's info for at least one messaging platform,
         #use length of str in case of blank but non null env variable
         raise Exception("No messaging platform info provided. Be sure one of BOT_ID,\
@@ -705,39 +675,27 @@ def bot_main(function):
         espn_s2 = '1'
 
     try:
-        espn_username = os.environ["ESPN_USERNAME"]
-    except KeyError:
-        espn_username = '1'
-
-    try:
-        espn_password = os.environ["ESPN_PASSWORD"]
-    except KeyError:
-        espn_password = '1'
-
-    try:
-        test = os.environ["TEST"]
+        test = str_to_bool(os.environ["TEST"])
     except KeyError:
         test = False
 
     try:
-        top_half_scoring = os.environ["TOP_HALF_SCORING"]
+        top_half_scoring = str_to_bool(os.environ["TOP_HALF_SCORING"])
     except KeyError:
         top_half_scoring = False
 
     global randomPhrase
     try:
-        randomPhrase = True if os.environ["RANDOM_PHRASE"] == '1' else False
+        randomPhrase = str_to_bool(os.environ["RANDOM_PHRASE"])
     except KeyError:
         randomPhrase = False
 
     global extraTrophies
     try:
-        extraTrophies = True if os.environ["EXTRA_TROPHIES"] == '1' else False
+        extraTrophies = str_to_bool(os.environ["EXTRA_TROPHIES"])
     except KeyError:
         extraTrophies = False
 
-    bot = GroupMeBot(bot_id)
-    slack_bot = SlackBot(slack_webhook_url)
     discord_bot = DiscordBot(discord_webhook_url)
 
     if swid == '{1}' and espn_s2 == '1': # and espn_username == '1' and espn_password == '1':
@@ -764,17 +722,13 @@ def bot_main(function):
         print(get_projected_scoreboard(league))
         print(get_close_scores(league))
         print(get_standings(league, top_half_scoring))
-        print(get_power_rankings(league))
-        print(get_expected_win(league))
+        print(combined_power_rankings(league))
         print(get_waiver_report(league))
         print(get_matchups(league))
         print(get_heads_up(league))
         print(get_inactives(league))
         function="get_final"
         # print(test_users(league))
-        # bot.send_message("Testing")
-        # slack_bot.send_message("Testing")
-        # discord_bot.send_message(get_heads_up(league))
         # discord_bot.send_message("Testing")
 
     text = ''
@@ -793,7 +747,7 @@ def bot_main(function):
     elif function=="get_close_scores":
         text = get_close_scores(league)
     elif function=="get_power_rankings":
-        text = get_power_rankings(league)
+        text = combined_power_rankings(league)
     elif function=="get_expected_win":
         text = get_expected_win(league)
     elif function=="get_waiver_report":
@@ -802,10 +756,6 @@ def bot_main(function):
         text = get_trophies(league)
     elif function=="get_standings":
         text = get_standings(league, top_half_scoring)
-    elif function=="get_power_rankings":
-        text = get_power_rankings(league)
-    elif function=="get_expected_win":
-        text = get_expected_win(league)
     elif function=="get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
@@ -821,8 +771,6 @@ def bot_main(function):
         text = "Something happened. HALP"
 
     if text != '' and not test:
-        bot.send_message(text)
-        slack_bot.send_message(text)
         discord_bot.send_message(text)
 
     if test:
@@ -846,7 +794,7 @@ if __name__ == '__main__':
         my_timezone='America/New_York'
 
     try:
-        tues_sched = True if os.environ["TUES_SCHED"] == '1' else False
+        tues_sched = str_to_bool(os.environ["TUES_SCHED"])
     except KeyError:
         tues_sched = False
 
@@ -895,13 +843,9 @@ if __name__ == '__main__':
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
             day_of_week='tue', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_expected_win'], id='get_expected_win',
-            day_of_week='tue', hour=18, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
-            timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed', hour=8, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-
 
     #schedule with a COVID delay to tuesday:
     #extra score update:                 tuesday morning at 7:30am local time.
@@ -925,9 +869,6 @@ if __name__ == '__main__':
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
             day_of_week='wed', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
-            timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_expected_win'], id='get_expected_win',
-            day_of_week='wed', hour=18, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu', hour=8, start_date=ff_start_date, end_date=ff_end_date,
