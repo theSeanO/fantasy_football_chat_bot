@@ -162,19 +162,23 @@ def all_played(lineup):
             return False
     return True
 
-def get_heads_up(league, week=None):
+def get_heads_up(league, div, week=None):
     box_scores = league.box_scores(week=week)
     headsup = []
+    div_name = ''
 
     for i in box_scores:
-        headsup += scan_roster(i.home_lineup, i.home_team)
-        headsup += scan_roster(i.away_lineup, i.away_team)
+        if i.home_team.division_id == div:
+            headsup += scan_roster(i.home_lineup, i.home_team)
+            div_name = i.home_team.division_name
+        if i.away_team.division_id == div:
+            headsup += scan_roster(i.away_lineup, i.away_team)
 
     if not headsup:
         return ('')
 
-    text = ['__**Heads Up Report:**__ '] + headsup
-    if random_phrase == True:
+    text = ['__**Heads Up Report %s Division:**__ ' % div_name] + headsup
+    if random_phrase == True and div == 3:
         text += get_random_phrase()
 
     return '\n'.join(text)
@@ -729,7 +733,8 @@ def bot_main(function):
         print(combined_power_rankings(league))
         print(get_waiver_report(league, faab))
         print(get_matchups(league))
-        print(get_heads_up(league))
+        print(get_heads_up(league, 2))
+        print(get_heads_up(league, 3))
         print(get_inactives(league))
         function="get_final"
         # print(test_users(league))
@@ -739,8 +744,10 @@ def bot_main(function):
     if function=="get_matchups":
         text = get_matchups(league)
         text = text + "\n\n" + get_projected_scoreboard(league)
-    elif function=="get_heads_up":
-        text = get_heads_up(league)
+    elif function=="get_heads_up_1":
+        text = get_heads_up(league, 2)
+    elif function=="get_heads_up_2":
+        text = get_heads_up(league, 3)
     elif function=="get_inactives":
         text = get_inactives(league)
     elif function=="get_scoreboard_short":
@@ -814,8 +821,11 @@ if __name__ == '__main__':
     sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard2',
         day_of_week='sun', hour='16,20', start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
-    sched.add_job(bot_main, 'cron', ['get_heads_up'], id='headsup',
+    sched.add_job(bot_main, 'cron', ['get_heads_up_1'], id='headsup1',
         day_of_week='wed', hour=16, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=my_timezone, replace_existing=True)
+    sched.add_job(bot_main, 'cron', ['get_heads_up_2'], id='headsup2',
+        day_of_week='wed', hour=16, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_matchups'], id='matchups',
         day_of_week='thu', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
