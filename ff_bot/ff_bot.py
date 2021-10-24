@@ -177,7 +177,11 @@ def get_heads_up(league, div, week=None):
     if not headsup:
         return ('')
 
-    text = ['__**Heads Up Report %s Division:**__ ' % div_name] + headsup
+    if div == 2:
+        text = ['__**Heads Up Report:**__ '] + headsup
+    else:
+        text = [' '] + headsup
+
     if random_phrase == True and div == 3:
         text += get_random_phrase()
 
@@ -730,15 +734,15 @@ def bot_main(function):
         emotes += [''] * league.teams[-1].team_id
 
     if test:
-        print(get_scoreboard_short(league))
-        print(get_projected_scoreboard(league))
-        print(get_close_scores(league))
-        print(get_standings(league, top_half_scoring))
-        print(get_power_rankings(league))
-        print(get_sim_record(league))
-        print(combined_power_rankings(league))
-        print(get_waiver_report(league, faab))
-        print(get_matchups(league))
+        # print(get_scoreboard_short(league))
+        # print(get_projected_scoreboard(league))
+        # print(get_close_scores(league))
+        # print(get_standings(league, top_half_scoring))
+        # print(get_power_rankings(league))
+        # print(get_sim_record(league))
+        # print(combined_power_rankings(league))
+        # print(get_waiver_report(league, faab))
+        # print(get_matchups(league))
         print(get_heads_up(league, 2))
         print(get_heads_up(league, 3))
         print(get_inactives(league))
