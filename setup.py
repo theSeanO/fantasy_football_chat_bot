@@ -11,17 +11,17 @@ setup(
 
     description='ESPN fantasy football Chat Bot',
 
-    author='Dean Carlson',
+    author=['Dean Carlson', 'Sean Gallardo'],
 
-    author_email='deantcarlson@gmail.com',
+    author_email=['deantcarlson@gmail.com', 'sdvgallardo@gmail.com'],
 
-    install_requires=['requests>=2.0.0,<3.0.0', 'espn_api>=0.18.4', 'apscheduler>3.0.0', 'datetime'],
+    install_requires=['requests>=2.0.0,<3.0.0', 'espn_api>=0.20.1', 'apscheduler>3.0.0', 'datetime'],
 
     test_suite='nose.collector',
 
     tests_require=['nose', 'requests_mock'],
 
-    url='https://github.com/dtcarls/ff_bot',
+    url='https://github.com/sdvgallardo/fantasy_football_chat_bot-vS',
 
     classifiers=[
         'Natural Language :: English',
