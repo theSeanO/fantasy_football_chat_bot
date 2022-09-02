@@ -37,6 +37,7 @@ class DiscordBot(object):
 
 emotes = ['']
 users = ['']
+score_warn = 0
 random_phrase = False
 
 def get_random_phrase():
@@ -195,13 +196,13 @@ def scan_roster(lineup, team):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR':
-            if i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL' or i.projected_points <= 4:
+        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
+            if i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL' or i.projected_points <= score_warn:
                 count += 1
-                player = (i.position + ' ' if i.position != 'D/ST' else '') + i.name + ' - '
+                player = i.position + ' ' + i.name + ' - '
                 if i.pro_opponent == 'None':
                     player += '**BYE**'
-                elif i.projected_points <= 4:
+                elif i.projected_points <= score_warn:
                     player += '**' + str(i.projected_points) + ' pts**'
                 else:
                     player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
@@ -818,6 +819,12 @@ def bot_main(function):
         random_phrase = str_to_bool(os.environ["RANDOM_PHRASE"])
     except KeyError:
         random_phrase = False
+
+    global score_warn
+    try:
+        score_warn = int(os.environ["SCORE_WARNING"])
+    except KeyError:
+        score_warn = 0
 
     try:
         extra_trophies = str_to_bool(os.environ["EXTRA_TROPHIES"])
