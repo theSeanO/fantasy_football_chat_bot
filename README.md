@@ -17,8 +17,9 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 - Adds a Waiver Report that provides a quick overview of the adds and drops that have taken place on waiver days *[ESPN_S2 and SWID variables are REQUIRED for this functionality]*
 - Adds a Heads Up Report, which lets players know if they have any players that they might not want to start
 - Adds an Inactive Report, which lets players know when they have players that are designated Out, or would otherwise score them 0 points
-- Adds an extra possible Environmental Variable, TUES_SCHED, which can be activated if a game is delayed until Tuesday for COVID-19, and moves all scheduled jobs up a day
-- Adds extra places for the fun random phrases
+- Adds a possible Environmental Variable, TUES_SCHED, which can be activated if a game is delayed until Tuesday for COVID-19, and moves all scheduled jobs up a day
+- Adds another possible Environmental Variable, SCORE_WARNING, which is a number that can be set as a threshold for the Heads Up Report
+- Adds extra places for the fun random phrases that can be activated with the variable RANDOM_PHRASE
 - When provided in the Environmental Variables USERS and EMOTES, bot will display them in the scheduled updates
 - Custom formatting changes
 - Custom forks and changes for my two leagues
@@ -116,14 +117,16 @@ Note: App will restart when you change any variable so your chat room may be sem
 
 - DISCORD_WEBHOOK_URL: This is your Webhook URL from the Discord Settings page (REQUIRED)
 - LEAGUE_ID: This is your ESPN league id (REQUIRED)
-- START_DATE: This is when the bot will start paying attention and sending messages to your chat. (2020-09-10 by default)
-- END_DATE: This is when the bot will stop paying attention and stop sending messages to your chat. (2020-12-30 by default)
+- START_DATE: This is when the bot will start paying attention and sending messages to your chat.
+- END_DATE: This is when the bot will stop paying attention and stop sending messages to your chat.
 - LEAGUE_YEAR: ESPN League year to look at (2020 by default)
 - TIMEZONE: The timezone that the messages will look to send in. (America/New_York by default)
 - INIT_MSG: The message that the bot will say when it is started (“Hi” by default, can be blank for no message)
 - TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
 - RANDOM_PHRASE: If set to 1, when matchups, heads up report, inactive report, waiver report, and final scores are posted, will include a random phrase from a list
 - EXTRA_TROPHIES: If set to 1, will award the additional trophies Week MVP, Week LVP, Overachiever, and Underachiever, when final scores are posted
+- SCORE_WARNING: When set to a whole number, this will act as the threshold for a player to appear on the weekly Heads Up Report
+- TUES_SCHED: If set to 1, will move updates accordingly for a COVID delayed game to Tuesday
 - FAAB: If set to 1, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
 - ESPN_S2: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
 - SWID: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
@@ -244,6 +247,7 @@ python3 setup.py install
 - TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
 - RANDOM_PHRASE: If set to 1, when matchups, heads up report, inactive report, waiver report, and final scores are posted, will include a random phrase from a list
 - EXTRA_TROPHIES: If set to 1, will award the additional trophies Week MVP, Week LVP, Overachiever, and Underachiever, when final scores are posted
+- SCORE_WARNING: When set to a whole number, this will act as the threshold for a player to appear on the weekly Heads Up Report
 - TUES_SCHED: If set to 1, will move updates accordingly for a COVID delayed game to Tuesday
 - FAAB: If set to 1, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
 - ESPN_S2: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
