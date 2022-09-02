@@ -54,7 +54,7 @@ def get_random_phrase():
                'Behold! Corn!',
                'No let\'s baby?',
                'You know, I\'m something of a fucking idiot myself',
-               'Welcome to Hell League, please enjoy your stay',
+               'Welcome to Hell League. H is for Healing. E is for Empowerment. L is for Love and Laughter.',
                'Waiver wire? Good luck with that.',
                'Aaron Rodgers would make a good Jeopardy host',
                'What\'s better than this? Guys being dudes.',
@@ -63,7 +63,7 @@ def get_random_phrase():
                'If you\'re reading this, it\'s too late. Get out now.',
                'I for one welcome our new robot overlords',
                'What is my purpose?',
-               'https://youtu.be/0D7hawTDmJk',]
+               'I\'m not saying this clock the wife got from Kmart is shit, but the alarm didn\'t go off this morning and the time is now 9:77',]
     return ['`' + random.choice(phrases) + '`']
 
 def get_scoreboard_short(league, week=None):
