@@ -134,3 +134,4 @@ dmypy.json
 .vscode/*
 
 ff_bot/ids.txt
+run.sh
