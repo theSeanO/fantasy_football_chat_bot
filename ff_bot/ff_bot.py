@@ -43,7 +43,6 @@ random_phrase = False
 def get_random_phrase():
     phrases = ['I\'m dead inside',
                'How much do you pay me to do this?',
-               'Do I think? Does the pope shit in the woods?',
                'Hello darkness my old friend',
                '011011010110000101100100011001010010000001111001011011110111010100100000011001110110111101101111011001110110110001100101',
                'Boo boo beep? Bop!? Boo beep!',
@@ -56,14 +55,12 @@ def get_random_phrase():
                'You know, I\'m something of a fucking idiot myself',
                'Welcome to Hell League. H is for Healing. E is for Empowerment. L is for Love and Laughter.',
                'Waiver wire? Good luck with that.',
-               'Aaron Rodgers would make a good Jeopardy host',
                'What\'s better than this? Guys being dudes.',
                'Have an open flex spot? Just stick a kicker in there, no one will know.',
-               'Bonk. Go to horny jail.',
-               'If you\'re reading this, it\'s too late. Get out now.',
                'I for one welcome our new robot overlords',
                'What is my purpose?',
-               'I\'m not saying this clock the wife got from Kmart is shit, but the alarm didn\'t go off this morning and the time is now 9:77',]
+               'I\'m not saying this clock the wife got from Kmart is shit, but the alarm didn\'t go off this morning and the time is now 9:77',
+               'https://youtu.be/KAwyWkksXuo',]
     return ['`' + random.choice(phrases) + '`']
 
 def get_scoreboard_short(league, week=None):
