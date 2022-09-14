@@ -351,12 +351,15 @@ def combined_power_rankings(league, week=None):
     for i in pr:
         if i:
             if emotes[i[1].team_id] != '':
-                ranks += ['%s: %s %s (%s - %.1f - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
+                # ranks += ['%s: %s %s (%s - %.1f - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
+                ranks += ['%s: %s %s (%s - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], sr_sorted[pos-1][0])]
             else:
-                ranks += ['%s: %s (%s - %.1f - %s)' % (pos, i[1].team_name, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
+                # ranks += ['%s: %s (%s - %.1f - %s)' % (pos, i[1].team_name, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
+                ranks += ['%s: %s (%s - %s)' % (pos, i[1].team_name, i[0], sr_sorted[pos-1][0])]
         pos += 1
 
-    text = ['__**Power Rankings:**__ (PR points - Playoff % - Simulated Record)'] + ranks
+    # text = ['__**Power Rankings:**__ (PR points - Playoff % - Simulated Record)'] + ranks
+    text = ['__**Power Rankings:**__ (PR points - Simulated Record)'] + ranks
     if random_phrase == True:
         text += [' '] + get_random_phrase()
 
