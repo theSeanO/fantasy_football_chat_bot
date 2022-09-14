@@ -1,7 +1,4 @@
-[![Build Status](https://travis-ci.com/dtcarls/fantasy_football_chat_bot.svg?branch=master)](https://travis-ci.com/dtcarls/fantasy_football_chat_bot)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d8506396005d48d1a52dee114f2c05ae)](https://www.codacy.com/app/dtcarls/ff_bot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dtcarls/ff_bot&amp;utm_campaign=Badge_Grade)
-
-For troubleshooting, join the discord!
+For troubleshooting, join the Discord!
 
 [![Discord Banner 2](https://discordapp.com/api/guilds/878995504225218620/widget.png?style=banner2)](https://discord.gg/bkShnqTTP8)
 
@@ -53,12 +50,7 @@ Table of Contents
      * [User and Emote IDs](#user-and-emote-ids)
      * [Private Leagues](#private-leagues)
   * [Troubleshooting / FAQ](#troubleshooting--faq)
-  * [Getting Started for development and testing](#getting-started-for-development-and-testing)
-     * [Installing for development](#installing-for-development)
-     * [Environment Variables](#environment-variables)
-     * [Running with Docker](#running-with-docker)
-     * [Running without Docker](#running-without-docker)
-     * [Running the tests](#running-the-tests)
+  * [Self Hosting, Development and Testing](#self-hosting-development-and-testing)
 
 ## Setting up Discord and deploying app in Heroku
 
@@ -68,9 +60,9 @@ Table of Contents
  <details>
   <summary>Click to expand!</summary>
 
-Log into or create a discord account
+Log into or create a Discord account
 
-Go to or create a discord server to receive messages in
+Go to or create a Discord server to receive messages in
 
 Open the server settings
 
@@ -91,10 +83,12 @@ Save the "Webhook URL" on this page
 
 ### Heroku setup
 
-Heroku is what we will be using to host the chat bot (for free)
+Heroku is what we will be using to host the chat bot
 
-**You should not need to enter credit card information for this hosting service for our needs.**
-You **may** run out of free hours without a credit card linked. If you decide to link your credit card you will have enough free hours for the month for a single application since this more than doubles your available hours. We are not responsible for any charges associated with Heroku.
+**Starting November 28, 2022, Heroku plans to stop offering free product plans and plans to start shutting down free dynos and data services.** 
+The original creator of this bot offers a hosting service for lower than the new costs of Heroku at https://www.GameDayBot.com/
+
+You will lose some features of this fork (Discord formatting w/ emotes & user tagging, extra options, extra trophies), but I have worked with the original fork to implement a few of my changes. 
 
 Go to https://id.heroku.com/login and sign up or login
 
@@ -112,32 +106,46 @@ Now you will need to setup your environment variables so that it works for your 
 
 ![](https://i.imgur.com/7a1V6v8.png)
 
-Now we will need to edit these variables (click the pencil to the right of the variable to modify)
-Note: App will restart when you change any variable so your chat room may be semi-spammed with the init message of "Hi" you can change the INIT_MSG variable to be blank to have no init message. It should also be noted that Heroku seems to restart the app about once a day
+Now we will need to edit these variables. (click the pencil to the right of the variable to modify)
+See [Environment Variables Section](#environment-variables) for documentation on each variable. 
 
-- DISCORD_WEBHOOK_URL: This is your Webhook URL from the Discord Settings page (REQUIRED)
-- LEAGUE_ID: This is your ESPN league id (REQUIRED)
-- START_DATE: This is when the bot will start paying attention and sending messages to your chat.
-- END_DATE: This is when the bot will stop paying attention and stop sending messages to your chat.
-- LEAGUE_YEAR: ESPN League year to look at (2020 by default)
-- TIMEZONE: The timezone that the messages will look to send in. (America/New_York by default)
-- INIT_MSG: The message that the bot will say when it is started (“Hi” by default, can be blank for no message)
-- TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
-- RANDOM_PHRASE: If set to 1, when matchups, heads up report, inactive report, waiver report, and final scores are posted, will include a random phrase from a list
-- EXTRA_TROPHIES: If set to 1, will award the additional trophies Week MVP, Week LVP, Overachiever, and Underachiever, when final scores are posted
-- SCORE_WARNING: When set to a whole number, this will act as the threshold for a player to appear on the weekly Heads Up Report
-- TUES_SCHED: If set to 1, will move updates accordingly for a COVID delayed game to Tuesday
-- FAAB: If set to 1, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
-- ESPN_S2: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
-- SWID: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
+Note: App will restart when you change any variable, so your chat room may be semi-spammed with the init message of "Hi". 
+You can change the INIT_MSG variable to be blank to have no init message. 
+It should also be noted that Heroku seems to restart the app about once a day
 
-After you have setup your variables you will need to turn it on. Navigate to the "Resources" tab of your Heroku app Dashboard.
+After you have set up your variables you will need to turn it on. Navigate to the "Resources" tab of your Heroku app Dashboard.
 You should see something like below. Click the pencil on the right and toggle the buton so it is blue like depicted and click "Confirm."
 ![](https://i.imgur.com/J6bpV2I.png)
 
 You're done! You now have a fully featured GroupMe/Slack/Discord chat bot for ESPN leagues! If you have an INIT_MSG you will see it exclaimed in your GroupMe, Discord, or Slack chat room.
 
 Unfortunately to do auto deploys of the latest version you need admin access to the repository on git. You can check for updates on the github page (https://github.com/dtcarls/ff_bot/commits/master) and click the deploy button again; however, this will deploy a new instance and the variables will need to be edited again.
+
+### Environment Variables
+
+<details>
+  <summary>Click to expand!</summary>
+
+- DISCORD_WEBHOOK_URL: This is your Webhook URL from the Discord Settings page (REQUIRED)
+- LEAGUE_ID: This is your ESPN league id (REQUIRED)
+- START_DATE: This is when the bot will start paying attention and sending messages to your chat.
+- END_DATE: This is when the bot will stop paying attention and stop sending messages to your chat.
+- LEAGUE_YEAR: ESPN League year to look at
+- TIMEZONE: The timezone that the messages will look to send in. (America/New_York by default)
+- INIT_MSG: The message that the bot will say when it is started (“Hi” by default, leave blank for no message)
+- TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
+- RANDOM_PHRASE: If set to True, when matchups, heads up report, inactive report, waiver report, and final scores are posted, will include a random phrase from a list
+- EXTRA_TROPHIES: If set to True, when extra trophies will be included when final scores are posted
+- SCORE_WARNING: Assign a score value for the Heads Up report to warn users about (default is 0)
+- TUES_SCHED: If set to True, will move updates accordingly for a COVID delayed game to Tuesday
+- FAAB: If set to True, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
+- ESPN_S2: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
+- SWID: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
+- USERS: List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\>,\<@[-ID 2 HERE-]\>,etc.
+- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[-Emote shortcut-]:[-Emote ID-]\>,\<:[-Emote shortcut-]:[-Emote ID-]\>,etc.
+- TEST: Used for troubleshooting--set to 1 so bot will provide test output instead
+
+</details>
 
 ### User and Emote IDs
 
@@ -159,7 +167,7 @@ Emotes MUST be from the server-specific list. To get the ID, say '\\:[Emote shor
 
 Both the Users and Emotes lists need to go in order that the teams joined your league. On your league page, go to League -> Members, which will give you a list of teams in this order. Additionally, each team has a team ID that reflects this order. You can visit each team page to make sure your order is correct. If you have deleted a team in the past, then that number does not get reused and you will need to leave their entry in the list blank, with nothing between the commas. For instance, if Team 2 was deleted your list would look like: "ID1,,ID3,..."
 
- </details>
+</details>
 
 ### Private Leagues
 
@@ -207,82 +215,61 @@ Is there a version of this for Messenger/WhatsApp/[insert other chat]?
 No, but I am open to pull requests implementing their API for additional cross platform support.
 </details>
 
-## Getting Started for development and testing
+## Self Hosting, Development, and Testing
 
 <details>
   <summary>Click to expand!</summary>
 
-These instructions will get you a copy of the project up and running
-on your local machine for development and testing purposes.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Installing for development
-With Docker:
-```bash
-git clone https://github.com/dtcarls/ff_bot
-
-cd ff_bot
-
-docker build -t ff_bot .
+### Clone the repo
+First and foremost, clone a copy of this repo to your machine:
+``` bash 
+git clone https://github.com/sdvgallardo/fantasy_football_chat_bot-vS.git ff_bot
 ```
 
-Without Docker:
+### With Docker:
 
+To host with Docker, fill in `docker-compose.yml` with your [Environment Variables](#environment-variables). Variables with "" *must* be wrapped in quotes.
+
+If you are running Docker on a Raspberry Pi, you will need to change the Python image in the Dockerfile to `slim-buster`
 ```bash
-git clone https://github.com/dtcarls/ff_bot
-
 cd ff_bot
+docker compose up -d
+```
 
+#### Restarting Docker
+If changes are made to the bot, or you adjust your environment variables, you will need to stop and recompose the container:
+```bash
+cd ff_bot
+docker stop [container name]
+docker compose up -d
+```
+
+
+### Without Docker:
+You can also directly run just the Python script.
+
+Start by running the install:
+```bash
+cd ff_bot
 python3 setup.py install
 ```
+You may also need to install the required dependencies with `pip install -r requirements.txt`.
 
-### Environment Variables
-
-- DISCORD_WEBHOOK_URL: This is your Webhook URL from the Discord Settings page (REQUIRED IF USING DISCORD)
-- LEAGUE_ID: This is your ESPN league id (REQUIRED)
-- START_DATE: This is when the bot will start paying attention and sending messages to your chat. (2020-09-10 by default)
-- END_DATE: This is when the bot will stop paying attention and stop sending messages to your chat. (2020-12-30 by default)
-- LEAGUE_YEAR: ESPN League year to look at (2020 by default)
-- TIMEZONE: The timezone that the messages will look to send in. (America/New_York by default)
-- INIT_MSG: The message that the bot will say when it is started (“Hi” by default, can be blank for no message)
-- TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
-- RANDOM_PHRASE: If set to 1, when matchups, heads up report, inactive report, waiver report, and final scores are posted, will include a random phrase from a list
-- EXTRA_TROPHIES: If set to 1, will award the additional trophies Week MVP, Week LVP, Overachiever, and Underachiever, when final scores are posted
-- SCORE_WARNING: When set to a whole number, this will act as the threshold for a player to appear on the weekly Heads Up Report
-- TUES_SCHED: If set to 1, will move updates accordingly for a COVID delayed game to Tuesday
-- FAAB: If set to 1, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
-- ESPN_S2: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
-- SWID: Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation
-- USERS: List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\>,\<@[-ID 2 HERE-]\>,etc.
-- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[-Emote shortcut-]:[-Emote ID-]\>,\<:[-Emote shortcut-]:[-Emote ID-]\>,etc.
-
-### Running with Docker
+Then, export your environment variables and run `ff_bot.py`.
 
 ```bash
->>> export DISCORD_WEBHOOK_URL=[enter your Webhook URL]
->>> export LEAGUE_ID=[enter ESPN league ID]
->>> export LEAGUE_YEAR=[enter league year]
->>> cd ff_bot
->>> docker run --rm=True \
--e DISCORD_WEBHOOK_URL=$DISCORD_WEBHOOK_URL \
--e LEAGUE_ID=$LEAGUE_ID \
--e LEAGUE_YEAR=$LEAGUE_YEAR \
-ff_bot
-```
-
-### Running without Docker
-
-```bash
->>> export DISCORD_WEBHOOK_URL=[enter your Webhook URL]
->>> export LEAGUE_ID=[enter ESPN league ID]
->>> export LEAGUE_YEAR=[enter league year]
->>> cd ff_bot
->>> python3 ff_bot/ff_bot.py
+export DISCORD_WEBHOOK_URL=[enter your Webhook URL]
+export LEAGUE_ID=[enter ESPN league ID]
+export LEAGUE_YEAR=[enter league year]
+cd ff_bot
+python3 ff_bot/ff_bot.py
 ```
 
 ### Running the tests
 
-Automated tests for this package are included in the `tests` directory. After installation,
-you can run these tests by changing the directory to the `ff_bot` directory and running the following:
+Automated tests for this package are included in the `tests` directory. After installation, you can run these tests by changing the directory to the `ff_bot` directory and running the following:
 
 ```python3
 python3 setup.py test

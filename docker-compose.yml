@@ -6,29 +6,37 @@ services:
       context: .
     restart: always
     environment:
-      #Bot ID from the GroupMe developers page (REQUIRED IF USING GROUPME)
-      BOT_ID: "1"
-      #Webhook URL from the Slack App page (REQUIRED IF USING SLACK)
-      SLACK_WEBHOOK_URL: "1"
-      #This is your Webhook URL from the Discord Settings page (REQUIRED IF USING DISCORD)
-      DISCORD_WEBHOOK_URL: "1"
+      #This is your Webhook URL from the Discord Settings page (REQUIRED)
+      DISCORD_WEBHOOK_URL: ""
       #ESPN league id (REQUIRED)
-      LEAGUE_ID:
+      LEAGUE_ID: 
       # #When the bot will start paying attention and sending messages to your chat.
       # START_DATE:
       # #When the bot will stop paying attention and stop sending messages to your chat.
       # END_DATE:
       # #ESPN League year
-      # LEAGUE_YEAR:
+      LEAGUE_YEAR:
+      # #Required for private leagues. See Private Leagues Section for documentation
+      ESPN_S2: ""
+      SWID: ""
       # #The timezone that the messages will look to send in. (America/New_York by default)
       # TIMEZONE:
-      # #The message that the bot will say when it is started (can be blank for no message)
+      # #The message that the bot will say when it is started (leave blank for no message)
       # INIT_MSG:
       # #If set to True, when standings are posted on Wednesday it will also include top half scoring wins
       # TOP_HALF_SCORING:
-      # #If set to True, when matchups are posted on Tuesday it will also include a random phrase
+      # #If set to True, random phrases will appear after certain bot messages
       # RANDOM_PHRASE:
-      # #Used for private leagues. See Private Leagues Section for documentation
-      # ESPN_S2:
-      # #Used for private leagues. See Private Leagues Section for documentation
-      # SWID:
+      # #If set to True, when extra trophies will be included when final score update runs
+      # EXTRA_TROPHIES: 
+      # #If set to True, will move updates accordingly for a COVID delayed game to Tuesday
+      # TUES_SCHED:
+      # #Assign a score value for the Heads Up report to warn users about (default is 0)
+      # SCORE_WARNING:
+      # #If set to True, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
+      # FAAB: 
+      # #See User and Emote IDs section for documentation on these
+      # USERS: ""
+      # EMOTES: ""
+      # #Used for troubleshooting--set to 1 so bot will provide test output instead
+      # TEST: 0
