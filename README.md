@@ -141,8 +141,8 @@ Unfortunately to do auto deploys of the latest version you need admin access to 
 - FAAB: If set to True, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
 - ESPN_S2: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
 - SWID: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
-- USERS: List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\>,\<@[-ID 2 HERE-]\>,etc.
-- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[-Emote shortcut-]:[-Emote ID-]\>,\<:[-Emote shortcut-]:[-Emote ID-]\>,etc.
+- USERS: List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\> ,\<@[-ID 2 HERE-]\> ,etc.
+- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[-Emote shortcut-]:[-Emote ID-]\> ,\<:[-Emote shortcut-]:[-Emote ID-]\> ,etc.
 - TEST: Used for troubleshooting--set to 1 so bot will provide test output instead
 
 </details>
@@ -154,8 +154,8 @@ Unfortunately to do auto deploys of the latest version you need admin access to 
 
 If you're using Discord and would like to go to the effort, you can provide lists of your Discord user and emote IDs in the Environment Variables.
 
-- USERS: List of Discord user IDs, comma separated, in the format of \<@[ID 1 HERE]\>,\<@[ID 2 HERE]\>,etc.
-- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[Emote shortcut]:[Emote ID]\>,\<:[Emote shortcut]:[Emote ID]\>,etc.
+- USERS: List of Discord user IDs, comma separated, in the format of \<@[ID 1 HERE]\> ,\<@[ID 2 HERE]\> ,etc.
+- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[Emote shortcut]:[Emote ID]\> ,\<:[Emote shortcut]:[Emote ID]\> ,etc.
 
 Replace the [ ] and the content within with the IDs.
 
@@ -165,7 +165,9 @@ For Users, just right click the user in the server list and select "Copy ID". Us
 
 Emotes MUST be from the server-specific list. To get the ID, say '\\:[Emote shortcut]:' in any text channel and copy the text that appears.
 
-Both the Users and Emotes lists need to go in order that the teams joined your league. On your league page, go to League -> Members, which will give you a list of teams in this order. Additionally, each team has a team ID that reflects this order. You can visit each team page to make sure your order is correct. If you have deleted a team in the past, then that number does not get reused and you will need to leave their entry in the list blank, with nothing between the commas. For instance, if Team 2 was deleted your list would look like: "ID1,,ID3,..."
+Both the Users and Emotes lists need to go in order that the teams joined your league. On your league page, go to League -> Members, which will give you a list of teams in this order. Additionally, each team has a team ID that reflects this order. You can visit each team page to make sure your order is correct. If you have deleted a team in the past, then that number does not get reused and you will need to leave their entry in the list blank, with nothing between the commas. For instance, if Team 2 was deleted your list would look like: "ID1 ,,ID3 ,..."
+
+Make sure to include a space before the comma before each user and emote ID, it's important for formatting messages. 
 
 </details>
 
