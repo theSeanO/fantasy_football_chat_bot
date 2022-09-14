@@ -69,7 +69,7 @@ def get_scoreboard_short(league, week=None):
         if i.away_team:
             home_score = '%.2f' % (i.home_score)
             away_score = '%.2f' % (i.away_score)
-            score = '%s `%s %s - %s %s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev.rjust(4), home_score.rjust(6),
+            score = '%s`%s %s - %s %s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev.rjust(4), home_score.rjust(6),
                         away_score.ljust(6), i.away_team.team_abbrev.ljust(4), emotes[i.away_team.team_id])
             scores += [score.strip()]
 
@@ -88,7 +88,7 @@ def get_projected_scoreboard(league, week=None):
         if i.away_team:
             home_score = '%.2f' % (get_projected_total(i.home_lineup))
             away_score = '%.2f' % (get_projected_total(i.away_lineup))
-            score = '%s `%s %s - %s %s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev.rjust(4), home_score.rjust(6),
+            score = '%s`%s %s - %s %s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev.rjust(4), home_score.rjust(6),
                         away_score.ljust(6), i.away_team.team_abbrev.ljust(4), emotes[i.away_team.team_id])
             scores += [score.strip()]
 
@@ -101,7 +101,7 @@ def get_standings(league, top_half_scoring, week=None):
     standings = []
     if not top_half_scoring:
         standings = league.standings()
-        standings_txt = [f"{pos + 1}: {emotes[team.team_id]} {team.team_name} ({team.wins}-{team.losses})" for \
+        standings_txt = [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
             pos, team in enumerate(standings)]
     else:
         top_half_totals = {t.team_name: 0 for t in teams}
@@ -115,7 +115,7 @@ def get_standings(league, top_half_scoring, week=None):
             standings.append((wins, t.losses, t.team_name, emotes[t.team_id]))
 
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {emote} {team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
+        standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
 
     text = ['__**Current Standings:**__ '] + standings_txt
@@ -215,7 +215,7 @@ def scan_roster(lineup, team):
         list += p + "\n"
 
     if count > 0:
-        s = '%s **%s** - **%d**: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])
+        s = '%s**%s** - **%d**: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])
         report =  [s.lstrip()]
 
     return report
@@ -237,12 +237,8 @@ def scan_inactives(lineup, team):
     for p in players:
         inactive_list += p + "\n"
     if count > 0:
-        if users[team.team_id] != '':
-            inactives = ['%s **%s** - **%d**: \n%s \n' % (users[team.team_id], team.team_name, count, inactive_list[:-1])]
-        else:
-            s = '**%s** - **%d**: \n%s \n' % (team.team_name, count, inactive_list[:-1])
-            inactives = [s.lstrip()]
-
+        inactives = ['%s**%s** - **%d**: \n%s \n' % (users[team.team_id], team.team_name, count, inactive_list[:-1])]
+    
     return inactives
 
 def get_matchups(league, week=None):
@@ -251,8 +247,8 @@ def get_matchups(league, week=None):
     scores = []
     for i in matchups:
         if i.away_team:
-            home_team = '%s **%s** (%s-%s)' % (emotes[i.home_team.team_id], i.home_team.team_name, i.home_team.wins, i.home_team.losses)
-            away_team = '%s **%s** (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
+            home_team = '%s**%s** (%s-%s)' % (emotes[i.home_team.team_id], i.home_team.team_name, i.home_team.wins, i.home_team.losses)
+            away_team = '%s**%s** (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
             scores += [home_team.lstrip() + ' vs ' + away_team.lstrip()]
 
     text = ['__**Matchups:**__ '] + scores + [' ']
@@ -297,22 +293,22 @@ def get_waiver_report(league, faab):
                 if d2 == today:
                     if len(actions) == 1 and actions[0][1] == 'WAIVER ADDED':
                         if faab:
-                            s = '%s **%s** \nADDED%s %s ($%s)\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, actions[0][3])
+                            s = '%s**%s** \nADDED%s %s ($%s)\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, actions[0][3])
                         else:
-                            s = '%s **%s** \nADDED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
+                            s = '%s**%s** \nADDED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
                         report += [s.lstrip()]
                     elif len(actions) > 1:
                         if actions[0][1] == 'WAIVER ADDED' or  actions[1][1] == 'WAIVER ADDED':
                             if actions[0][1] == 'WAIVER ADDED':
                                 if faab:
-                                    s = '%s **%s** \nADDED%s %s ($%s)\nDROPPED %s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, actions[0][3], ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name)
+                                    s = '%s**%s** \nADDED%s %s ($%s)\nDROPPED %s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, actions[0][3], ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name)
                                 else:
-                                    s = '%s **%s** \nADDED%s %s, \nDROPPED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name)
+                                    s = '%s**%s** \nADDED%s %s, \nDROPPED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name)
                             else:
                                 if faab:
-                                    s = '%s **%s** \nADDED%s %s ($%s)\nDROPPED %s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name, actions[1][3], ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
+                                    s = '%s**%s** \nADDED%s %s ($%s)\nDROPPED %s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name, actions[1][3], ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
                                 else:
-                                    s = '%s **%s** \nADDED%s %s, \nDROPPED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
+                                    s = '%s**%s** \nADDED%s %s, \nDROPPED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
                             report += [s.lstrip()]
 
             report.reverse()
@@ -350,15 +346,10 @@ def combined_power_rankings(league, week=None):
 
     for i in pr:
         if i:
-            if emotes[i[1].team_id] != '':
-                # ranks += ['%s: %s %s (%s - %.1f - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
-                ranks += ['%s: %s %s (%s - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], sr_sorted[pos-1][0])]
-            else:
-                # ranks += ['%s: %s (%s - %.1f - %s)' % (pos, i[1].team_name, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
-                ranks += ['%s: %s (%s - %s)' % (pos, i[1].team_name, i[0], sr_sorted[pos-1][0])]
+            ranks += ['%s: %s%s (%s - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], sr_sorted[pos-1][0])]
         pos += 1
 
-    # text = ['__**Power Rankings:**__ (PR points - Playoff % - Simulated Record)'] + ranks
+    # text = ['__**Power Rankings:**__ (PR points - Simulated Record)'] + ranks
     text = ['__**Power Rankings:**__ (PR points - Simulated Record)'] + ranks
     if random_phrase == True:
         text += [' '] + get_random_phrase()
@@ -377,10 +368,7 @@ def get_power_rankings(league, week=None):
 
     for i in power_rankings:
         if i:
-            if emotes[i[1].team_id] != '':
-                ranks += ['%s - %s %s' % (i[0], emotes[i[1].team_id], i[1].team_name)]
-            else:
-                ranks += ['%s - %s' % (i[0], i[1].team_name)]
+            ranks += ['%s - %s%s' % (i[0], emotes[i[1].team_id], i[1].team_name)]
 
     text = ['__**Power Rankings:**__ '] + ranks
 
@@ -395,10 +383,7 @@ def get_sim_record(league, week=None):
 
     for i in win_percent:
         if i:
-            if emotes[i[1].team_id] != '':
-                wins += ['%s - %s %s' % (i[0], emotes[i[1].team_id], i[1].team_name)]
-            else:
-                wins += ['%s - %s' % (i[0], i[1].team_name)]
+            wins += ['%s - %s%s' % (i[0], emotes[i[1].team_id], i[1].team_name)]
 
     text = ['__**Simulated Record:**__ '] + wins
     if random_phrase == True:
@@ -458,109 +443,83 @@ def get_trophies(league, extra_trophies, week=None):
     matchups = league.box_scores(week=week)
 
     low_score = 9999
-    low_team_name = ''
-    low_team_emote = ''
+    low_team = -1
 
     high_score = -1
-    high_team_name = ''
-    high_team_emote = ''
+    high_team = -1
 
     closest_score = 9999
-    close_winner = ''
-    close_winner_emote = ''
-    close_loser = ''
-    close_loser_emote = ''
+    close_winner = -1
+    close_loser = -1
 
     biggest_blowout = -1
-    blown_out_team_name = ''
-    blown_out_emote = ''
-    ownerer_team_name = ''
-    ownerer_emote = ''
+    blown_out_team = -1
+    ownerer_team = -1
 
     over_diff = -1000
-    over_team = ''
-    over_emote = ''
+    over_team = -1
 
     under_diff = 999
-    under_team = ''
-    uner_emote = ''
+    under_team = -1
 
     mvp_score_diff = -100
     mvp_proj = -100
     mvp_score = ''
     mvp = ''
     mvp_team = -1
-    mvp_emote = ''
 
     lvp_score_diff = 999
     lvp_proj = 999
     lvp_score = ''
     lvp = ''
     lvp_team = -1
-    lvp_emote = ''
 
     for i in matchups:
         if i.home_score > high_score:
             high_score = i.home_score
-            high_team_name = i.home_team.team_name
-            high_team_emote = emotes[i.home_team.team_id]
+            high_team = i.home_team
         if i.home_score < low_score:
             low_score = i.home_score
-            low_team_name = i.home_team.team_name
-            low_team_emote = emotes[i.home_team.team_id]
+            low_team = i.home_team
         if i.away_score > high_score:
             high_score = i.away_score
-            high_team_name = i.away_team.team_name
-            high_team_emote = emotes[i.away_team.team_id]
+            high_team = i.away_team
         if i.away_score < low_score:
             low_score = i.away_score
-            low_team_name = i.away_team.team_name
-            low_team_emote = emotes[i.away_team.team_id]
+            low_team = i.away_team
 
         if i.away_score - i.home_score != 0 and \
             abs(i.away_score - i.home_score) < closest_score:
             closest_score = abs(i.away_score - i.home_score)
             if i.away_score - i.home_score < 0:
-                close_winner = i.home_team.team_name
-                close_winner_emote = emotes[i.home_team.team_id]
-                close_loser = i.away_team.team_name
-                close_loser_emote = emotes[i.away_team.team_id]
+                close_winner = i.home_team
+                close_loser = i.away_team
             else:
-                close_winner = i.away_team.team_name
-                close_winner_emote = emotes[i.away_team.team_id]
-                close_loser = i.home_team.team_name
-                close_loser_emote = emotes[i.home_team.team_id]
+                close_winner = i.away_team
+                close_loser = i.home_team
 
         if abs(i.away_score - i.home_score) > biggest_blowout:
             biggest_blowout = abs(i.away_score - i.home_score)
             if i.away_score - i.home_score < 0:
-                ownerer_team_name = i.home_team.team_name
-                ownerer_emote = emotes[i.home_team.team_id]
-                blown_out_team_name = i.away_team.team_name
-                blown_out_emote = emotes[i.away_team.team_id]
+                ownerer_team = i.home_team
+                blown_out_team = i.away_team
             else:
-                ownerer_team_name = i.away_team.team_name
-                ownerer_emote = emotes[i.away_team.team_id]
-                blown_out_team_name = i.home_team.team_name
-                blown_out_emote = emotes[i.home_team.team_id]
+                ownerer_team = i.away_team
+                blown_out_team = i.home_team
 
         if (i.home_score - get_projected_final(i.home_lineup)) > over_diff:
             over_diff = i.home_score - get_projected_final(i.home_lineup)
-            over_team = i.home_team.team_name
-            over_emote = emotes[i.home_team.team_id]
+            over_team = i.home_team
         elif (i.home_score - get_projected_final(i.home_lineup)) < under_diff:
             under_diff = i.home_score - get_projected_final(i.home_lineup)
-            under_team = i.home_team.team_name
-            under_emote = emotes[i.home_team.team_id]
+            under_team = i.home_team
 
         if (i.away_score - get_projected_final(i.away_lineup)) > over_diff:
             over_diff = i.away_score - get_projected_final(i.away_lineup)
-            over_team = i.away_team.team_name
-            over_emote = emotes[i.away_team.team_id]
+            over_team = i.away_team
         elif (i.away_score - get_projected_final(i.away_lineup)) < under_diff:
             under_diff = i.away_score - get_projected_final(i.away_lineup)
-            under_team = i.away_team.team_name
-            under_emote = emotes[i.away_team.team_id]
+            under_team = i.away_team
 
         for p in i.home_lineup:
             if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
@@ -571,15 +530,13 @@ def get_trophies(league, extra_trophies, week=None):
                     mvp_proj = proj_diff
                     mvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                     mvp = p.position + ' ' + p.name
-                    mvp_team = i.home_team.team_abbrev
-                    mvp_emote = emotes[i.home_team.team_id]
+                    mvp_team = i.home_team
                 elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
                     lvp_score_diff = score_diff
                     lvp_proj = proj_diff
                     lvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                     lvp = p.position + ' ' + p.name
-                    lvp_team = i.home_team.team_abbrev
-                    lvp_emote = emotes[i.home_team.team_id]
+                    lvp_team = i.home_team
         for p in i.away_lineup:
             if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
                 score_diff = (p.points - p.projected_points)/p.projected_points
@@ -589,41 +546,29 @@ def get_trophies(league, extra_trophies, week=None):
                     mvp_proj = proj_diff
                     mvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                     mvp = p.position + ' ' + p.name
-                    mvp_team = i.away_team.team_abbrev
-                    mvp_emote = emotes[i.away_team.team_id]
+                    mvp_team = i.away_team
                 elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
                     lvp_score_diff = score_diff
                     lvp_proj = proj_diff
                     lvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                     lvp = p.position + ' ' + p.name
-                    lvp_team = i.away_team.team_abbrev
-                    lvp_emote = emotes[i.away_team.team_id]
+                    lvp_team = i.away_team
 
-    if emotes[1] != '':
-        low_score_str = ['Lowest score: %s **%s** with %.2f points' % (low_team_emote, low_team_name, low_score)]
-        high_score_str = ['Highest score: %s **%s** with %.2f points' % (high_team_emote, high_team_name, high_score)]
-        over_str = ['Overachiever: %s **%s** with %.2f points more than their projection' % (over_emote, over_team, over_diff)]
-        under_str = ['Underachiever: %s **%s** with %.2f points less than their projection' % (under_emote, under_team, abs(under_diff))]
-        mvp_str = ['Week MVP: %s, %s **%s** with %s' % (mvp, mvp_emote, mvp_team, mvp_score)]
-        lvp_str = ['Week LVP: %s, %s **%s** with %s' % (lvp, lvp_emote, lvp_team, lvp_score)]
-        close_score_str = ['%s **%s** barely beat %s **%s** by a margin of %.2f' % (close_winner_emote, close_winner, close_loser_emote, close_loser, closest_score)]
-        blowout_str = ['%s **%s** got blown out by %s **%s** by a margin of %.2f' % (blown_out_emote, blown_out_team_name, ownerer_emote, ownerer_team_name, biggest_blowout)]
-    else:
-        low_score_str = ['Lowest score: **%s** with %.2f points' % (low_team_name, low_score)]
-        high_score_str = ['Highest score: **%s** with %.2f points' % (high_team_name, high_score)]
-        over_str = ['Overachiever: **%s** with %.2f points more than their projection' % (over_team, over_diff)]
-        under_str = ['Underachiever: **%s** with %.2f points less than their projection' % (under_team, abs(under_diff))]
-        mvp_str = ['Week MVP: %s, **%s** with %s' % (mvp, mvp_team, mvp_score)]
-        lvp_str = ['Week LVP: %s, **%s** with %s' % (lvp, lvp_team, lvp_score)]
-        close_score_str = ['**%s** barely beat **%s** by a margin of %.2f' % (close_winner, close_loser, closest_score)]
-        blowout_str = ['**%s** got blown out by **%s** by a margin of %.2f' % (blown_out_team_name, ownerer_team_name, biggest_blowout)]
+    low_score_str = ['Lowest score: %s**%s** with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
+    high_score_str = ['Highest score: %s**%s** with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
+    over_str = ['Overachiever: %s**%s** with %.2f points more than their projection' % (emotes[over_team.team_id], over_team.team_name, over_diff)]
+    under_str = ['Underachiever: %s**%s** with %.2f points less than their projection' % (emotes[under_team.team_id], under_team.team_name, abs(under_diff))]
+    mvp_str = ['Week MVP: %s, %s**%s** with %s' % (mvp, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['Week LVP: %s, %s**%s** with %s' % (lvp, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
+    close_score_str = ['%s**%s** barely beat %s**%s** by a margin of %.2f' % (emotes[close_winner.team_id], close_winner.team_name, emotes[close_loser.team_id], close_loser.team_name, closest_score)]
+    blowout_str = ['%s**%s** got blown out by %s**%s** by a margin of %.2f' % (emotes[blown_out_team.team_id], blown_out_team.team_name, emotes[ownerer_team.team_id], ownerer_team.team_name, biggest_blowout)]
 
     text = ['__**Trophies of the week:**__ '] + low_score_str + high_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
-        if under_diff < 0 and low_team_name != under_team:
+        if under_diff < 0 and low_team.team_name != under_team.team_name:
             text += under_str
-        if over_diff > 0 and high_team_name != over_team:
+        if over_diff > 0 and high_team.team_name != over_team.team_name:
             text += over_str
         text += lvp_str + mvp_str + [' ']
     else:
@@ -642,56 +587,70 @@ def test_users(league):
     text = ['**Users:** '] + message + [' '] + get_random_phrase()
     return '\n'.join(text)
 
-def season_mvp(league):
+def season_trophies(league):
     mvp_score_diff = -100
     mvp_proj = -100
     mvp_score = ''
     mvp = ''
     mvp_team = -1
-    mvp_emote = ''
     mvp_week = 0
 
-    vmvp_score_diff = -100
-    vmvp_proj = -100
-    vmvp_score = ''
-    vmvp = ''
-    vmvp_team = -1
-    vmvp_emote = ''
-    vmvp_week = 0
+    smvp_score_diff = -100
+    smvp_proj = -100
+    smvp_score = ''
+    smvp = ''
+    smvp_team = -1
 
     lvp_score_diff = 999
     lvp_proj = 999
     lvp_score = ''
     lvp = ''
     lvp_team = -1
-    lvp_emote = ''
     lvp_week = 0
 
-    vlvp_score_diff = 999
-    vlvp_proj = 999
-    vlvp_score = ''
-    vlvp = ''
-    vlvp_team = -1
-    vlvp_emote = ''
-    vlvp_week = 0
+    slvp_score_diff = 999
+    slvp_proj = 999
+    slvp_score = ''
+    slvp = ''
+    slvp_team = -1
+
+    most_moves = 0
+    moves_score = ''
+    moves_team = -1
+
+    high_score = 0
+    score_team = 0
+    score_week = 0
 
     for team in league.teams:
+        moves = team.acquisitions + team.drops + team.trades
+        if moves > most_moves:
+            most_moves = moves
+            moves_score = '%d total moves (%d adds, %d drops, %d trades)' % (moves, team.acquisitions, team.drops, team.trades)
+            moves_team = team
+
+        for score in team.scores:
+            if score > high_score:
+                high_score = score
+                score_team = team
+                score_week = team.scores.index(score)
+
         for p in team.roster:
             if p.projected_total_points > 0:
                 score_diff = (p.total_points - p.projected_total_points)/p.projected_total_points
                 proj_diff = p.total_points - p.projected_total_points
-                if (score_diff > vmvp_score_diff) or (score_diff == vmvp_score_diff and proj_diff > vmvp_proj):
-                    vmvp_score_diff = score_diff
-                    vmvp_proj = proj_diff
-                    vmvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.total_points, p.projected_total_points, score_diff)
-                    vmvp = p.position + ' ' + p.name
-                    vmvp_team = team.team_abbrev
-                elif (score_diff < vlvp_score_diff) or (score_diff == vlvp_score_diff and proj_diff < vlvp_proj):
-                    vlvp_score_diff = score_diff
-                    vlvp_proj = proj_diff
-                    vlvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.total_points, p.projected_total_points, score_diff)
-                    vlvp = p.position + ' ' + p.name
-                    vlvp_team = team.team_abbrev
+                if (score_diff > smvp_score_diff) or (score_diff == smvp_score_diff and proj_diff > smvp_proj):
+                    smvp_score_diff = score_diff
+                    smvp_proj = proj_diff
+                    smvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.total_points, p.projected_total_points, score_diff)
+                    smvp = p.position + ' ' + p.name
+                    smvp_team = team
+                elif (score_diff < slvp_score_diff) or (score_diff == slvp_score_diff and proj_diff < slvp_proj):
+                    slvp_score_diff = score_diff
+                    slvp_proj = proj_diff
+                    slvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.total_points, p.projected_total_points, score_diff)
+                    slvp = p.position + ' ' + p.name
+                    slvp_team = team
 
     z = 1
     while z <= 18:
@@ -702,12 +661,12 @@ def season_mvp(league):
                     score_diff = (p.points - p.projected_points)/p.projected_points
                     proj_diff = p.points - p.projected_points
                     if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
-                        if p.name != "Garrett Gilbert" and p.name != "Josh Johnson":
+                        if p.projected_points > 0.1:
                             mvp_score_diff = score_diff
                             mvp_proj = proj_diff
                             mvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                             mvp = p.position + ' ' + p.name
-                            mvp_team = i.home_team.team_abbrev
+                            mvp_team = i.home_team
                             mvp_week = z
                     elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
                         if p.position != 'K':
@@ -715,7 +674,7 @@ def season_mvp(league):
                             lvp_proj = proj_diff
                             lvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                             lvp = p.position + ' ' + p.name
-                            lvp_team = i.home_team.team_abbrev
+                            lvp_team = i.home_team
                             lvp_week = z
 
             for p in i.away_lineup:
@@ -723,12 +682,12 @@ def season_mvp(league):
                     score_diff = (p.points - p.projected_points)/p.projected_points
                     proj_diff = p.points - p.projected_points
                     if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
-                        if p.name != "Garrett Gilbert" and p.name !="Josh Johnson":
+                        if p.projected_points > 0.1:
                             mvp_score_diff = score_diff
                             mvp_proj = proj_diff
                             mvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                             mvp = p.position + ' ' + p.name
-                            mvp_team = i.away_team.team_abbrev
+                            mvp_team = i.away_team
                             mvp_week = z
                     elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
                         if p.position != 'K':
@@ -736,18 +695,22 @@ def season_mvp(league):
                             lvp_proj = proj_diff
                             lvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
                             lvp = p.position + ' ' + p.name
-                            lvp_team = i.away_team.team_abbrev
+                            lvp_team = i.away_team
                             lvp_week = z
         z = z+1
 
-    mvp_str = ['Season Best Performance: %s, Week %d, **%s** with %s' % (mvp, mvp_week, mvp_team, mvp_score)]
-    lvp_str = ['Season Worst Performance: %s, Week %d, **%s** with %s' % (lvp, lvp_week, lvp_team, lvp_score)]
+    moves_str = ['Most Moves: %s**%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
+    score_str = ['Highest Score: %s**%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
+    mvp_str = ['Best Performance: %s, Week %d, %s**%s** with %s' % (mvp, mvp_week, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['Worst Performance: %s, Week %d, %s**%s** with %s' % (lvp, lvp_week, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
+    smvp_str = ['Season MVP: %s, %s**%s** with %s' % (smvp, emotes[smvp_team.team_id], smvp_team.team_abbrev, smvp_score)]
+    slvp_str = ['Season LVP: %s, %s**%s** with %s' % (slvp, emotes[slvp_team.team_id], slvp_team.team_abbrev, slvp_score)]
+ 
+    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + lvp_str + mvp_str + slvp_str + smvp_str + [' ']
 
-    vmvp_str = ['Season MVP: %s, **%s** with %s' % (vmvp, vmvp_team, vmvp_score)]
-    vlvp_str = ['Season LVP: %s, **%s** with %s' % (vlvp, vlvp_team, vlvp_score)]
+    if random_phrase == True:
+        text += get_random_phrase()
 
-
-    text = lvp_str + mvp_str + vlvp_str + vmvp_str + [' ']
     return '\n'.join(text)
 
 def str_to_bool(check):
@@ -848,7 +811,7 @@ def bot_main(function):
 
     global users
     try:
-        users += os.environ["USERS"].split(',')
+        users += os.environ["USERS"].split(',') 
     except KeyError:
         users += [''] * league.teams[-1].team_id
 
@@ -870,7 +833,7 @@ def bot_main(function):
         print(get_matchups(league))
         print(get_heads_up(league))
         print(get_inactives(league))
-        # print(season_mvp(league))
+        print(season_trophies(league))
         function="get_final"
         # print(test_users(league))
         # discord_bot.send_message("Testing")
@@ -905,6 +868,8 @@ def bot_main(function):
         week = league.current_week - 1
         text = get_scoreboard_short(league, week=week)
         text = text + "\n\n" + get_trophies(league, extra_trophies, week=week)
+    elif function=="season_trophies":
+        text = season_trophies(league)
     elif function=="init":
         try:
             text = os.environ["INIT_MSG"]
@@ -934,6 +899,8 @@ if __name__ == '__main__':
     except KeyError:
         ff_end_date='2023-01-04'
 
+    end_date = datetime.strptime(ff_end_date, "%Y-%m-%d").date()
+
     try:
         my_timezone = os.environ["TIMEZONE"]
     except KeyError:
@@ -953,6 +920,7 @@ if __name__ == '__main__':
     #heads up report:                    wednesday afternoon at 4:30pm local time.
     #matchups:                           thursday evening at 6:30pm east coast time.
     #inactives:                          saturday evening at 8pm east coast time.
+    #season end trophies:                on the End Date provided at 7:30am local time.
     sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard2',
         day_of_week='sun', hour='16,20', start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
@@ -965,13 +933,16 @@ if __name__ == '__main__':
     sched.add_job(bot_main, 'cron', ['get_inactives'], id='inactives',
         day_of_week='sat', hour=20, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
+    sched.add_job(bot_main, 'date', ['season_trophies'], id='season_trophies',
+        run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30), 
+        timezone=my_timezone, replace_existing=True)
 
     #schedule without a COVID delay:
     #score update:                       friday and monday morning at 7:30am local time.
     #close scores (within 15.99 points): sunday and monday evening at 6:30pm east coast time.
     #final scores and trophies:          tuesday morning at 7:30am local time.
     #standings, PR, PO%, SR:             tuesday evening at 6:30pm local time.
-    #waiver report:                      wednesday morning at 8am local time.
+    #waiver report:                      wed-sun morning at 7:30am local time.
     if tues_sched == False:
         ready_text = "Ready! Regular schedule set."
         sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard1',
@@ -990,7 +961,7 @@ if __name__ == '__main__':
             day_of_week='tue', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
-            day_of_week='wed', hour=8, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
 
     #schedule with a COVID delay to tuesday:
@@ -998,7 +969,7 @@ if __name__ == '__main__':
     #close scores (within 15.99 points): sunday, monday, and tuesday evening at 6:30pm east coast time.
     #final scores and trophies:          wednesday morning at 7:30am local time.
     #standings, PR, PO%, SR:             wednesday evening at 6:30pm local time.
-    #waiver report:                      thursday morning at 8am local time.
+    #waiver report:                      thurs-sun morning at 7:30 local time.
     else:
         ready_text = "Ready! Tuesday schedule set."
         sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard1',
@@ -1017,7 +988,7 @@ if __name__ == '__main__':
             day_of_week='wed', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
-            day_of_week='thu', hour=8, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
 
     try:
