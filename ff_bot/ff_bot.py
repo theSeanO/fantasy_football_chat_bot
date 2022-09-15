@@ -645,7 +645,7 @@ def season_trophies(league):
                 score_week = team.scores.index(score)
 
         for p in team.roster:
-            if p.projected_total_points > 0:
+            if p.projected_total_points > 0 and p.position != 'D/ST':
                 score_diff = (p.total_points - p.projected_total_points)/p.projected_total_points
                 proj_diff = p.total_points - p.projected_total_points
                 if (score_diff > smvp_score_diff) or (score_diff == smvp_score_diff and proj_diff > smvp_proj):
@@ -831,19 +831,19 @@ def bot_main(function):
         emotes += [''] * league.teams[-1].team_id
 
     if test:
-        print(get_scoreboard_short(league))
-        print(get_projected_scoreboard(league))
-        print(get_close_scores(league))
-        print(get_standings(league, top_half_scoring))
+        print(get_scoreboard_short(league) + "\n")
+        print(get_projected_scoreboard(league) + "\n")
+        print(get_close_scores(league) + "\n")
+        print(get_standings(league, top_half_scoring) + "\n")
         # print(get_power_rankings(league))
         # print(get_sim_record(league))
-        print(combined_power_rankings(league))
-        print(get_waiver_report(league, faab))
-        print(get_matchups(league))
-        print(get_heads_up(league, 2))
-        print(get_heads_up(league, 3))
-        print(get_inactives(league))
-        print(season_trophies(league))
+        print(combined_power_rankings(league) + "\n")
+        print(get_waiver_report(league, faab) + "\n")
+        print(get_matchups(league) + "\n")
+        print(get_heads_up(league, 2) + "\n")
+        print(get_heads_up(league, 3) + "\n")
+        print(get_inactives(league) + "\n")
+        print(season_trophies(league) + "\n")
         function="get_final"
         # print(test_users(league))
         # discord_bot.send_message("Testing")
@@ -851,7 +851,7 @@ def bot_main(function):
     text = ''
     if function=="get_matchups":
         text = get_matchups(league)
-        text = text + "\n\n" + get_projected_scoreboard(league)
+        # text = text + "\n\n" + get_projected_scoreboard(league)
     elif function=="get_heads_up_1":
         text = get_heads_up(league, 2)
     elif function=="get_heads_up_2":
@@ -930,7 +930,7 @@ if __name__ == '__main__':
     #regular schedule:
     #game day score update:              sunday at 4pm, 8pm east coast time.
     #heads up report:                    wednesday afternoon at 4:30pm local time.
-    #matchups:                           thursday evening at 6:30pm east coast time.
+    #matchups & projections:             thursday evening at 6:30pm east coast time.
     #inactives:                          saturday evening at 8pm east coast time.
     #season end trophies:                on the End Date provided at 7:30am local time.
     sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard2',
@@ -944,6 +944,9 @@ if __name__ == '__main__':
         timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_matchups'], id='matchups',
         day_of_week='thu', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=game_timezone, replace_existing=True)
+    sched.add_job(bot_main, 'cron', ['get_projected_scoreboard'], id='proj_scoreboard',
+        day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_inactives'], id='inactives',
         day_of_week='sat', hour=20, start_date=ff_start_date, end_date=ff_end_date,
@@ -973,7 +976,7 @@ if __name__ == '__main__':
             day_of_week='tue', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
-            day_of_week='tue', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
@@ -1000,7 +1003,7 @@ if __name__ == '__main__':
             day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
-            day_of_week='wed', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='wed', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
