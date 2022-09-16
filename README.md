@@ -32,14 +32,14 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 - Sends out the following messages on this schedule:
 - Scoreboard - Sun - 16:00, 20:00 east coast time (Current ESPN fantasy scoreboard)
 - Scoreboard - Mon,Fri - 7:30 local time (Current ESPN fantasy scoreboard)
-- Close Scores - Sun,Mon - 18:30 east coast time (Games that are within 16 points of eachother to keep an eye on during the Sunday & Monday night games)
+- Close Scores - Sun,Mon - 18:30 east coast time (Games that are within 16 points to keep an eye on during the Sunday & Monday night games)
 - Final scores and Trophies- Tue - 7:30 local time
 - Current standings - Tue - 18:30 local time
 - Power rankings - Tue - 18:30 local time
-- Waiver report - Wed - 8:00 local time
-- Heads up report - Wed - 16:30 local time
-- Matchups - Thu - 18:30 east coast time (Upcoming matchups)
-- Inactive player report - Sat - 20:00 east coast time
+- Waiver report - Wed - 7:30 local time
+- Heads up report - Wed - 18:30 local time
+- Matchups - Thu - 18:30 east coast time (Upcoming matchups before Thursday night game)
+- Inactive player report - Sun - 12:05 east coast time (Right after inactive reports for the first games on Sunday)
 
 Table of Contents
 =================
