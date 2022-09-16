@@ -197,17 +197,25 @@ def scan_roster(lineup, team):
     players = []
     for i in lineup:
         if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
-            if i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL' or i.projected_points <= score_warn:
+            if (i.pro_opponent == 'None') or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= score_warn):
                 count += 1
                 player = i.position + ' ' + i.name + ' - '
                 if i.pro_opponent == 'None':
                     player += '**BYE**'
+                elif i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL':
+                    player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
                 elif i.projected_points <= score_warn:
                     player += '**' + str(i.projected_points) + ' pts**'
-                else:
-                    player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
                 players += [player]
-
+        elif i.position == 'D/ST' and (i.pro_opponent == 'None' or i.projected_points <= score_warn):
+            count += 1
+            player = i.name + ' - '
+            if i.pro_opponent == 'None':
+                player += '**BYE**'
+            elif i.projected_points <= score_warn:
+                player += '**' + str(i.projected_points) + ' pts**'
+            players += [player]
+                
     list = ""
     report = ""
 
@@ -224,18 +232,24 @@ def scan_inactives(lineup, team):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR':
+        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
             if i.pro_opponent == 'None':
                 count +=1
                 players += ['%s %s - **BYE**' % (i.position, i.name)]
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
                 count +=1
                 players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
+        elif i.position == 'D/ST' and i.pro_opponent == 'None':
+            count += 1
+            players += ['%s - **BYE**' % (i.name)]
+            
 
     inactive_list = ""
     inactives = ""
+
     for p in players:
         inactive_list += p + "\n"
+
     if count > 0:
         inactives = ['%s**%s** - **%d**: \n%s \n' % (users[team.team_id], team.team_name, count, inactive_list[:-1])]
     
@@ -713,6 +727,100 @@ def season_trophies(league):
 
     return '\n'.join(text)
 
+def best_possible_scores(league, week=None):
+    week = league.current_week - 1
+    box_scores = league.box_scores(week=week)
+    results = []
+    best_scores = {}
+
+    for i in box_scores:
+        best_scores[i.home_team] = best_lineup_score(i.home_lineup)
+        best_scores[i.away_team] = best_lineup_score(i.away_lineup)
+
+    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1], reverse=True)}
+
+    i = 1
+    for score in best_scores:
+        s = ['%d: %s%s: %.2f (%.2f actual, %.2f diff)' % (i, emotes[score.team_id], score.team_name, best_scores[score], score.scores[week-1], (best_scores[score] - score.scores[week-1]))]
+        results += s
+        i += 1
+
+    if not results:
+        return ('')
+
+    text = ['__**Best Possible Scores:**__ '] + results
+    if random_phrase == True:
+        text += get_random_phrase()
+
+    return '\n'.join(text)
+
+def best_lineup_score(lineup):
+    score = 0
+    best_score = 0
+    num_qb = num_flex = num_te = num_k = num_dst = 1
+    num_rb = num_wr =2
+
+    qb = {}
+    rb = {}
+    wr = {}
+    te = {}
+    dst = {}
+    k = {}
+
+    for p in lineup:
+        if p.position == 'QB':
+            qb[p.name] = p.points
+        elif p.position == 'RB':
+            rb[p.name] = p.points
+        elif p.position == 'WR':
+            wr[p.name] = p.points
+        elif p.position == 'TE':
+            te[p.name] = p.points
+        elif p.position == 'D/ST':
+            dst[p.name] = p.points
+        elif p.position == 'K':
+            k[p.name] = p.points
+        if p.slot_position not in ['BE', 'IR']:
+            score += p.points
+
+    best_qb = {key: value for key, value in sorted(qb.items(), key=lambda item: item[1], reverse=True)[:num_qb:]}
+    best_rb = {key: value for key, value in sorted(rb.items(), key=lambda item: item[1], reverse=True)[:num_rb:]}
+    best_wr = {key: value for key, value in sorted(wr.items(), key=lambda item: item[1], reverse=True)[:num_wr:]}
+    best_te = {key: value for key, value in sorted(te.items(), key=lambda item: item[1], reverse=True)[:num_te:]}
+    best_dst = {key: value for key, value in sorted(dst.items(), key=lambda item: item[1], reverse=True)[:num_dst:]}
+    best_k = {key: value for key, value in sorted(k.items(), key=lambda item: item[1], reverse=True)[:num_k:]}
+
+    flex = {}
+    for p in lineup:
+        if p.position in ['RB', 'WR', 'TE']:
+            if p.name not in best_rb and p.name not in best_wr and p.name not in best_te:
+                flex[p.name] = p.points
+
+    best_flex = {key: value for key, value in sorted(flex.items(), key=lambda item: item[1], reverse=True)[:num_flex:]}
+
+    team_str = ''
+    best_score += sum(best_qb.values())
+    best_score += sum(best_rb.values())
+    best_score += sum(best_wr.values())
+    best_score += sum(best_te.values())
+    best_score += sum(best_flex.values())
+    best_score += sum(best_dst.values())
+    best_score += sum(best_k.values())    
+
+    team_str += 'QB: ' + (', '.join(best_qb.keys())) 
+    team_str += ' | RB: ' + (', '.join(best_rb.keys())) 
+    team_str += ' | WR: ' + (', '.join(best_wr.keys())) 
+    team_str += ' | TE: ' + (', '.join(best_te.keys())) 
+    team_str += ' | Flex: ' + (', '.join(best_flex.keys())) 
+    team_str += ' | ' + (', '.join(best_dst.keys())) 
+    team_str += ' | K: ' + (', '.join(best_k.keys())) 
+
+    # score_diff = best_score - score
+
+    # s = ['%s**%s**: %.2f (%.2f actual, %.2f diff)' % (emotes[team.team_id],team.team_name, best_score, score, score_diff)]
+
+    return best_score
+
 def str_to_bool(check):
   return check.lower() in ("yes", "true", "t", "1")
 
@@ -829,6 +937,7 @@ def bot_main(function):
         # print(get_power_rankings(league))
         # print(get_sim_record(league))
         print(combined_power_rankings(league) + "\n")
+        print(best_possible_scores(league) + "\n")
         print(get_waiver_report(league, faab) + "\n")
         print(get_matchups(league) + "\n")
         print(get_heads_up(league) + "\n")
@@ -917,15 +1026,15 @@ if __name__ == '__main__':
 
     #regular schedule:
     #game day score update:              sunday at 4pm, 8pm east coast time.
-    #heads up report:                    wednesday afternoon at 4:30pm local time.
+    #heads up report:                    wednesday evening at 6:30pm local time.
     #matchups & projections:             thursday evening at 6:30pm east coast time.
-    #inactives:                          saturday evening at 8pm east coast time.
+    #inactives:                          sunday morning at 12:05pm east coast time.
     #season end trophies:                on the End Date provided at 7:30am local time.
     sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard2',
         day_of_week='sun', hour='16,20', start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_heads_up'], id='headsup',
-        day_of_week='wed', hour=16, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_matchups'], id='matchups',
         day_of_week='thu', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
@@ -934,7 +1043,7 @@ if __name__ == '__main__':
         day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_inactives'], id='inactives',
-        day_of_week='sat', hour=20, start_date=ff_start_date, end_date=ff_end_date,
+        day_of_week='sun', hour=12, minute=5, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     sched.add_job(bot_main, 'date', ['season_trophies'], id='season_trophies',
         run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30), 
