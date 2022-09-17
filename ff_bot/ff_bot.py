@@ -492,8 +492,8 @@ def best_possible_scores(league, week=None):
 def best_lineup_score(lineup):
     score = 0
     best_score = 0
-    num_qb = num_flex = num_te = num_k = num_dst = 1
-    num_rb = num_wr =2
+    num_qb = num_rb = num_wr = num_te = num_k = num_dst = 1
+    num_flex = 3
 
     qb = {}
     rb = {}
