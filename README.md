@@ -14,6 +14,7 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 - Adds a Waiver Report that provides a quick overview of the adds and drops that have taken place on waiver days *[ESPN_S2 and SWID variables are REQUIRED for this functionality]*
 - Adds a Heads Up Report, which lets players know if they have any players that they might not want to start
 - Adds an Inactive Report, which lets players know when they have players that are designated Out, or would otherwise score them 0 points
+- Adds the Best Possible Scores report, which tabulates how many points each team could have scored, and how much of that score they got
 - Adds a possible Environmental Variable, TUES_SCHED, which can be activated if a game is delayed until Tuesday for COVID-19, and moves all scheduled jobs up a day
 - Adds another possible Environmental Variable, SCORE_WARNING, which is a number that can be set as a threshold for the Heads Up Report
 - Adds extra places for the fun random phrases that can be activated with the variable RANDOM_PHRASE
@@ -36,6 +37,7 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 - Final scores and Trophies- Tue - 7:30 local time
 - Current standings - Tue - 18:30 local time
 - Power rankings - Tue - 18:30 local time
+- Best possible scores - Tue - 18:30 local time
 - Waiver report - Wed - 7:30 local time
 - Heads up report - Wed - 18:30 local time
 - Matchups - Thu - 18:30 east coast time (Upcoming matchups before Thursday night game)
@@ -138,7 +140,6 @@ Unfortunately to do auto deploys of the latest version you need admin access to 
 - EXTRA_TROPHIES: If set to True, when extra trophies will be included when final scores are posted
 - SCORE_WARNING: Assign a score value for the Heads Up report to warn users about (default is 0)
 - TUES_SCHED: If set to True, will move updates accordingly for a COVID delayed game to Tuesday
-- FAAB: If set to True, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
 - ESPN_S2: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
 - SWID: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
 - USERS: List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\> ,\<@[-ID 2 HERE-]\> ,etc.
