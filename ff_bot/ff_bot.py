@@ -31,6 +31,7 @@ class DiscordBot(object):
                               data=json.dumps(template), headers=headers)
 
             if r.status_code != 204:
+                print(r.content)
                 raise DiscordException(r.content)
 
             return r
@@ -461,6 +462,101 @@ def sim_record_percent(league, week):
     powerRankingDictSorted = {x: ('{:.3f}'.format(powerRankingDictSortedTemp[x])) for x in powerRankingDictSortedTemp.keys()}  #put into a prettier format
     return [(powerRankingDictSorted[x],x) for x in powerRankingDictSorted.keys()]    #return in the format that the bot expects
 
+def best_possible_scores(league, week=None):
+    week = league.current_week - 1
+    box_scores = league.box_scores(week=week)
+    results = []
+    best_scores = {}
+
+    for i in box_scores:
+        best_scores[i.home_team] = best_lineup_score(i.home_lineup)
+        best_scores[i.away_team] = best_lineup_score(i.away_lineup)
+
+    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
+
+    i = 1
+    for score in best_scores:
+        s = ['%d: %s%s: %.2f (%.2f - %.2f%%)' % (i, emotes[score.team_id], score.team_name, best_scores[score][0], best_scores[score][1], best_scores[score][3])]
+        results += s
+        i += 1
+
+    if not results:
+        return ('')
+
+    text = ['__**Best Possible Scores:**__  (Actual Score - % of possible)'] + results
+    if random_phrase == True:
+        text += get_random_phrase()
+
+    return '\n'.join(text)
+
+def best_lineup_score(lineup):
+    score = 0
+    best_score = 0
+    num_qb = num_flex = num_te = num_k = num_dst = 1
+    num_rb = num_wr =2
+
+    qb = {}
+    rb = {}
+    wr = {}
+    te = {}
+    dst = {}
+    k = {}
+
+    for p in lineup:
+        if p.position == 'QB':
+            qb[p.name] = p.points
+        elif p.position == 'RB':
+            rb[p.name] = p.points
+        elif p.position == 'WR':
+            wr[p.name] = p.points
+        elif p.position == 'TE':
+            te[p.name] = p.points
+        elif p.position == 'D/ST':
+            dst[p.name] = p.points
+        elif p.position == 'K':
+            k[p.name] = p.points
+        if p.slot_position not in ['BE', 'IR']:
+            score += p.points
+
+    best_qb = {key: value for key, value in sorted(qb.items(), key=lambda item: item[1], reverse=True)[:num_qb:]}
+    best_rb = {key: value for key, value in sorted(rb.items(), key=lambda item: item[1], reverse=True)[:num_rb:]}
+    best_wr = {key: value for key, value in sorted(wr.items(), key=lambda item: item[1], reverse=True)[:num_wr:]}
+    best_te = {key: value for key, value in sorted(te.items(), key=lambda item: item[1], reverse=True)[:num_te:]}
+    best_dst = {key: value for key, value in sorted(dst.items(), key=lambda item: item[1], reverse=True)[:num_dst:]}
+    best_k = {key: value for key, value in sorted(k.items(), key=lambda item: item[1], reverse=True)[:num_k:]}
+
+    flex = {}
+    for p in lineup:
+        if p.position in ['RB', 'WR', 'TE']:
+            if p.name not in best_rb and p.name not in best_wr and p.name not in best_te:
+                flex[p.name] = p.points
+
+    best_flex = {key: value for key, value in sorted(flex.items(), key=lambda item: item[1], reverse=True)[:num_flex:]}
+
+    best_score += sum(best_qb.values())
+    best_score += sum(best_rb.values())
+    best_score += sum(best_wr.values())
+    best_score += sum(best_te.values())
+    best_score += sum(best_flex.values())
+    best_score += sum(best_dst.values())
+    best_score += sum(best_k.values())
+
+    score_diff = best_score - score
+    score_pct = (score / best_score) * 100
+
+    # Only needed this for testing
+    # team_str = ''
+    # team_str += 'QB: ' + (', '.join(best_qb.keys())) 
+    # team_str += ' | RB: ' + (', '.join(best_rb.keys())) 
+    # team_str += ' | WR: ' + (', '.join(best_wr.keys())) 
+    # team_str += ' | TE: ' + (', '.join(best_te.keys())) 
+    # team_str += ' | Flex: ' + (', '.join(best_flex.keys())) 
+    # team_str += ' | ' + (', '.join(best_dst.keys())) 
+    # team_str += ' | K: ' + (', '.join(best_k.keys())) 
+    # s = ['%s**%s**: %.2f (%.2f actual, %.2f diff) %s' % (emotes[team.team_id],team.team_name, best_score, score, score_diff, team_str)]
+
+    return (best_score, score, score_diff, score_pct)
+
 def get_trophies(league, extra_trophies, week=None):
     #Gets trophies for highest score, lowest score, overachiever, underachiever, week MVP & LVP, closest score, and biggest win
     matchups = league.box_scores(week=week)
@@ -642,21 +738,21 @@ def season_trophies(league):
     moves_team = -1
 
     high_score = 0
-    score_team = 0
+    score_team = -1
     score_week = 0
 
     for team in league.teams:
-        moves = team.acquisitions + team.drops + team.trades
+        moves = team.acquisitions + team.trades
         if moves > most_moves:
             most_moves = moves
-            moves_score = '%d total moves (%d adds, %d drops, %d trades)' % (moves, team.acquisitions, team.drops, team.trades)
+            moves_score = '%d total moves (%d adds, %d trades)' % (moves, team.acquisitions, team.trades)
             moves_team = team
 
         for score in team.scores:
             if score > high_score:
                 high_score = score
                 score_team = team
-                score_week = team.scores.index(score)
+                score_week = team.scores.index(score) + 1
 
         for p in team.roster:
             if p.projected_total_points > 0 and p.position != 'D/ST':
@@ -676,9 +772,20 @@ def season_trophies(league):
                     slvp_team = team
 
     z = 1
-    while z <= 18:
+    score_diff_totals = {}
+    for team in league.teams:
+        score_diff_totals[team] = 0
+        
+    while z <= len(league.teams[0].scores):
         matchups = league.box_scores(week=z)
         for i in matchups:
+            best_score_home = best_lineup_score(i.home_lineup)
+            score_diff_totals[i.home_team] += best_score_home[2]
+
+            if (i.away_team != 0):
+                best_score_away = best_lineup_score(i.away_lineup)
+                score_diff_totals[i.away_team] += best_score_away[2]
+            
             for p in i.home_lineup:
                 if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
                     score_diff = (p.points - p.projected_points)/p.projected_points
@@ -721,114 +828,28 @@ def season_trophies(league):
                             lvp_team = i.away_team
                             lvp_week = z
         z = z+1
+    
+    worst_score_diff = [value for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
+    worst_score_team = [key for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
+
+    best_score_diff = [value for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1])[:1:]][0]
+    best_score_team = [key for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1])[:1:]][0]
 
     moves_str = ['Most Moves: %s**%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
     score_str = ['Highest Score: %s**%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
+    bsd_str = ['Fewest Points On Bench: %s**%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
+    wsd_str = ['Most Points on Bench: %s**%s** left a huge %.2f possible points on the bench' % (emotes[worst_score_team.team_id], worst_score_team.team_name, worst_score_diff)]
     mvp_str = ['Best Performance: %s, Week %d, %s**%s** with %s' % (mvp, mvp_week, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
     lvp_str = ['Worst Performance: %s, Week %d, %s**%s** with %s' % (lvp, lvp_week, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
     smvp_str = ['Season Fuckass: %s, %s**%s** with %s' % (smvp, emotes[smvp_team.team_id], smvp_team.team_abbrev, smvp_score)]
     slvp_str = ['Season Suckass: %s, %s**%s** with %s' % (slvp, emotes[slvp_team.team_id], slvp_team.team_abbrev, slvp_score)]
  
-    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + lvp_str + mvp_str + slvp_str + smvp_str + [' ']
+    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + wsd_str + bsd_str + lvp_str + mvp_str + slvp_str + smvp_str + [' ']
 
     if random_phrase == True:
         text += get_random_phrase()
 
     return '\n'.join(text)
-
-def best_possible_scores(league, week=None):
-    week = league.current_week - 1
-    box_scores = league.box_scores(week=week)
-    results = []
-    best_scores = {}
-
-    for i in box_scores:
-        best_scores[i.home_team] = best_lineup_score(i.home_lineup)
-        best_scores[i.away_team] = best_lineup_score(i.away_lineup)
-
-    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1], reverse=True)}
-
-    i = 1
-    for score in best_scores:
-        s = ['%d: %s%s: %.2f (%.2f actual, %.2f diff)' % (i, emotes[score.team_id], score.team_name, best_scores[score], score.scores[week-1], (best_scores[score] - score.scores[week-1]))]
-        results += s
-        i += 1
-
-    if not results:
-        return ('')
-
-    text = ['__**Best Possible Scores:**__ '] + results
-    if random_phrase == True:
-        text += get_random_phrase()
-
-    return '\n'.join(text)
-
-def best_lineup_score(lineup):
-    score = 0
-    best_score = 0
-    num_qb = num_flex = num_te = num_k = num_dst = 1
-    num_rb = num_wr =2
-
-    qb = {}
-    rb = {}
-    wr = {}
-    te = {}
-    dst = {}
-    k = {}
-
-    for p in lineup:
-        if p.position == 'QB':
-            qb[p.name] = p.points
-        elif p.position == 'RB':
-            rb[p.name] = p.points
-        elif p.position == 'WR':
-            wr[p.name] = p.points
-        elif p.position == 'TE':
-            te[p.name] = p.points
-        elif p.position == 'D/ST':
-            dst[p.name] = p.points
-        elif p.position == 'K':
-            k[p.name] = p.points
-        if p.slot_position not in ['BE', 'IR']:
-            score += p.points
-
-    best_qb = {key: value for key, value in sorted(qb.items(), key=lambda item: item[1], reverse=True)[:num_qb:]}
-    best_rb = {key: value for key, value in sorted(rb.items(), key=lambda item: item[1], reverse=True)[:num_rb:]}
-    best_wr = {key: value for key, value in sorted(wr.items(), key=lambda item: item[1], reverse=True)[:num_wr:]}
-    best_te = {key: value for key, value in sorted(te.items(), key=lambda item: item[1], reverse=True)[:num_te:]}
-    best_dst = {key: value for key, value in sorted(dst.items(), key=lambda item: item[1], reverse=True)[:num_dst:]}
-    best_k = {key: value for key, value in sorted(k.items(), key=lambda item: item[1], reverse=True)[:num_k:]}
-
-    flex = {}
-    for p in lineup:
-        if p.position in ['RB', 'WR', 'TE']:
-            if p.name not in best_rb and p.name not in best_wr and p.name not in best_te:
-                flex[p.name] = p.points
-
-    best_flex = {key: value for key, value in sorted(flex.items(), key=lambda item: item[1], reverse=True)[:num_flex:]}
-
-    team_str = ''
-    best_score += sum(best_qb.values())
-    best_score += sum(best_rb.values())
-    best_score += sum(best_wr.values())
-    best_score += sum(best_te.values())
-    best_score += sum(best_flex.values())
-    best_score += sum(best_dst.values())
-    best_score += sum(best_k.values())    
-
-    team_str += 'QB: ' + (', '.join(best_qb.keys())) 
-    team_str += ' | RB: ' + (', '.join(best_rb.keys())) 
-    team_str += ' | WR: ' + (', '.join(best_wr.keys())) 
-    team_str += ' | TE: ' + (', '.join(best_te.keys())) 
-    team_str += ' | Flex: ' + (', '.join(best_flex.keys())) 
-    team_str += ' | ' + (', '.join(best_dst.keys())) 
-    team_str += ' | K: ' + (', '.join(best_k.keys())) 
-
-    # score_diff = best_score - score
-
-    # s = ['%s**%s**: %.2f (%.2f actual, %.2f diff)' % (emotes[team.team_id],team.team_name, best_score, score, score_diff)]
-
-    return best_score
 
 def str_to_bool(check):
   return check.lower() in ("yes", "true", "t", "1")
@@ -914,11 +935,6 @@ def bot_main(function):
     except KeyError:
         extra_trophies = False
 
-    try:
-        faab = str_to_bool(os.environ["FAAB"])
-    except KeyError:
-        faab = False
-
     discord_bot = DiscordBot(discord_webhook_url)
 
     if swid == '{1}' or espn_s2 == '1': # and espn_username == '1' and espn_password == '1':
@@ -938,6 +954,8 @@ def bot_main(function):
     except KeyError:
         emotes += [''] * league.teams[-1].team_id
 
+    faab = league.settings.faab
+
     if test:
         print(get_scoreboard_short(league) + "\n")
         print(get_projected_scoreboard(league) + "\n")
@@ -952,7 +970,7 @@ def bot_main(function):
         print(get_heads_up(league, 2) + "\n")
         print(get_heads_up(league, 3) + "\n")
         print(get_inactives(league) + "\n")
-        print(season_trophies(league) + "\n")
+        # print(season_trophies(league) + "\n")
         function="get_final"
         # print(test_users(league))
         # discord_bot.send_message("Testing")
@@ -978,6 +996,8 @@ def bot_main(function):
         text = combined_power_rankings(league)
     elif function=="get_sim_record":
         text = get_sim_record(league)
+    elif function=="get_best_scores":
+        text = best_possible_scores(league)
     elif function=="get_waiver_report":
         text = get_waiver_report(league, faab)
     elif function=="get_trophies":
@@ -1087,6 +1107,9 @@ if __name__ == '__main__':
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
             day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
+        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
+            day_of_week='tue', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
+            timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
@@ -1113,6 +1136,9 @@ if __name__ == '__main__':
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
             day_of_week='wed', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
+            timezone=my_timezone, replace_existing=True)
+        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
+            day_of_week='wed', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
