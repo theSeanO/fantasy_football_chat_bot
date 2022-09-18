@@ -375,8 +375,6 @@ def combined_power_rankings(league, week=None):
         pos += 1
 
     text = ['__**Power Rankings:**__ (PR points - Playoff % - Simulated Record)'] + ranks
-    if random_phrase == True:
-        text += [' '] + get_random_phrase()
 
     return '\n'.join(text)
 
