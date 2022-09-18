@@ -364,10 +364,7 @@ def combined_power_rankings(league, week=None):
             ranks += ['%s: %s%s (%s - %s)' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], sr_sorted[pos-1][0])]
         pos += 1
 
-    # text = ['__**Power Rankings:**__ (PR points - Simulated Record)'] + ranks
     text = ['__**Power Rankings:**__ (PR points - Simulated Record)'] + ranks
-    if random_phrase == True:
-        text += [' '] + get_random_phrase()
 
     return '\n'.join(text)
 
@@ -484,7 +481,7 @@ def best_lineup_score(lineup):
     score = 0
     best_score = 0
     num_qb = num_flex = num_te = num_k = num_dst = 1
-    num_rb = num_wr =2
+    num_rb = num_wr = 2
 
     qb = {}
     rb = {}
