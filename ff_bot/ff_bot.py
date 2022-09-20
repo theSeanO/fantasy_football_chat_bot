@@ -1090,7 +1090,7 @@ if __name__ == '__main__':
             day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='tue', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
@@ -1120,7 +1120,7 @@ if __name__ == '__main__':
             day_of_week='wed', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='wed', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='wed', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
