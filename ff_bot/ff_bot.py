@@ -99,44 +99,21 @@ def get_projected_scoreboard(league, week=None):
     return '\n'.join(text)
 
 def get_standings(league, top_half_scoring, week=None):
-    standings_txt = ''
-    teams = league.teams
+    standings_txt = []
     standings = []
     if not top_half_scoring:
         standings = league.standings()
-        standings_txt = [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
-            pos, team in enumerate(standings)]
-    else:
-        top_half_totals = {t.team_name: 0 for t in teams}
-        if not week:
-            week = league.current_week
-        for w in range(1, week):
-            top_half_totals = top_half_wins(league, top_half_totals, w)
-
-        for t in teams:
-            wins = top_half_totals[t.team_name] + t.wins
-            standings.append((wins, t.losses, t.team_name, emotes[t.team_id]))
-
-        standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
-            pos, (wins, losses, team_name, emote) in enumerate(standings)]
+        for i in range(4):
+            division = [team for team in standings if team.division_id == i]
+            if len(division) > 0:
+                div_name = division[0].division_name
+                standings_txt += ['**%s**' % (div_name)]
+                standings_txt += [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
+                    pos, team in enumerate(division)]
+                standings_txt += ['']
 
     text = ['__**Current Standings:**__ '] + standings_txt
     return "\n".join(text)
-
-def top_half_wins(league, top_half_totals, week):
-    box_scores = league.box_scores(week=week)
-
-    scores = [(i.home_score, i.home_team.team_name) for i in box_scores] + \
-            [(i.away_score, i.away_team.team_name) for i in box_scores if i.away_team]
-
-    scores = sorted(scores, key=lambda tup: tup[0], reverse=True)
-
-    for i in range(0, len(scores)//2):
-        points, team_name = scores[i]
-        top_half_totals[team_name] += 1
-
-    return top_half_totals
 
 def get_projected_total(lineup):
     total_projected = 0
@@ -164,12 +141,10 @@ def all_played(lineup):
 def get_heads_up(league, div, week=None):
     box_scores = league.box_scores(week=week)
     headsup = []
-    div_name = ''
 
     for i in box_scores:
         if i.home_team.division_id == div:
             headsup += scan_roster(i.home_lineup, i.home_team)
-            div_name = i.home_team.division_name
         if i.away_team.division_id == div:
             headsup += scan_roster(i.away_lineup, i.away_team)
 
@@ -180,9 +155,6 @@ def get_heads_up(league, div, week=None):
         text = ['__**Heads Up Report:**__ '] + headsup
     else:
         text = [' '] + headsup
-
-    if random_phrase == True and div == 3:
-        text += get_random_phrase()
 
     return '\n'.join(text)
 
@@ -357,8 +329,6 @@ def combined_power_rankings(league, week=None):
     sr = sim_record_percent(league, week=week)
     sr_sorted = sim_record_percent(league, week=week)
 
-    combRankingDict = {x: 0. for x in league.teams}
-
     pos = 0
     for i in pr:
         for j in sr:
@@ -375,6 +345,8 @@ def combined_power_rankings(league, week=None):
         pos += 1
 
     text = ['__**Power Rankings:**__ (PR points - Playoff % - Simulated Record)'] + ranks
+    if random_phrase == True:
+        text += [' '] + get_random_phrase()
 
     return '\n'.join(text)
 
@@ -463,27 +435,34 @@ def sim_record_percent(league, week):
 def best_possible_scores(league, week=None):
     week = league.current_week - 1
     box_scores = league.box_scores(week=week)
+    div_name = ''
     results = []
-    best_scores = {}
 
-    for i in box_scores:
-        best_scores[i.home_team] = best_lineup_score(i.home_lineup)
-        best_scores[i.away_team] = best_lineup_score(i.away_lineup)
+    for x in range(4):
+        best_scores = {}
+        for i in box_scores:
+            if i.home_team.division_id == x:
+                best_scores[i.home_team] = best_lineup_score(i.home_lineup)
+                div_name = i.home_team.division_name
+            if i.away_team.division_id == x:
+                best_scores[i.away_team] = best_lineup_score(i.away_lineup)
 
-    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
+        if len(best_scores) > 0:
+            best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
 
-    i = 1
-    for score in best_scores:
-        s = ['%d: %s%s: %.2f (%.2f - %.2f%%)' % (i, emotes[score.team_id], score.team_name, best_scores[score][0], best_scores[score][1], best_scores[score][3])]
-        results += s
-        i += 1
+            i = 1
+            results += ['**%s**' % (div_name)]
+            for score in best_scores:
+                s = ['%d: %s%s: %.2f (%.2f - %.2f%%)' % (i, emotes[score.team_id], score.team_name, best_scores[score][0], best_scores[score][1], best_scores[score][3])]
+                results += s
+                i += 1
+            
+            results += ['']
 
     if not results:
         return ('')
-
+        
     text = ['__**Best Possible Scores:**__  (Actual Score - % of possible)'] + results
-    if random_phrase == True:
-        text += get_random_phrase()
 
     return '\n'.join(text)
 
@@ -959,10 +938,10 @@ def bot_main(function):
         print(get_projected_scoreboard(league) + "\n")
         print(get_close_scores(league) + "\n")
         print(get_standings(league, top_half_scoring) + "\n")
+        print(best_possible_scores(league) + "\n")
         # print(get_power_rankings(league))
         # print(get_sim_record(league))
         print(combined_power_rankings(league) + "\n")
-        print(best_possible_scores(league) + "\n")
         print(get_waiver_report(league, faab) + "\n")
         print(get_matchups(league) + "\n")
         print(get_heads_up(league, 2) + "\n")
@@ -1102,11 +1081,11 @@ if __name__ == '__main__':
         sched.add_job(bot_main, 'cron', ['get_standings'], id='standings',
             day_of_week='tue', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
             day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
+        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+            day_of_week='tue', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
@@ -1132,11 +1111,11 @@ if __name__ == '__main__':
         sched.add_job(bot_main, 'cron', ['get_standings'], id='standings',
             day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
             day_of_week='wed', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='wed', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
+        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+            day_of_week='wed', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
