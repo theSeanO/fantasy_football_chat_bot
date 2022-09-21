@@ -365,6 +365,8 @@ def combined_power_rankings(league, week=None):
         pos += 1
 
     text = ['__**Power Rankings:**__ (PR points - Simulated Record)'] + ranks
+    if random_phrase == True:
+        text += [' '] + get_random_phrase()
 
     return '\n'.join(text)
 
@@ -472,8 +474,6 @@ def best_possible_scores(league, week=None):
         return ('')
 
     text = ['__**Best Possible Scores:**__  (Actual Score - % of possible)'] + results
-    if random_phrase == True:
-        text += get_random_phrase()
 
     return '\n'.join(text)
 
@@ -949,10 +949,10 @@ def bot_main(function):
         print(get_projected_scoreboard(league) + "\n")
         print(get_close_scores(league) + "\n")
         print(get_standings(league, top_half_scoring) + "\n")
+        print(best_possible_scores(league) + "\n")
         # print(get_power_rankings(league))
         # print(get_sim_record(league))
         print(combined_power_rankings(league) + "\n")
-        print(best_possible_scores(league) + "\n")
         print(get_waiver_report(league, faab) + "\n")
         print(get_matchups(league) + "\n")
         print(get_heads_up(league) + "\n")
@@ -1086,11 +1086,11 @@ if __name__ == '__main__':
         sched.add_job(bot_main, 'cron', ['get_standings'], id='standings',
             day_of_week='tue', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
             day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
+        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+            day_of_week='tue', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
@@ -1116,11 +1116,11 @@ if __name__ == '__main__':
         sched.add_job(bot_main, 'cron', ['get_standings'], id='standings',
             day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
             day_of_week='wed', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
-        sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='wed', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
+        sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
+            day_of_week='wed', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
