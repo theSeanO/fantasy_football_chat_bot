@@ -1048,8 +1048,11 @@ if __name__ == '__main__':
     sched.add_job(bot_main, 'cron', ['get_projected_scoreboard'], id='proj_scoreboard',
         day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
-    sched.add_job(bot_main, 'cron', ['get_heads_up'], id='headsup',
+    sched.add_job(bot_main, 'cron', ['get_heads_up_1'], id='headsup1',
         day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=my_timezone, replace_existing=True)
+    sched.add_job(bot_main, 'cron', ['get_heads_up_2'], id='headsup2',
+        day_of_week='fri', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_inactives'], id='inactives',
         day_of_week='sun', hour=12, minute=5, start_date=ff_start_date, end_date=ff_end_date,
