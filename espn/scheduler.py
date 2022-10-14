@@ -15,8 +15,8 @@ def scheduler():
     #game day score update:              sunday at 4pm, 8pm east coast time.
     #final scores and trophies:          tuesday morning at 7:30am local time.
     #standings, PR, PO%, SR:             tuesday evening at 6:30pm local time.
-    #heads up report:                    wednesday evening at 6:30pm local time.
     #matchups & projections:             thursday evening at 6:30pm east coast time.
+    #heads up report:                    friday evening at 6:30pm local time.
     #inactives:                          sunday morning at 12:05pm east coast time.
     #score update:                       friday and monday morning at 7:30am local time.
     #close scores (within 15.99 points): sunday and monday evening at 6:30pm east coast time.
@@ -43,10 +43,6 @@ def scheduler():
         day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_heads_up'], id='headsup',
-        day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=my_timezone, replace_existing=True)
-
     sched.add_job(espn_bot, 'cron', ['get_matchups'], id='matchups',
         day_of_week='thu', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
@@ -54,6 +50,10 @@ def scheduler():
     sched.add_job(espn_bot, 'cron', ['get_projected_scoreboard'], id='proj_scoreboard',
         day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
+
+    sched.add_job(espn_bot, 'cron', ['get_heads_up'], id='headsup',
+        day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=my_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'cron', ['get_inactives'], id='inactives',
         day_of_week='sun', hour=12, minute=5, start_date=ff_start_date, end_date=ff_end_date,

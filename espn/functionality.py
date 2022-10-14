@@ -1,9 +1,11 @@
 from datetime import date
 import ff_bot.utils as utils
+import espn.env_vars as env_vars
 
-random_phrase = utils.get_random_phrase()
+random_phrase = env_vars.get_random_phrase()
 
-def get_scoreboard_short(league, week=None, emotes=None):
+def get_scoreboard_short(league, week=None):
+    emotes = env_vars.split_emotes(league)
     #Gets current week's scoreboard
     box_scores = league.box_scores(week=week)
     scores = []
@@ -23,7 +25,8 @@ def get_scoreboard_short(league, week=None, emotes=None):
     return '\n'.join(text)
 
 
-def get_projected_scoreboard(league, week=None, emotes=None):
+def get_projected_scoreboard(league, week=None):
+    emotes = env_vars.split_emotes(league)
     #Gets current week's scoreboard projections
     box_scores = league.box_scores(week=week)
     scores = []
@@ -39,7 +42,8 @@ def get_projected_scoreboard(league, week=None, emotes=None):
     return '\n'.join(text)
 
 
-def get_standings(league, top_half_scoring, week=None, emotes=None):
+def get_standings(league, top_half_scoring, week=None):
+    emotes = env_vars.split_emotes(league)
     standings_txt = ''
     teams = league.teams
     standings = []
@@ -107,7 +111,9 @@ def all_played(lineup):
     return True
 
 
-def get_heads_up(league, week=None, warning=0, emotes=None):
+def get_heads_up(league, week=None, warning=0):
+    emotes = env_vars.split_emotes(league)
+    #Get list of players to monitor this week
     box_scores = league.box_scores(week=week)
     headsup = []
 
@@ -124,7 +130,9 @@ def get_heads_up(league, week=None, warning=0, emotes=None):
 
     return '\n'.join(text)
 
-def get_inactives(league, week=None, users=None):
+def get_inactives(league, week=None):
+    users = env_vars.split_users(league)
+    #Get list of players that are inactive this week
     box_scores = league.box_scores(week=week)
     inactives = []
 
@@ -205,7 +213,8 @@ def scan_inactives(lineup, team, users):
     return inactives
 
 
-def get_matchups(league, week=None, emotes=None):
+def get_matchups(league, week=None):
+    emotes = env_vars.split_emotes(league)
     #Gets current week's Matchups
     matchups = league.box_scores(week=week)
     scores = []
@@ -221,7 +230,8 @@ def get_matchups(league, week=None, emotes=None):
 
     return '\n'.join(text)
 
-def get_close_scores(league, week=None, emotes=None):
+def get_close_scores(league, week=None):
+    emotes = env_vars.split_emotes(league)
     #Gets current closest scores (15.999 points or closer)
     matchups = league.box_scores(week=week)
     scores = []
@@ -244,7 +254,8 @@ def get_close_scores(league, week=None, emotes=None):
     text = ['__**Close Projected Scores:**__ '] + scores
     return '\n'.join(text)
 
-def get_waiver_report(league, faab, emotes=None):
+def get_waiver_report(league, faab):
+    emotes = env_vars.split_emotes(league)
     activities = league.recent_activity(50)
     report = []
     today = date.today().strftime('%Y-%m-%d')
@@ -287,7 +298,8 @@ def get_waiver_report(league, faab, emotes=None):
     return '\n'.join(text)
 
 
-def combined_power_rankings(league, week=None, emotes=None):
+def combined_power_rankings(league, week=None):
+    emotes = env_vars.split_emotes(league)
     if not week:
         week = league.current_week
 
@@ -363,7 +375,8 @@ def sim_record_percent(league, week):
     powerRankingDictSorted = {x: ('{:.3f}'.format(powerRankingDictSortedTemp[x])) for x in powerRankingDictSortedTemp.keys()}  #put into a prettier format
     return [(powerRankingDictSorted[x],x) for x in powerRankingDictSorted.keys()]    #return in the format that the bot expects
 
-def best_possible_scores(league, week=None, emotes=None):
+def best_possible_scores(league, week=None):
+    emotes = env_vars.split_emotes(league)
     week = league.current_week - 1
     box_scores = league.box_scores(week=week)
     results = []
@@ -458,7 +471,8 @@ def best_lineup_score(lineup):
 
     return (best_score, score, score_diff, score_pct)
 
-def get_trophies(league, extra_trophies, week=None, emotes=None):
+def get_trophies(league, extra_trophies, week=None):
+    emotes = env_vars.split_emotes(league)
     #Gets trophies for highest score, lowest score, overachiever, underachiever, week MVP & LVP, closest score, and biggest win
     matchups = league.box_scores(week=week)
 

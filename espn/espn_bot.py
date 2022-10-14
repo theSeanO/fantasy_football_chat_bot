@@ -27,27 +27,15 @@ def espn_bot(function):
 
     faab = league.settings.faab
 
-    emotes = ['']
-    try:
-        emotes += os.environ["EMOTES"].split(',')
-    except KeyError:
-        emotes += [''] * league.teams[-1].team_id
-
-    users = ['']
-    try:
-        users += os.environ["USERS"].split(',') 
-    except KeyError:
-        users += [''] * league.teams[-1].team_id
-
     if test:
-        print(espn.get_matchups(league, random_phrase))
+        print(espn.get_matchups(league))
         print(espn.get_scoreboard_short(league))
         print(espn.get_projected_scoreboard(league))
         print(espn.get_close_scores(league))
-        print(espn.get_power_rankings(league))
+        print(espn.combined_power_rankings(league))
         print(espn.get_scoreboard_short(league))
         print(espn.get_standings(league, top_half_scoring))
-        print(espn.get_monitor(league))
+        print(espn.get_heads_up(league))
         if waiver_report and swid != '{1}' and espn_s2 != '1':
             print(espn.get_waiver_report(league, faab))
         function = "get_final"
@@ -57,34 +45,34 @@ def espn_bot(function):
 
     text = ''
     if function == "get_matchups":
-        text = espn.get_matchups(league, random_phrase, emotes)
+        text = espn.get_matchups(league)
         text = text + "\n\n" + espn.get_projected_scoreboard(league)
     elif function == "get_monitor":
-        text = espn.get_monitor(league, emotes)
+        text = espn.get_monitor(league)
     elif function == "get_scoreboard_short":
-        text = espn.get_scoreboard_short(league, emotes)
-        text = text + "\n\n" + espn.get_projected_scoreboard(league, emotes)
+        text = espn.get_scoreboard_short(league)
+        text = text + "\n\n" + espn.get_projected_scoreboard(league)
     elif function == "get_projected_scoreboard":
-        text = espn.get_projected_scoreboard(league, emotes)
+        text = espn.get_projected_scoreboard(league)
     elif function == "get_close_scores":
-        text = espn.get_close_scores(league, emotes)
+        text = espn.get_close_scores(league)
     elif function == "get_power_rankings":
-        text = espn.get_power_rankings(league, emotes)
+        text = espn.combined_power_rankings(league)
     # elif function=="get_waiver_report":
     #     text = get_waiver_report(league)
     elif function == "get_trophies":
-        text = espn.get_trophies(league, emotes)
+        text = espn.get_trophies(league)
     elif function == "get_standings":
-        text = espn.get_standings(league, top_half_scoring, emotes)
+        text = espn.get_standings(league, top_half_scoring)
         if waiver_report and swid != '{1}' and espn_s2 != '1':
             text += '\n\n' + espn.get_waiver_report(league, faab)
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
-        text = "Final " + espn.get_scoreboard_short(league, week=week, emotes=emotes)
-        text = text + "\n\n" + espn.get_trophies(league, week=week, emotes=emotes)
+        text = "Final " + espn.get_scoreboard_short(league, week=week)
+        text = text + "\n\n" + espn.get_trophies(league, week=week)
     elif function == "get_waiver_report" and swid != '{1}' and espn_s2 != '1':
-        text = espn.get_waiver_report(league, faab, emotes)
+        text = espn.get_waiver_report(league, faab)
     elif function == "init":
         try:
             text = data["init_msg"]

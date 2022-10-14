@@ -151,3 +151,21 @@ def get_random_phrase():
         random_phrase = False
     
     return random_phrase
+
+def split_emotes(league):
+    emotes = ['']
+    try:
+        emotes += os.environ["EMOTES"].split(',')
+    except KeyError:
+        emotes += [''] * league.teams[-1].team_id
+
+    return emotes
+
+def split_users(league):
+    users = ['']
+    try:
+        users += os.environ["USERS"].split(',') 
+    except KeyError:
+        users += [''] * league.teams[-1].team_id
+
+    return users
