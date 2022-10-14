@@ -1043,22 +1043,22 @@ if __name__ == '__main__':
 
     #regular schedule:
     #game day score update:              sunday at 4pm, 8pm east coast time.
-    #heads up report:                    wednesday evening at 6:30pm local time.
     #matchups & projections:             thursday evening at 6:30pm east coast time.
+    #heads up report:                    friday evening at 6:30pm local time.
     #inactives:                          sunday morning at 12:05pm east coast time.
     #season end trophies:                on the End Date provided at 7:30am local time.
     sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard2',
         day_of_week='sun', hour='16,20', start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
-    sched.add_job(bot_main, 'cron', ['get_heads_up'], id='headsup',
-        day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_matchups'], id='matchups',
         day_of_week='thu', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_projected_scoreboard'], id='proj_scoreboard',
         day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
+    sched.add_job(bot_main, 'cron', ['get_heads_up'], id='headsup',
+        day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=my_timezone, replace_existing=True)
     sched.add_job(bot_main, 'cron', ['get_inactives'], id='inactives',
         day_of_week='sun', hour=12, minute=5, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
@@ -1071,7 +1071,7 @@ if __name__ == '__main__':
     #close scores (within 15.99 points): sunday and monday evening at 6:30pm east coast time.
     #final scores and trophies:          tuesday morning at 7:30am local time.
     #standings, PR, PO%, SR:             tuesday evening at 6:30pm local time.
-    #waiver report:                      wed-sun morning at 7:30am local time.
+    #waiver report:                      wed-sun morning at 6:30am local time.
     if tues_sched == False:
         ready_text = "Ready! Regular schedule set."
         sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard1',
@@ -1093,7 +1093,7 @@ if __name__ == '__main__':
             day_of_week='tue', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
-            day_of_week='wed,thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='wed,thu,fri,sat,sun', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
 
     #schedule with a COVID delay to tuesday:
@@ -1101,7 +1101,7 @@ if __name__ == '__main__':
     #close scores (within 15.99 points): sunday, monday, and tuesday evening at 6:30pm east coast time.
     #final scores and trophies:          wednesday morning at 7:30am local time.
     #standings, PR, PO%, SR:             wednesday evening at 6:30pm local time.
-    #waiver report:                      thurs-sun morning at 7:30 local time.
+    #waiver report:                      thurs-sun morning at 6:30 local time.
     else:
         ready_text = "Ready! Tuesday schedule set."
         sched.add_job(bot_main, 'cron', ['get_scoreboard_short'], id='scoreboard1',
@@ -1123,7 +1123,7 @@ if __name__ == '__main__':
             day_of_week='wed', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
-            day_of_week='thu,fri,sat,sun', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='thu,fri,sat,sun', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
 
     try:
