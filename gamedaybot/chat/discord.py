@@ -17,7 +17,7 @@ class Discord(object):
 
     def send_message(self, text):
         # Sends a message to the chatroom
-        message = "```{0}```".format(text)
+        message = ">>>{0}".format(text)
         template = {
             "content": message #limit 3000 chars
         }

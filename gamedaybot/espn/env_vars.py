@@ -100,6 +100,13 @@ def get_env_vars():
     data['espn_s2'] = espn_s2
 
     try:
+        score_warn = int(os.environ["SCORE_WARNING"])
+    except KeyError:
+        score_warn = 0
+
+    data['score_warn'] = score_warn
+
+    try:
         test = utils.str_to_bool(os.environ["TEST"])
     except KeyError:
         test = False
@@ -113,12 +120,7 @@ def get_env_vars():
 
     data['top_half_scoring'] = top_half_scoring
 
-    try:
-        random_phrase = utils.str_to_bool(os.environ["RANDOM_PHRASE"])
-    except KeyError:
-        random_phrase = False
-
-    data['random_phrase'] = random_phrase
+    data['random_phrase'] = get_random_phrase()
 
     try:
         waiver_report = utils.str_to_bool(os.environ["WAIVER_REPORT"])
@@ -128,9 +130,43 @@ def get_env_vars():
     data['waiver_report'] = waiver_report
 
     try:
+        extra_trophies = utils.str_to_bool(os.environ["EXTRA_TROPHIES"])
+    except KeyError:
+        extra_trophies = False
+
+    data['extra_trophies'] = extra_trophies
+
+    try:
         data['init_msg'] = os.environ["INIT_MSG"]
     except KeyError:
         # do nothing here, empty init message
         pass
 
     return data
+
+def get_random_phrase():
+    random_phrase = False
+    try:
+        random_phrase = utils.str_to_bool(os.environ["RANDOM_PHRASE"])
+    except KeyError:
+        random_phrase = False
+    
+    return random_phrase
+
+def split_emotes(league):
+    emotes = ['']
+    try:
+        emotes += os.environ["EMOTES"].split(',')
+    except KeyError:
+        emotes += [''] * league.teams[-1].team_id
+
+    return emotes
+
+def split_users(league):
+    users = ['']
+    try:
+        users += os.environ["USERS"].split(',') 
+    except KeyError:
+        users += [''] * league.teams[-1].team_id
+
+    return users
