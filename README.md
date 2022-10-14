@@ -30,6 +30,7 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 
 **What does this do?**
 
+Schedule Link: https://www.gamedaybot.com/message-schedule/
 - Sends out the following messages on this schedule:
 - Scoreboard - Sun - 16:00, 20:00 east coast time (Current ESPN fantasy scoreboard)
 - Scoreboard - Mon,Fri - 7:30 local time (Current ESPN fantasy scoreboard)
@@ -121,7 +122,7 @@ You should see something like below. Click the pencil on the right and toggle th
 
 You're done! You now have a fully featured GroupMe/Slack/Discord chat bot for ESPN leagues! If you have an INIT_MSG you will see it exclaimed in your GroupMe, Discord, or Slack chat room.
 
-Unfortunately to do auto deploys of the latest version you need admin access to the repository on git. You can check for updates on the github page (https://github.com/dtcarls/ff_bot/commits/master) and click the deploy button again; however, this will deploy a new instance and the variables will need to be edited again.
+Unfortunately to do auto deploys of the latest version you need admin access to the repository on git. You can check for updates on the github page (https://github.com/dtcarls/fantasy_football_chat_bot/commits/master) and click the deploy button again; however, this will deploy a new instance and the variables will need to be edited again.
 
 ### Environment Variables
 
