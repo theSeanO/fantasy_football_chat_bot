@@ -191,10 +191,12 @@ def scan_roster(lineup, team):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
+        if i.slot_position != 'BE' and i.slot_position !='IR':
             if (i.pro_opponent == 'None') or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= score_warn):
                 count += 1
-                player = i.position + ' ' + i.name + ' - '
+                if i.position == 'D/ST': player = i.name + ' - '
+                else: player = i.position + ' ' + i.name + ' - '
+
                 if i.pro_opponent == 'None':
                     player += '**BYE**'
                 elif i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL':
@@ -202,14 +204,6 @@ def scan_roster(lineup, team):
                 elif i.projected_points <= score_warn:
                     player += '**' + str(i.projected_points) + ' pts**'
                 players += [player]
-        elif i.position == 'D/ST' and (i.pro_opponent == 'None' or i.projected_points <= score_warn):
-            count += 1
-            player = i.name + ' - '
-            if i.pro_opponent == 'None':
-                player += '**BYE**'
-            elif i.projected_points <= score_warn:
-                player += '**' + str(i.projected_points) + ' pts**'
-            players += [player]
                 
     list = ""
     report = ""
@@ -234,7 +228,7 @@ def scan_inactives(lineup, team):
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
                 count +=1
                 players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
-        elif i.position == 'D/ST' and i.pro_opponent == 'None':
+        elif i.position == 'D/ST' and i.pro_opponent == 'None' and i.slot_position != 'BE':
             count += 1
             players += ['%s - **BYE**' % (i.name)]
             
