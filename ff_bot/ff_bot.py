@@ -93,17 +93,12 @@ def get_standings(league, week=None):
     standings = []
     standings = league.standings()
 
-    x = 0
-    for t in league.teams:
-        if len(t.team_name) > x: 
-            x = len(t.team_name)
-
     for i in range(4):
         division = [team for team in standings if team.division_id == i]
         if len(division) > 0:
             div_name = division[0].division_name
             standings_txt += ['**%s**' % (div_name)]
-            standings_txt += [f"{pos + 1:2}: {emotes[team.team_id]}`{team.team_name.ljust(x)} ({team.wins}-{team.losses})`" for \
+            standings_txt += [f"{pos + 1:2}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
                 pos, team in enumerate(division)]
             standings_txt += ['']
 
@@ -331,7 +326,7 @@ def combined_power_rankings(league, week=None):
 
     for i in pr:
         if i:
-            ranks += ['%2s: %s`%s (%5s - %4.1f - %s)`' % (pos, emotes[i[1].team_id], i[1].team_name.ljust(x), i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
+            ranks += ['%2s: %s`%4s   (%5s - %4.1f - %s)`' % (pos, emotes[i[1].team_id], i[1].team_abbrev, i[0], i[1].playoff_pct, sr_sorted[pos-1][0])]
         pos += 1
 
     text = ['__**Power Rankings:**__ (PR points - Playoff % - Simulated Record)'] + ranks
@@ -479,7 +474,7 @@ def best_possible_scores(league, week=None):
             i = 1
             results += ['**%s**' % (div_name)]
             for score in best_scores:
-                s = ['%2d: %s`%s %6.2f (%6.2f - %6.2f%%)`' % (i, emotes[score.team_id], score.team_name.ljust(x), best_scores[score][0], best_scores[score][1], best_scores[score][3])]
+                s = ['%2d: %s`%4s   %6.2f (%6.2f - %6.2f%%)`' % (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0], best_scores[score][1], best_scores[score][3])]
                 results += s
                 i += 1
             
