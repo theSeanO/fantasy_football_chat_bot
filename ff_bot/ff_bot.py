@@ -169,13 +169,14 @@ def scan_roster(lineup, team):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position !='IR':
-            if (i.pro_opponent == 'None') or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= score_warn):
-                count += 1
-                if i.position == 'D/ST': player = i.name + ' - '
-                else: player = i.position + ' ' + i.name + ' - '
+        if i.slot_position != 'BE' and i.slot_position != 'IR':
+            if (i.on_bye_week) or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= score_warn):
+                if i.game_played == 0 or i.on_bye_week:
+                    count += 1
+                    if i.position == 'D/ST': player = i.name + ' - '
+                    else: player = i.position + ' ' + i.name + ' - '
 
-                if i.pro_opponent == 'None':
+                if i.on_bye_week:
                     player += '**BYE**'
                 elif i.game_played == 0 and (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL'):
                     player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
@@ -200,7 +201,7 @@ def scan_inactives(lineup, team):
     players = []
     for i in lineup:
         if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
-            if i.pro_opponent == 'None':
+            if i.on_bye_week:
                 count +=1
                 players += ['%s %s - **BYE**' % (i.position, i.name)]
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
@@ -210,7 +211,6 @@ def scan_inactives(lineup, team):
             count += 1
             players += ['%s - **BYE**' % (i.name)]
             
-
     inactive_list = ""
     inactives = ""
 
@@ -237,20 +237,18 @@ def get_matchups(league, week=None):
     return '\n'.join(text)
 
 def get_close_scores(league, week=None):
-    #Gets current closest scores (15.999 points or closer)
+    #Gets current projected closest scores (15.999 points or closer)
     matchups = league.box_scores(week=week)
     scores = []
 
     for i in matchups:
         if i.away_team:
-            home_score = get_projected_total(i.home_lineup)
-            away_score = get_projected_total(i.away_lineup)
-            diffScore = away_score - home_score
+            away_projected = get_projected_total(i.away_lineup)
+            home_projected = get_projected_total(i.home_lineup)
+            diffScore = away_projected - home_projected
             if ( -16 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 16 and not all_played(i.home_lineup)):
-                home_score = '%.2f' % (home_score)
-                away_score = '%.2f' % (away_score)
-                scores += ['%s `%4s %6s - %6s %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, home_score,
-                            away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
+                scores += ['%s `%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
+                            i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
 
     if not scores:
         return('')
@@ -318,11 +316,6 @@ def combined_power_rankings(league, week=None):
 
     ranks = []
     pos = 1
-
-    x = 0
-    for t in league.teams:
-        if len(t.team_name) > x: 
-            x = len(t.team_name)
 
     for i in pr:
         if i:
@@ -491,6 +484,7 @@ def best_lineup_score(lineup, starter_counts):
     best_lineup = {}
     position_players = {}
 
+    score = 0
     for position in starter_counts:
         position_players[position] = {}
         score = 0
@@ -517,7 +511,9 @@ def best_lineup_score(lineup, starter_counts):
         # print(sum(best_lineup[position].values()))
         best_score += sum(best_lineup[position].values())
 
-    score_pct = (score / best_score) * 100
+    score_pct = 0.0
+    if best_score > 0:
+        score_pct = (score / best_score) * 100
     return (best_score, score, best_score - score, score_pct)
 
 def get_trophies(league, extra_trophies, week=None):
@@ -705,10 +701,10 @@ def season_trophies(league):
     score_week = 0
 
     for team in league.teams:
-        moves = team.acquisitions + team.trades
+        moves = (team.acquisitions * 0.5) + (team.drops * 0.5) + team.trades
         if moves > most_moves:
             most_moves = moves
-            moves_score = '%d total moves (%d adds, %d trades)' % (moves, team.acquisitions, team.trades)
+            moves_score = '%d adds and %d trades' % (team.acquisitions, team.trades)
             moves_team = team
 
         for score in team.scores:
@@ -736,18 +732,26 @@ def season_trophies(league):
 
     z = 1
     score_diff_totals = {}
+    high_score_pcts = {}
     for team in league.teams:
         score_diff_totals[team] = 0
+        high_score_pcts[team] = 0
+
+    starter_counts = get_starter_counts(league)
         
     while z <= len(league.teams[0].scores):
         matchups = league.box_scores(week=z)
         for i in matchups:
-            best_score_home = best_lineup_score(i.home_lineup)
+            best_score_home = best_lineup_score(i.home_lineup, starter_counts)
             score_diff_totals[i.home_team] += best_score_home[2]
+            if best_score_home[3] >= 99:
+                high_score_pcts[i.home_team] += 1
 
             if (i.away_team != 0):
-                best_score_away = best_lineup_score(i.away_lineup)
+                best_score_away = best_lineup_score(i.away_lineup, starter_counts)
                 score_diff_totals[i.away_team] += best_score_away[2]
+                if best_score_away[3] >= 99:
+                    high_score_pcts[i.away_team] += 1
             
             for p in i.home_lineup:
                 if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
@@ -791,26 +795,23 @@ def season_trophies(league):
                             lvp_team = i.away_team
                             lvp_week = z
         z = z+1
-    
-    worst_score_diff = [value for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
-    worst_score_team = [key for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
 
     best_score_diff = [value for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1])[:1:]][0]
     best_score_team = [key for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1])[:1:]][0]
 
-    moves_str = ['Most Moves: %s**%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
-    score_str = ['Highest Score: %s**%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
-    bsd_str = ['Fewest Points On Bench: %s**%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
-    wsd_str = ['Most Points on Bench: %s**%s** left a huge %.2f possible points on the bench' % (emotes[worst_score_team.team_id], worst_score_team.team_name, worst_score_diff)]
-    mvp_str = ['Best Performance: %s, Week %d, %s**%s** with %s' % (mvp, mvp_week, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['Worst Performance: %s, Week %d, %s**%s** with %s' % (lvp, lvp_week, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
-    smvp_str = ['Season Fuckass: %s, %s**%s** with %s' % (smvp, emotes[smvp_team.team_id], smvp_team.team_abbrev, smvp_score)]
-    slvp_str = ['Season Suckass: %s, %s**%s** with %s' % (slvp, emotes[slvp_team.team_id], slvp_team.team_abbrev, slvp_score)]
- 
-    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + wsd_str + bsd_str + lvp_str + mvp_str + slvp_str + smvp_str + [' ']
+    most_high_pcts = [value for key, value in sorted(high_score_pcts.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
+    most_high_team = [key for key, value in sorted(high_score_pcts.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
 
-    if random_phrase == True:
-        text += get_random_phrase()
+    moves_str = ['**Most Moves**: %s**%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
+    score_str = ['**Highest Score**: %s**%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
+    bsd_str = ['**Best Benching**: %s**%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
+    hpt_str = ['**Most Efficient**: %s**%s** scored >99%% of their best possible score on %d weeks' % (emotes[most_high_team.team_id], most_high_team.team_name, most_high_pcts)]
+    mvp_str = ['**Best Performance**: %s, Week %d, %s**%s** with %s' % (mvp, mvp_week, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['**Worst Performance**: %s, Week %d, %s**%s** with %s' % (lvp, lvp_week, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
+    smvp_str = ['**Season Fuckass**: %s, %s**%s** with %s' % (smvp, emotes[smvp_team.team_id], smvp_team.team_abbrev, smvp_score)]
+    slvp_str = ['**Season Suckass**: %s, %s**%s** with %s' % (slvp, emotes[slvp_team.team_id], slvp_team.team_abbrev, slvp_score)]
+ 
+    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + lvp_str + mvp_str + slvp_str + smvp_str + [' ']
 
     return '\n'.join(text)
 
@@ -962,6 +963,7 @@ def bot_main(function):
     elif function=="get_best_scores":
         text = best_possible_scores(league)
     elif function=="get_waiver_report":
+        faab = league.settings.faab
         text = get_waiver_report(league, faab)
     elif function=="get_trophies":
         text = get_trophies(league)
@@ -1068,10 +1070,10 @@ if __name__ == '__main__':
             day_of_week='tue', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='tue', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
-            day_of_week='tue', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='tue', hour=18, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
@@ -1098,10 +1100,10 @@ if __name__ == '__main__':
             day_of_week='wed', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_best_scores'], id='best_scores',
-            day_of_week='wed', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='wed', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_power_rankings'], id='power_rankings',
-            day_of_week='wed', hour=18, minute=30, second=6, start_date=ff_start_date, end_date=ff_end_date,
+            day_of_week='wed', hour=18, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
         sched.add_job(bot_main, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='thu,fri,sat,sun', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
