@@ -443,6 +443,7 @@ def best_possible_scores(league, week=None):
     if not week:
         week = league.current_week - 1
     box_scores = league.box_scores(week=week)
+    div_name = ''
     results = []
     best_scores = {}
     starter_counts = get_starter_counts(league)
@@ -460,6 +461,9 @@ def best_possible_scores(league, week=None):
                 div_name = i.home_team.division_name
             if i.away_team.division_id == d:
                 best_scores[i.away_team] = best_lineup_score(i.away_lineup, starter_counts)
+
+        if div_name == '':
+            div_name = box_scores[-1].away_team.division_name
 
         if len(best_scores) > 0:
             best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
