@@ -159,20 +159,21 @@ def scan_roster(lineup, team):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR':
-            if (i.on_bye_week) or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= score_warn):
-                if i.game_played == 0 or i.on_bye_week:
-                    count += 1
-                    if i.position == 'D/ST': player = i.name + ' - '
-                    else: player = i.position + ' ' + i.name + ' - '
+        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
+            if i.on_bye_week:
+                count +=1
+                players += ['%s %s - **BYE**' % (i.position, i.name)]
+            elif i.game_played == 0 and ((i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or i.projected_points <= score_warn):
+                count +=1
+                players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
 
-                if i.on_bye_week:
-                    player += '**BYE**'
-                elif i.game_played == 0 and (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL'):
-                    player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
-                elif i.game_played == 0 and (i.projected_points <= score_warn):
-                    player += '**' + str(i.projected_points) + ' pts**'
-                players += [player]
+        elif i.position == 'D/ST': 
+            if i.pro_opponent == 'None' and i.slot_position != 'BE':
+                count += 1
+                players += ['%s - **BYE**' % (i.name)]
+            elif i.game_played == 0 and i.projected_points <= score_warn:
+                count += 1
+                players += ['%s - %d pts' % (i.name, i.projected_points)]
                 
     list = ""
     report = ""
