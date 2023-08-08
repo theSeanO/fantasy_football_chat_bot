@@ -15,7 +15,6 @@ def espn_bot(function):
     espn_s2 = data['espn_s2']
     league_id = data['league_id']
     year = data['year']
-    random_phrase = data['random_phrase']
     test = data['test']
     top_half_scoring = data['top_half_scoring']
     waiver_report = data['waiver_report']
@@ -34,19 +33,19 @@ def espn_bot(function):
     faab = league.settings.faab
 
     if test:
-            print(espn.get_matchups(league) + '\n')
-            print(espn.get_scoreboard_short(league) + '\n')
-            print(espn.get_projected_scoreboard(league) + '\n')
-            print(espn.get_close_scores(league) + '\n')
-            print(espn.get_standings(league, top_half_scoring) + '\n')
-            print(espn.best_possible_scores(league) + '\n')
-            print(espn.combined_power_rankings(league) + '\n')
-            print(espn.get_monitor(league, warning) + '\n')
-            print(espn.get_inactives(league) + '\n')
-            if waiver_report and swid != '{1}' and espn_s2 != '1':
-                print(espn.get_waiver_report(league, faab) + '\n')
-            function = "get_final"
-            # discord_bot.send_message("Testing")
+        print(espn.get_matchups(league) + '\n')
+        print(espn.get_scoreboard_short(league) + '\n')
+        print(espn.get_projected_scoreboard(league) + '\n')
+        print(espn.get_close_scores(league) + '\n')
+        print(espn.get_standings(league, top_half_scoring) + '\n')
+        print(espn.best_possible_scores(league) + '\n')
+        print(espn.combined_power_rankings(league) + '\n')
+        print(espn.get_monitor(league, warning) + '\n')
+        print(espn.get_inactives(league) + '\n')
+        if waiver_report and swid != '{1}' and espn_s2 != '1':
+            print(espn.get_waiver_report(league, faab) + '\n')
+        function = "get_final"
+        # discord_bot.send_message("Testing")
 
     text = ''
     if function == "get_matchups":
@@ -65,7 +64,7 @@ def espn_bot(function):
         text = espn.get_close_scores(league)
     elif function == "get_power_rankings":
         text = espn.combined_power_rankings(league)
-    elif function=="get_waiver_report":
+    elif function == "get_waiver_report":
         if waiver_report and swid != '{1}' and espn_s2 != '1':
             text += '\n\n' + espn.get_waiver_report(league, faab)
     elif function == "get_trophies":
@@ -74,7 +73,7 @@ def espn_bot(function):
         text = espn.get_standings(league, top_half_scoring)
     elif function == "get_best_scores":
         text = espn.best_possible_scores(league)
-    
+
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
@@ -93,7 +92,7 @@ def espn_bot(function):
         text = "Something happened. HALP"
 
     if text != '' and not test:
-        messages=utils.str_limit_check(text, data['str_limit'])
+        messages = utils.str_limit_check(text, data['str_limit'])
         for message in messages:
             discord_bot.send_message(message)
 

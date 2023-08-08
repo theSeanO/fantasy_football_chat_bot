@@ -1,5 +1,4 @@
 import os
-import gamedaybot.espn.functionality as espn
 import gamedaybot.utils as utils
 
 
@@ -145,14 +144,16 @@ def get_env_vars():
 
     return data
 
+
 def get_random_phrase():
     random_phrase = False
     try:
         random_phrase = utils.str_to_bool(os.environ["RANDOM_PHRASE"])
     except KeyError:
         random_phrase = False
-    
+
     return random_phrase
+
 
 def split_emotes(league):
     emotes = ['']
@@ -163,10 +164,11 @@ def split_emotes(league):
 
     return emotes
 
+
 def split_users(league):
     users = ['']
     try:
-        users += os.environ["USERS"].split(',') 
+        users += os.environ["USERS"].split(',')
     except KeyError:
         users += [''] * league.teams[-1].team_id
 

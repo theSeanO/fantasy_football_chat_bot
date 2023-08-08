@@ -186,7 +186,7 @@ def all_played(lineup):
     return True
 
 
-def get_monitor(league):
+def get_monitor(league, warning):
     """
     Retrieve a list of players from a given fantasy football league that should be monitored during a game.
 
@@ -343,7 +343,7 @@ def get_close_scores(league, week=None):
 
     emotes = env_vars.split_emotes(league)
     # Gets current closest scores (15.999 points or closer)
-    matchups = league.box_scores(week=week)
+    box_scores = league.box_scores(week=week)
     score = []
 
     for i in box_scores:
