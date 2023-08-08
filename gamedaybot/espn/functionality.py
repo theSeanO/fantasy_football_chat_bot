@@ -5,6 +5,23 @@ import env_vars
 random_phrase = env_vars.get_random_phrase()
 
 def get_scoreboard_short(league, week=None):
+    """
+    Retrieve the scoreboard for a given week of the fantasy football season.
+
+    Parameters
+    ----------
+    league: espn_api.football.League
+        The league for which to retrieve the scoreboard.
+    week: int
+        The week of the season for which to retrieve the scoreboard.
+
+    Returns
+    -------
+    list of dict
+        A list of dictionaries representing the games on the scoreboard for the given week. Each dictionary contains
+        information about a single game, including the teams and their scores.
+    """
+
     emotes = env_vars.split_emotes(league)
     # Gets current week's scoreboard
     box_scores = league.box_scores(week=week)
@@ -22,6 +39,23 @@ def get_scoreboard_short(league, week=None):
 
 def get_projected_scoreboard(league, week=None):
     emotes = env_vars.split_emotes(league)
+    """
+    Retrieve the projected scoreboard for a given week of the fantasy football season.
+
+    Parameters
+    ----------
+    league: espn_api.football.League
+        The league for which to retrieve the projected scoreboard.
+    week: int
+        The week of the season for which to retrieve the projected scoreboard.
+
+    Returns
+    -------
+    list of dict
+        A list of dictionaries representing the projected games on the scoreboard for the given week. Each dictionary
+        contains information about a single game, including the teams and their projected scores.
+    """
+
     # Gets current week's scoreboard projections
     box_scores = league.box_scores(week=week)
     score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, get_projected_total(i.home_lineup),
@@ -32,7 +66,25 @@ def get_projected_scoreboard(league, week=None):
     return '\n'.join(text)
 
 
-def get_standings(league, top_half_scoring, week=None):
+def get_standings(league, top_half_scoring=False, week=None):
+    """
+    Retrieve the current standings for a fantasy football league, with an option to include top-half scoring.
+
+    Parameters
+    ----------
+    league: object
+        The league object for which to retrieve the standings.
+    top_half_scoring: bool, optional
+        If True, include top-half scoring in the standings calculation. Defaults to False.
+    week: int, optional
+        The week for which to retrieve the standings. Defaults to the current week of the league.
+
+    Returns
+    -------
+    str
+        A string containing the current standings, formatted as a list of teams with their records and positions.
+    """
+
     emotes = env_vars.split_emotes(league)
     standings_txt = ''
     teams = league.teams
@@ -42,6 +94,8 @@ def get_standings(league, top_half_scoring, week=None):
         standings_txt = [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
             pos, team in enumerate(standings)]
     else:
+        # top half scoring can be enabled by default in ESPN now.
+        # this should generally not be used
         top_half_totals = {t.team_name: 0 for t in teams}
         if not week:
             week = league.current_week
@@ -68,7 +122,7 @@ def top_half_wins(league, top_half_totals, week):
 
     scores = sorted(scores, key=lambda tup: tup[0], reverse=True)
 
-    for i in range(0, len(scores)//2):
+    for i in range(0, len(scores) // 2):
         points, team_name = scores[i]
         top_half_totals[team_name] += 1
 
@@ -76,9 +130,25 @@ def top_half_wins(league, top_half_totals, week):
 
 
 def get_projected_total(lineup):
+    """
+    Retrieve the projected total points for a given lineup in a fantasy football league.
+
+    Parameters
+    ----------
+    lineup : list
+        A list of player objects that represents the lineup
+
+    Returns
+    -------
+    float
+        The projected total points for the given lineup.
+    """
+
     total_projected = 0
     for i in lineup:
+        # exclude player on bench and injured reserve
         if i.slot_position != 'BE' and i.slot_position != 'IR':
+            # Check if the player has already played or not
             if i.points != 0 or i.game_played > 0:
                 total_projected += i.points
             else:
@@ -95,13 +165,42 @@ def get_projected_final(lineup):
 
 
 def all_played(lineup):
+    """
+    Check if all the players in a given lineup have played their game.
+
+    Parameters
+    ----------
+    lineup : list
+        A list of player objects that represents the lineup
+
+    Returns
+    -------
+    bool
+        True if all the players in the lineup have played their game, False otherwise.
+    """
+
     for i in lineup:
+        # exclude player on bench and injured reserve
         if i.slot_position != 'BE' and i.slot_position != 'IR' and i.game_played < 100:
             return False
     return True
 
 
-def get_monitor(league, warning=0):
+def get_monitor(league):
+    """
+    Retrieve a list of players from a given fantasy football league that should be monitored during a game.
+
+    Parameters
+    ----------
+    league: object
+        The league object for which to retrieve the monitor players.
+
+    Returns
+    -------
+    str
+        A string containing the list of players to monitor, formatted as a list of player names and status.
+    """
+
     emotes = env_vars.split_emotes(league)
     box_scores = league.box_scores()
     monitor = []
@@ -226,12 +325,28 @@ def get_matchups(league, week=None):
 
 
 def get_close_scores(league, week=None):
+    """
+    Retrieve the projected closest scores (10.999 points or closer) for a given week in a fantasy football league.
+
+    Parameters
+    ----------
+    league: object
+        The league object for which to retrieve the closest scores.
+    week : int, optional
+        The week number for which to retrieve the closest scores, by default None.
+
+    Returns
+    -------
+    str
+        A string containing the projected closest scores for the given week, formatted as a list of team names and abbreviation.
+    """
+
     emotes = env_vars.split_emotes(league)
     # Gets current closest scores (15.999 points or closer)
     matchups = league.box_scores(week=week)
     score = []
 
-    for i in matchups:
+    for i in box_scores:
         if i.away_team:
             diffScore = i.away_score - i.home_score
             if (-16 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 16 and not all_played(i.home_lineup)):
@@ -243,13 +358,35 @@ def get_close_scores(league, week=None):
     return '\n'.join(text)
 
 
-def get_waiver_report(league, faab):
+def get_waiver_report(league, faab=False):
+    """
+    This function generates a waiver report for a given league.
+    The report lists all the waiver transactions that occurred on the current day,
+    including the team that made the transaction, the player added and the player dropped (if applicable).
+
+    Parameters
+    ----------
+    league: object
+        The league object for which the report is being generated
+    faab : bool, optional
+        A flag to indicate whether the report should include FAAB amount spent, by default False.
+
+    Returns
+    -------
+    str
+        A string containing the waiver report
+    """
+
+    # Get the recent activity of the league
     emotes = env_vars.split_emotes(league)
     activities = league.recent_activity(50)
+    # Initialize an empty list to store the report
     report = []
+    # Get the current date
     today = date.today().strftime('%Y-%m-%d')
     text = ''
 
+    # Iterate through each activity
     for activity in activities:
         actions = activity.actions
         d2 = date.fromtimestamp(activity.date/1000).strftime('%Y-%m-%d')

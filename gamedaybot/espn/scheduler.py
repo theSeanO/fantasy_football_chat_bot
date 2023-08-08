@@ -3,10 +3,22 @@ from datetime import datetime
 from gamedaybot.espn.espn_bot import espn_bot
 from gamedaybot.espn.env_vars import get_env_vars
 
+
 def scheduler():
+    """
+    This function is used to schedule jobs to send messages.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+    """
     data = get_env_vars()
     game_timezone = 'America/New_York'
-    sched = BlockingScheduler(job_defaults={'misfire_grace_time': 15*60})
+    sched = BlockingScheduler(job_defaults={'misfire_grace_time': 15 * 60})
     ff_start_date = data['ff_start_date']
     ff_end_date = data['ff_end_date']
     end_date = datetime.strptime(ff_end_date, "%Y-%m-%d").date()

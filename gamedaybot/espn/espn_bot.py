@@ -4,6 +4,7 @@ sys.path.insert(1, os.path.abspath('.'))
 import json
 from gamedaybot.espn.env_vars import get_env_vars
 import gamedaybot.espn.functionality as espn
+import gamedaybot.utils as utils
 from gamedaybot.chat.discord import Discord
 from espn_api.football import League
 
@@ -80,6 +81,7 @@ def espn_bot(function):
         text = espn.get_scoreboard_short(league, week=week)
         text = text + "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
     elif function == "get_waiver_report" and swid != '{1}' and espn_s2 != '1':
+        faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
     elif function == "init":
         try:
@@ -91,13 +93,9 @@ def espn_bot(function):
         text = "Something happened. HALP"
 
     if text != '' and not test:
-        messages=espn.str_limit_check(text, data['str_limit'])
+        messages=utils.str_limit_check(text, data['str_limit'])
         for message in messages:
             discord_bot.send_message(message)
-
-    if test:
-        # print "get_final" function
-        print(text)
 
 
 if __name__ == '__main__':
