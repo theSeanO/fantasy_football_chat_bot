@@ -86,47 +86,21 @@ def get_standings(league, top_half_scoring=False, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    standings_txt = ''
-    teams = league.teams
+    standings_txt = []
     standings = []
-    if not top_half_scoring:
-        standings = league.standings()
-        standings_txt = [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
-            pos, team in enumerate(standings)]
-    else:
-        # top half scoring can be enabled by default in ESPN now.
-        # this should generally not be used
-        top_half_totals = {t.team_name: 0 for t in teams}
-        if not week:
-            week = league.current_week
-        for w in range(1, week):
-            top_half_totals = top_half_wins(league, top_half_totals, w)
+    standings = league.standings()
 
-        for t in teams:
-            wins = top_half_totals[t.team_name] + t.wins
-            standings.append((wins, t.losses, t.team_name, emotes[t.team_id]))
-
-        standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
-            pos, (wins, losses, team_name, emote) in enumerate(standings)]
+    for i in range(4):
+        division = [team for team in standings if team.division_id == i]
+        if len(division) > 0:
+            div_name = division[0].division_name
+            standings_txt += ['**%s**' % (div_name)]
+            standings_txt += [f"{pos + 1:2}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
+                pos, team in enumerate(division)]
+            standings_txt += ['']
 
     text = ['__**Current Standings:**__ '] + standings_txt + ['']
     return "\n".join(text)
-
-
-def top_half_wins(league, top_half_totals, week):
-    box_scores = league.box_scores(week=week)
-
-    scores = [(i.home_score, i.home_team.team_name) for i in box_scores] + \
-        [(i.away_score, i.away_team.team_name) for i in box_scores if i.away_team]
-
-    scores = sorted(scores, key=lambda tup: tup[0], reverse=True)
-
-    for i in range(0, len(scores) // 2):
-        points, team_name = scores[i]
-        top_half_totals[team_name] += 1
-
-    return top_half_totals
 
 
 def get_projected_total(lineup):
@@ -186,7 +160,7 @@ def all_played(lineup):
     return True
 
 
-def get_monitor(league, warning):
+def get_monitor(league, warning, div):
     """
     Retrieve a list of players from a given fantasy football league that should be monitored during a game.
 
@@ -207,15 +181,20 @@ def get_monitor(league, warning):
     text = ''
 
     for i in box_scores:
-        monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
-        monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
+        if i.home_team.division_id == div:
+            monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
+        if i.away_team.division_id == div:
+            monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
     
     if not monitor:
         return ('')
     
+    if div == 2:
+        text = ['__**Heads Up Report:**__ '] + monitor
+    else:
+        text = [' '] + monitor
+
     text = ['__**Players to Monitor:**__ '] + monitor
-    if random_phrase == True:
-        text += utils.get_random_phrase()
     
     return '\n'.join(text)
 
@@ -342,14 +321,13 @@ def get_close_scores(league, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    # Gets current closest scores (15.999 points or closer)
     box_scores = league.box_scores(week=week)
     score = []
 
     for i in box_scores:
         if i.away_team:
             diffScore = i.away_score - i.home_score
-            if (-16 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 16 and not all_played(i.home_lineup)):
+            if (-11 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 11 and not all_played(i.home_lineup)):
                 score += ['%s`%4s %6.2f - %6.2f %4s`%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
                                                  i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
     if not score:
@@ -415,8 +393,8 @@ def get_waiver_report(league, faab=False):
 
     if not report:
         report += ['No waiver transactions']
-    else:
-        text = ['__**Waiver Report %s:**__' % today] + report + ['']
+
+    text = ['__**Waiver Report %s:**__' % today] + report + ['']
 
     if random_phrase == True:
         text += utils.get_random_phrase()
@@ -505,104 +483,254 @@ def sim_record_percent(league, week):
     return [(powerRankingDictSorted[x],x) for x in powerRankingDictSorted.keys()]    #return in the format that the bot expects
 
 
-def best_possible_scores(league, week=None):
-    emotes = env_vars.split_emotes(league)
+def get_starter_counts(league):
+    """
+    Get the number of starters for each position
+
+    Parameters
+    ----------
+    league : object
+        The league object for which the starter counts are being generated
+
+    Returns
+    -------
+    dict
+        A dictionary containing the number of players at each position within the starting lineup.
+    """
+
+    # Get the current week -1 to get the last week's box scores
     week = league.current_week - 1
+    # Get the box scores for the specified week
     box_scores = league.box_scores(week=week)
+    # Initialize a dictionary to store the home team's starters and their positions
+    h_starters = {}
+    # Initialize a variable to keep track of the number of home team starters
+    h_starter_count = 0
+    # Initialize a dictionary to store the away team's starters and their positions
+    a_starters = {}
+    # Initialize a variable to keep track of the number of away team starters
+    a_starter_count = 0
+    # Iterate through each game in the box scores
+    for i in box_scores:
+        # Iterate through each player in the home team's lineup
+        for player in i.home_lineup:
+            # Check if the player is a starter (not on the bench or injured)
+            if (player.slot_position != 'BE' and player.slot_position != 'IR'):
+                # Increment the number of home team starters
+                h_starter_count += 1
+                try:
+                    # Try to increment the count for this position in the h_starters dictionary
+                    h_starters[player.slot_position] = h_starters[player.slot_position] + 1
+                except KeyError:
+                    # If the position is not in the dictionary yet, add it and set the count to 1
+                    h_starters[player.slot_position] = 1
+        # in the rare case when someone has an empty slot we need to check the other team as well
+        for player in i.away_lineup:
+            if (player.slot_position != 'BE' and player.slot_position != 'IR'):
+                a_starter_count += 1
+                try:
+                    a_starters[player.slot_position] = a_starters[player.slot_position] + 1
+                except KeyError:
+                    a_starters[player.slot_position] = 1
+
+        if a_starter_count > h_starter_count:
+            return a_starters
+        else:
+            return h_starters
+
+
+def best_flex(flexes, player_pool, num):
+    """
+    Given a list of flex positions, a dictionary of player pool, and a number of players to return,
+    this function returns the best flex players from the player pool.
+
+    Parameters
+    ----------
+    flexes : list
+        a list of strings representing the flex positions
+    player_pool : dict
+        a dictionary with keys as position and values as a dictionary with player name as key and value as score
+    num : int
+        number of players to return from the player pool
+
+    Returns
+    ----------
+    best : dict
+        a dictionary containing the best flex players from the player pool
+    player_pool : dict
+        the updated player pool after removing the best flex players
+    """
+
+    pool = {}
+    # iterate through each flex position
+    for flex_position in flexes:
+        # add players from flex position to the pool
+        try:
+            pool = pool | player_pool[flex_position]
+        except KeyError:
+            pass
+    # sort the pool by score in descending order
+    pool = {k: v for k, v in sorted(pool.items(), key=lambda item: item[1], reverse=True)}
+    # get the top num players from the pool
+    best = dict(list(pool.items())[:num])
+    # remove the best flex players from the player pool
+    for pos in player_pool:
+        for p in best:
+            if p in player_pool[pos]:
+                player_pool[pos].pop(p)
+    return best, player_pool
+
+
+def optimal_lineup_score(lineup, starter_counts):
+    """
+    This function returns the optimal lineup score based on the provided lineup and starter counts.
+
+    Parameters
+    ----------
+    lineup : list
+        A list of player objects for which the optimal lineup score is being generated
+    starter_counts : dict
+        A dictionary containing the number of starters for each position
+
+    Returns
+    -------
+    tuple
+        A tuple containing the optimal lineup score, the provided lineup score, the difference between the two scores,
+        and the percentage of the provided lineup's score compared to the optimal lineup's score.
+    """
+
+    best_lineup = {}
+    position_players = {}
+
+    # get all players and points
+    score = 0
+    for player in lineup:
+        try:
+            position_players[player.position][player.name] = player.points
+        except KeyError:
+            position_players[player.position] = {}
+            position_players[player.position][player.name] = player.points
+        if player.slot_position not in ['BE', 'IR']:
+            score += player.points
+
+    # sort players by position for points
+    for position in starter_counts:
+        try:
+            position_players[position] = {k: v for k, v in sorted(
+                position_players[position].items(), key=lambda item: item[1], reverse=True)}
+            best_lineup[position] = dict(list(position_players[position].items())[:starter_counts[position]])
+            position_players[position] = dict(list(position_players[position].items())[starter_counts[position]:])
+        except KeyError:
+            best_lineup[position] = {}
+
+    # flexes. need to figure out best in other single positions first
+    for position in starter_counts:
+        # flex
+        if 'D/ST' not in position and '/' in position:
+            flex = position.split('/')
+            result = best_flex(flex, position_players, starter_counts[position])
+            best_lineup[position] = result[0]
+            position_players = result[1]
+
+    # Offensive Player. need to figure out best in other positions first
+    if 'OP' in starter_counts:
+        flex = ['RB', 'WR', 'TE', 'QB']
+        result = best_flex(flex, position_players, starter_counts['OP'])
+        best_lineup['OP'] = result[0]
+        position_players = result[1]
+
+    # Defensive Player. need to figure out best in other positions first
+    if 'DP' in starter_counts:
+        flex = ['DT', 'DE', 'LB', 'CB', 'S']
+        result = best_flex(flex, position_players, starter_counts['DP'])
+        best_lineup['DP'] = result[0]
+        position_players = result[1]
+
+    best_score = 0
+    for position in best_lineup:
+        best_score += sum(best_lineup[position].values())
+
+    score_pct = (score / best_score) * 100
+    return (best_score, score, best_score - score, score_pct)
+
+
+def optimal_team_scores(league, week=None):
+    """
+    This function returns the optimal team scores or managers.
+
+    Parameters
+    ----------
+    league : object
+        The league object for which the optimal team scores are being generated
+    week : int, optional
+        The week for which the optimal team scores are to be returned (default is the previous week)
+
+    Returns
+    -------
+    str or tuple
+        If full_report is True, a string representing the full report of the optimal team scores.
+        If full_report is False, a tuple containing the best and worst manager strings.
+
+    """
+    emotes = env_vars.split_emotes(league)
+    if not week:
+        week = league.current_week - 1
+    box_scores = league.box_scores(week=week)
+    div_name = ''
     results = []
     best_scores = {}
+    starter_counts = get_starter_counts(league)
 
-    for i in box_scores:
-        best_scores[i.home_team] = best_lineup_score(i.home_lineup)
-        best_scores[i.away_team] = best_lineup_score(i.away_lineup)
+    for d in range(4):
+        best_scores = {}
+        for i in box_scores:
+            if i.home_team.division_id == d:
+                best_scores[i.home_team] = optimal_lineup_score(i.home_lineup, starter_counts)
+                div_name = i.home_team.division_name
+            if i.away_team.division_id == d:
+                best_scores[i.away_team] = optimal_lineup_score(i.away_lineup, starter_counts)
+        
+        if div_name == '':
+            div_name = box_scores[-1].away_team.division_name
 
-    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
+        if len(best_scores) > 0:
+            best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
 
-    i = 1
-    for score in best_scores:
-        s = ['%d: %s%s: %.2f (%.2f - %.2f%%)' % (i, emotes[score.team_id], score.team_name, best_scores[score][0], best_scores[score][1], best_scores[score][3])]
-        results += s
-        i += 1
-
+            i = 1
+            results += ['**%s**' % (div_name)]
+            for score in best_scores:
+                s = ['%2d: %s`%4s: %6.2f (%6.2f - %.2f%%)`' %
+                        (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0],
+                        best_scores[score][1], best_scores[score][3])]
+                results += s
+                i += 1
+            
+            results += ['']
+    
     if not results:
         return ('')
 
-    text = ['__**Best Possible Scores:**__  (Actual Score - % of possible)'] + results + ['']
-
+    text = ['__**Best Possible Scores:**__  (Actual - % of optimal)'] + results + [' ']
     return '\n'.join(text)
-
-def best_lineup_score(lineup):
-    score = 0
-    best_score = 0
-    num_qb = num_flex = num_te = num_k = num_dst = 1
-    num_rb = num_wr = 2
-
-    qb = {}
-    rb = {}
-    wr = {}
-    te = {}
-    dst = {}
-    k = {}
-
-    for p in lineup:
-        if p.position == 'QB':
-            qb[p.name] = p.points
-        elif p.position == 'RB':
-            rb[p.name] = p.points
-        elif p.position == 'WR':
-            wr[p.name] = p.points
-        elif p.position == 'TE':
-            te[p.name] = p.points
-        elif p.position == 'D/ST':
-            dst[p.name] = p.points
-        elif p.position == 'K':
-            k[p.name] = p.points
-        if p.slot_position not in ['BE', 'IR']:
-            score += p.points
-
-    best_qb = {key: value for key, value in sorted(qb.items(), key=lambda item: item[1], reverse=True)[:num_qb:]}
-    best_rb = {key: value for key, value in sorted(rb.items(), key=lambda item: item[1], reverse=True)[:num_rb:]}
-    best_wr = {key: value for key, value in sorted(wr.items(), key=lambda item: item[1], reverse=True)[:num_wr:]}
-    best_te = {key: value for key, value in sorted(te.items(), key=lambda item: item[1], reverse=True)[:num_te:]}
-    best_dst = {key: value for key, value in sorted(dst.items(), key=lambda item: item[1], reverse=True)[:num_dst:]}
-    best_k = {key: value for key, value in sorted(k.items(), key=lambda item: item[1], reverse=True)[:num_k:]}
-
-    flex = {}
-    for p in lineup:
-        if p.position in ['RB', 'WR', 'TE']:
-            if p.name not in best_rb and p.name not in best_wr and p.name not in best_te:
-                flex[p.name] = p.points
-
-    best_flex = {key: value for key, value in sorted(flex.items(), key=lambda item: item[1], reverse=True)[:num_flex:]}
-
-    best_score += sum(best_qb.values())
-    best_score += sum(best_rb.values())
-    best_score += sum(best_wr.values())
-    best_score += sum(best_te.values())
-    best_score += sum(best_flex.values())
-    best_score += sum(best_dst.values())
-    best_score += sum(best_k.values())
-
-    score_diff = best_score - score
-    score_pct = (score / best_score) * 100
-
-    # Only needed this for testing
-    # team_str = ''
-    # team_str += 'QB: ' + (', '.join(best_qb.keys())) 
-    # team_str += ' | RB: ' + (', '.join(best_rb.keys())) 
-    # team_str += ' | WR: ' + (', '.join(best_wr.keys())) 
-    # team_str += ' | TE: ' + (', '.join(best_te.keys())) 
-    # team_str += ' | Flex: ' + (', '.join(best_flex.keys())) 
-    # team_str += ' | ' + (', '.join(best_dst.keys())) 
-    # team_str += ' | K: ' + (', '.join(best_k.keys())) 
-    # s = ['%s**%s**: %.2f (%.2f actual, %.2f diff) %s' % (emotes[team.team_id],team.team_name, best_score, score, score_diff, team_str)]
-
-    return (best_score, score, score_diff, score_pct)
 
 
 def get_trophies(league, extra_trophies, week=None):
+    """
+    Returns trophies for the highest score, lowest score, closest score, and biggest win.
+
+    Parameters
+    ----------
+    league : object
+        The league object for which the trophies are to be returned
+    week : int, optional
+        The week for which the trophies are to be returned (default is current week)
+
+    Returns
+    -------
+    str
+        A string representing the trophies
+    """
     emotes = env_vars.split_emotes(league)
-    #Gets trophies for highest score, lowest score, overachiever, underachiever, week MVP & LVP, closest score, and biggest win
     matchups = league.box_scores(week=week)
 
     low_score = 9999
@@ -721,8 +849,8 @@ def get_trophies(league, extra_trophies, week=None):
     high_score_str = ['Highest score: %s**%s** with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
     over_str = ['Overachiever: %s**%s** with %.2f points more than their projection' % (emotes[over_team.team_id], over_team.team_name, over_diff)]
     under_str = ['Underachiever: %s**%s** with %.2f points less than their projection' % (emotes[under_team.team_id], under_team.team_name, abs(under_diff))]
-    mvp_str = ['Week MVP: %s, %s**%s** with %s' % (mvp, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['Week LVP: %s, %s**%s** with %s' % (lvp, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
+    mvp_str = ['Mr. Fuckass: %s, %s**%s** with %s' % (mvp, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['Mr. Suckass: %s, %s**%s** with %s' % (lvp, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
     close_score_str = ['%s**%s** barely beat %s**%s** by a margin of %.2f' % (emotes[close_winner.team_id], close_winner.team_name, emotes[close_loser.team_id], close_loser.team_name, closest_score)]
     blowout_str = ['%s**%s** got blown out by %s**%s** by a margin of %.2f' % (emotes[blown_out_team.team_id], blown_out_team.team_name, emotes[ownerer_team.team_id], ownerer_team.team_name, biggest_blowout)]
 
