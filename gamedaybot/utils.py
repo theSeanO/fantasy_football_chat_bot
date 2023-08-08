@@ -1,7 +1,7 @@
-from datetime import datetime
 import os
-from urllib.parse import urlparse
 import random
+from datetime import datetime
+from urllib.parse import urlparse
 
 
 def get_random_phrase():

@@ -1,7 +1,7 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime
-from gamedaybot.espn.espn_bot import espn_bot
+from apscheduler.schedulers.blocking import BlockingScheduler
 from gamedaybot.espn.env_vars import get_env_vars
+from gamedaybot.espn.espn_bot import espn_bot
 
 
 def scheduler():

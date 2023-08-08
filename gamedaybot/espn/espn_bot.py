@@ -1,12 +1,13 @@
-import sys
 import os
+import sys
 sys.path.insert(1, os.path.abspath('.'))
 import json
-from gamedaybot.espn.env_vars import get_env_vars
+from espn_api.football import League
 import gamedaybot.espn.functionality as espn
 import gamedaybot.utils as utils
 from gamedaybot.chat.discord import Discord
-from espn_api.football import League
+from gamedaybot.espn.env_vars import get_env_vars
+
 
 def espn_bot(function):
     data = get_env_vars()
@@ -26,7 +27,7 @@ def espn_bot(function):
     else:
         league = League(league_id=league_id, year=year, espn_s2=espn_s2, swid=swid)
 
-    if league.scoringPeriodId > len(league.settings.matchup_periods):
+    if league.scoringPeriodId > len(league.settings.matchup_periods) and not test:
         print("Not in active season")
         return
 
