@@ -30,6 +30,7 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 
 **What does this do?**
 
+Schedule Link: https://www.gamedaybot.com/message-schedule/
 - Sends out the following messages on this schedule:
 - Scoreboard - Sun - 16:00, 20:00 east coast time (Current ESPN fantasy scoreboard)
 - Scoreboard - Mon,Fri - 7:30 local time (Current ESPN fantasy scoreboard)
@@ -84,6 +85,7 @@ Save the "Webhook URL" on this page
 </details>
 
 ### Heroku setup
+**"November 28, 2022, Heroku stopped offering free product plans"**
 
 Heroku is what we will be using to host the chat bot
 
@@ -121,7 +123,7 @@ You should see something like below. Click the pencil on the right and toggle th
 
 You're done! You now have a fully featured GroupMe/Slack/Discord chat bot for ESPN leagues! If you have an INIT_MSG you will see it exclaimed in your GroupMe, Discord, or Slack chat room.
 
-Unfortunately to do auto deploys of the latest version you need admin access to the repository on git. You can check for updates on the github page (https://github.com/dtcarls/ff_bot/commits/master) and click the deploy button again; however, this will deploy a new instance and the variables will need to be edited again.
+Unfortunately to do auto deploys of the latest version you need admin access to the repository on git. You can check for updates on the github page (https://github.com/dtcarls/fantasy_football_chat_bot/commits/master) and click the deploy button again; however, this will deploy a new instance and the variables will need to be edited again.
 
 ### Environment Variables
 
@@ -277,4 +279,43 @@ Automated tests for this package are included in the `tests` directory. After in
 ```python3
 python3 setup.py test
 ```
+</details>
+
+#### Private Leagues
+
+For private league you will need to get your swid and espn_s2.
+You can find these two values after logging into your espn fantasy football account on espn's website.
+(Chrome Browser)
+Right click anywhere on the website and click inspect option.
+From there click Application on the top bar.
+On the left under Storage section click Cookies then http://fantasy.espn.com.
+From there you should be able to find your swid and espn_s2 variables and values.
+## FAQ
+
+**League must be full.**
+
+The bot isn't working
+
+* Did you miss a step in the instructions? Try doing it from scratch again. If still no luck, open an issue (https://github.com/dtcarls/fantasy_football_chat_bot/issues) or hop into the discord (link at the top of readme) so the answer can be shared with others.
+
+How are power ranks calculated?
+
+* They are calculated using 2 step dominance, as well as a combination of points scored and margin of victory. Weighted 80/15/5 respectively. I wouldn't so much pay attention to the actual number but more of the gap between teams. Full source of the calculations can be seen here: https://github.com/cwendt94/espn-api/pull/12/files. If you want a tutorial on dominance matrices: https://www.youtube.com/watch?v=784TmwaHPOw
+
+Is there a version of this for Yahoo/CBS/NFL/[insert other site]?
+
+* No, this would require a significant rework for other sites.
+
+How do I set another timezone?
+
+* Specify your variable https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+
+Is there a version of this for Messenger/WhatsApp/[insert other chat]?
+
+* No, but I am open to pull requests implementing their API for additional cross platform support.
+
+My Standings look wrong. I have weird (+1) in it.
+
+* TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
+* Top half wins is being in the top half of your league for points and you receive an additional "win" for it. The number in parenthesis (+1) tells you how many added wins over the season for top half wins.
 </details>
