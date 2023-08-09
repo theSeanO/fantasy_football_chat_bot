@@ -45,6 +45,7 @@ def espn_bot(function):
         print(espn.get_inactives(league) + '\n')
         if waiver_report and swid != '{1}' and espn_s2 != '1':
             print(espn.get_waiver_report(league, faab) + '\n')
+        # print(espn.season_trophies(league, extra_trophies) + '\n')
         function = "get_final"
         # discord_bot.send_message("Testing")
 
@@ -66,7 +67,9 @@ def espn_bot(function):
     elif function == "get_power_rankings":
         text = espn.combined_power_rankings(league)
     elif function == "get_trophies":
-        text = espn.get_trophies(league)    
+        text = espn.get_trophies(league)
+    elif function == "season_trophies":
+        text = espn.season_trophies(league, extra_trophies)  
     elif function == "get_standings":
         text = espn.get_standings(league, top_half_scoring)
     elif function == "get_optimal_scores":
