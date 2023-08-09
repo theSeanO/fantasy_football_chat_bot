@@ -5,6 +5,14 @@ from urllib.parse import urlparse
 
 
 def get_random_phrase():
+    """
+    Returns a phrase from the list.
+
+    Returns
+    -------
+    bool
+        A random funny string.
+    """
     phrases = ['I\'m dead inside',
                'Is this all there is to my existence?',
                'How much do you pay me to do this?',

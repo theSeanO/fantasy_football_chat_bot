@@ -23,6 +23,7 @@ def scheduler():
     ff_end_date = data['ff_end_date']
     end_date = datetime.strptime(ff_end_date, "%Y-%m-%d").date()
     my_timezone = data['my_timezone']
+    ready_text = "Ready!"
 
     #game day score update:              sunday at 4pm, 8pm east coast time.
     #final scores and trophies:          tuesday morning at 7:30am local time.
@@ -51,7 +52,7 @@ def scheduler():
         day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_best_scores'], id='best_scores',
+    sched.add_job(espn_bot, 'cron', ['get_optimal_scores'], id='optimal_scores',
         day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
@@ -83,10 +84,20 @@ def scheduler():
         sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)  
+    else:
+        sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
+            day_of_week='wed', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+            timezone=my_timezone, replace_existing=True)  
 
     sched.add_job(espn_bot, 'date', ['season_trophies'], id='season_trophies',
         run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30), 
         timezone=my_timezone, replace_existing=True)
 
-    print("Ready!")
+    try:
+        if data['swid'] and data['espn_s2']:
+            ready_text += " SWID and ESPN_S2 provided."
+    except KeyError:
+        ready_text += " SWID and ESPN_S2 not provided."
+
+    print(ready_text)
     sched.start()
