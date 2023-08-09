@@ -415,13 +415,15 @@ def get_close_scores(league, week=None):
 
     for i in box_scores:
         if i.away_team:
-            diffScore = i.away_score - i.home_score
+            away_projected = get_projected_total(i.away_lineup)
+            home_projected = get_projected_total(i.home_lineup)
+            diffScore = away_projected - home_projected
             if (-11 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 11 and not all_played(i.home_lineup)):
-                score += ['%s`%4s %6.2f - %6.2f %4s`%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
-                                                 i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
+                score += ['%s`%4s %6.2f - %6.2f %4s`%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
+                                                 i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
     if not score:
         return('')
-    text = ['__**Close Scores**__'] + score
+    text = ['__**Projected Close Scores**__'] + score
     return '\n'.join(text)
 
 
