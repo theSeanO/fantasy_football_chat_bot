@@ -52,7 +52,7 @@ def scheduler():
         day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_best_scores'], id='best_scores',
+    sched.add_job(espn_bot, 'cron', ['get_optimal_scores'], id='optimal_scores',
         day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
@@ -87,11 +87,11 @@ def scheduler():
     if data['daily_waiver']:
         sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed,thu,fri,sat,sun', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-            timezone=my_timezone, replace_existing=True)
+            timezone=my_timezone, replace_existing=True)  
     else:
         sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
             day_of_week='wed', hour=6, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-            timezone=my_timezone, replace_existing=True)
+            timezone=my_timezone, replace_existing=True)  
 
 
     sched.add_job(espn_bot, 'date', ['season_trophies'], id='season_trophies',

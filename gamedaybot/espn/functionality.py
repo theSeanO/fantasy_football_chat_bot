@@ -200,6 +200,19 @@ def get_monitor(league, warning, div):
 
 
 def get_inactives(league, week=None):
+    """
+    Retrieve a list of players from a given fantasy football league that are likely inactive and need to be replaced.
+
+    Parameters
+    ----------
+    league: object
+        The league object for which to retrieve the inactive players.
+
+    Returns
+    -------
+    str
+        A string containing the list of inactive players, formatted as a list of player names and status.
+    """
     users = env_vars.split_users(league)
     box_scores = league.box_scores(week=week)
     inactives = []
@@ -220,6 +233,26 @@ def get_inactives(league, week=None):
 
 
 def scan_roster(lineup, team, warning, emotes):
+    """
+    Retrieve a list of players from a given fantasy football league that have a status.
+
+    Parameters
+    ----------
+    lineup : list
+        A list of player objects that represents the lineup
+    team : object
+        The team object for which to retrieve the monitor players
+    warning : int
+        The threshold at which to warn an owner to replace a player
+    emotes : list
+        A list of the server's team emotes
+
+    Returns
+    -------
+    list
+        A list of strings containing the list of players to monitor, formatted as a list of player names and statuses.
+    """
+
     count = 0
     players = []
     for i in lineup:
@@ -257,6 +290,24 @@ def scan_roster(lineup, team, warning, emotes):
 
 
 def scan_inactives(lineup, team, users):
+    """
+    Retrieve a list of players from a given fantasy football league that have a status that indicates they're not playing.
+
+    Parameters
+    ----------
+    lineup : list
+        A list of player objects that represents the lineup
+    team : object
+        The team object for which to retrieve the inactive players
+    users : list
+        A list of the server's user tags
+
+    Returns
+    -------
+    list
+        A list of strings containing the list of inactive, formatted as a list of player names and statuses.
+    """
+
     count = 0
     players = []
     for i in lineup:
@@ -285,6 +336,22 @@ def scan_inactives(lineup, team, users):
 
 
 def get_matchups(league, week=None):
+    """
+    Retrieve the matchups for a given week in a fantasy football league.
+
+    Parameters
+    ----------
+    league: object
+        The league object for which to retrieve the matchups.
+    week : int, optional
+        The week number for which to retrieve the matchups, by default None.
+
+    Returns
+    -------
+    str
+        A string containing the matchups for the given week, formatted as a list of team names and abbreviation.
+    """
+
     emotes = env_vars.split_emotes(league)
     # Gets current week's Matchups
     matchups = league.box_scores(week=week)
@@ -403,6 +470,27 @@ def get_waiver_report(league, faab=False):
 
 
 def combined_power_rankings(league, week=None):
+    """
+    This function returns the power rankings of the teams in the league for a specific week.
+    If the week is not provided, it defaults to the current week.
+    The power rankings are determined using a 2 step dominance algorithm,
+    as well as a combination of points scored and margin of victory.
+    It's weighted 80/15/5 respectively.
+    It also runs and adds the simulated record to the list.
+
+    Parameters
+    ----------
+    league: object
+        The league object for which the power rankings are being generated
+    week : int, optional
+        The week for which the power rankings are to be returned (default is current week)
+
+    Returns
+    -------
+    str
+        A string representing the power rankings
+    """
+
     emotes = env_vars.split_emotes(league)
     if not week:
         week = league.current_week

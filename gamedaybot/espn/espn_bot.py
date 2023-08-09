@@ -70,14 +70,11 @@ def espn_bot(function):
         text = espn.get_close_scores(league)
     elif function == "get_power_rankings":
         text = espn.combined_power_rankings(league)
-    elif function == "get_waiver_report":
-        if waiver_report and swid != '{1}' and espn_s2 != '1':
-            text += '\n\n' + espn.get_waiver_report(league, faab)
     elif function == "get_trophies":
-        text = espn.get_trophies(league)
+        text = espn.get_trophies(league)    
     elif function == "get_standings":
         text = espn.get_standings(league, top_half_scoring)
-    elif function == "get_best_scores":
+    elif function == "get_optimal_scores":
         text = espn.optimal_team_scores(league)
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
