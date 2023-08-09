@@ -133,5 +133,6 @@ dmypy.json
 #misc.
 .vscode/*
 
-ff_bot/ids.txt
-run.sh
+gamedaybot/ids.txt
+*.sh
+*.ipynb
