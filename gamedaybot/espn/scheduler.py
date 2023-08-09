@@ -48,12 +48,12 @@ def scheduler():
         day_of_week='tue', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_power_rankings'], id='power_rankings',
-        day_of_week='tue', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
+    sched.add_job(espn_bot, 'cron', ['get_optimal_scores'], id='optimal_scores',
+        day_of_week='tue', hour=18, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_optimal_scores'], id='optimal_scores',
-        day_of_week='tue', hour=18, minute=30, second=15, start_date=ff_start_date, end_date=ff_end_date,
+    sched.add_job(espn_bot, 'cron', ['get_power_rankings'], id='power_rankings',
+        day_of_week='tue', hour=18, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'cron', ['get_matchups'], id='matchups',
