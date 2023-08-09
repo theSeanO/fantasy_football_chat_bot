@@ -39,7 +39,7 @@ def espn_bot(function):
         print(espn.get_projected_scoreboard(league) + '\n')
         print(espn.get_close_scores(league) + '\n')
         print(espn.get_standings(league, top_half_scoring) + '\n')
-        print(espn.best_possible_scores(league) + '\n')
+        print(espn.optimal_team_scores(league) + '\n')
         print(espn.combined_power_rankings(league) + '\n')
         print(espn.get_monitor(league, warning) + '\n')
         print(espn.get_inactives(league) + '\n')
@@ -51,7 +51,7 @@ def espn_bot(function):
     text = ''
     if function == "get_matchups":
         text = espn.get_matchups(league)
-        text = text + "\n\n" + espn.get_projected_scoreboard(league)
+        # text = text + "\n\n" + espn.get_projected_scoreboard(league)
     elif function == "get_monitor":
         text = espn.get_monitor(league, warning)
     elif function == "get_inactives":
@@ -65,16 +65,12 @@ def espn_bot(function):
         text = espn.get_close_scores(league)
     elif function == "get_power_rankings":
         text = espn.combined_power_rankings(league)
-    elif function == "get_waiver_report":
-        if waiver_report and swid != '{1}' and espn_s2 != '1':
-            text += '\n\n' + espn.get_waiver_report(league, faab)
     elif function == "get_trophies":
-        text = espn.get_trophies(league)
+        text = espn.get_trophies(league)    
     elif function == "get_standings":
         text = espn.get_standings(league, top_half_scoring)
-    elif function == "get_best_scores":
-        text = espn.best_possible_scores(league)
-
+    elif function == "get_optimal_scores":
+        text = espn.optimal_team_scores(league)
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
@@ -96,6 +92,10 @@ def espn_bot(function):
         messages = utils.str_limit_check(text, data['str_limit'])
         for message in messages:
             discord_bot.send_message(message)
+
+    if test:
+        #print "get_final" function
+        print(text)
 
 
 if __name__ == '__main__':
