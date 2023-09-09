@@ -216,7 +216,8 @@ python3 ff_bot/ff_bot.py
 Automated tests for this package are included in the `tests` directory. After installation, you can run these tests by changing the directory to the `ff_bot` directory and running the following:
 
 ```python3
-python3 setup.py test
+pip install -r requirements-test.txt
+pytest
 ```
 </details>
 
