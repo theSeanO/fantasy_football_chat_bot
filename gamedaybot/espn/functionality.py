@@ -739,7 +739,10 @@ def optimal_lineup_score(lineup, starter_counts):
     for position in best_lineup:
         best_score += sum(best_lineup[position].values())
 
-    score_pct = (score / best_score) * 100
+    score_pct = 0
+    if best_score != 0:
+        score_pct = (score / best_score) * 100
+
     return (best_score, score, best_score - score, score_pct)
 
 
