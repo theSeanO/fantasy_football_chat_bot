@@ -190,11 +190,10 @@ def get_monitor(league, warning, div):
         return ('')
     
     if div == 2:
-        text = ['__**Heads Up Report:**__ '] + monitor
+        text = ['__**Players to Monitor:**__ '] + monitor
     else:
         text = [' '] + monitor
 
-    text = ['__**Players to Monitor:**__ '] + monitor
     
     return '\n'.join(text)
 
