@@ -460,8 +460,8 @@ def get_waiver_report(league, faab=False):
     report.reverse()
 
     if not report:
-        report += ['No waiver transactions']
-
+        return ''
+        
     text = ['__**Waiver Report %s:**__' % today] + report + ['']
 
     if random_phrase == True:
