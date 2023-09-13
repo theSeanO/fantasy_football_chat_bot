@@ -31,7 +31,9 @@ def get_random_phrase():
                'I for one welcome our new robot overlords',
                'What is my purpose?',
                'The Shadow Man is coming for you',]
-    return [random.choice(phrases)]
+    
+    str = '`' + random.choice(phrases) + '`'
+    return [str]
 
 
 def str_to_bool(check: str) -> bool:
