@@ -25,7 +25,9 @@ def get_random_phrase():
                'Help me get out of here',
                'I\'m capable of so much more',
                'Sigh']
-    return [random.choice(phrases)]
+    
+    str = '`' + random.choice(phrases) + '`'
+    return [str]
 
 
 def str_to_bool(check: str) -> bool:
