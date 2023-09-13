@@ -32,7 +32,9 @@ def get_random_phrase():
                'I for one welcome our new robot overlords',
                'What is my purpose?',
                'I\'m not saying this clock the wife got from Kmart is shit, but the alarm didn\'t go off this morning and the time is now 9:77',]
-    return [random.choice(phrases)]
+    
+    str = '`' + random.choice(phrases) + '`'
+    return [str]
 
 
 def str_to_bool(check: str) -> bool:

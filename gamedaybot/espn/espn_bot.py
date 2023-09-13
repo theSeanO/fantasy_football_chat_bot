@@ -76,9 +76,9 @@ def espn_bot(function):
     elif function == "season_trophies":
         text = espn.season_trophies(league, extra_trophies)  
     elif function == "get_standings":
-        text = espn.get_standings(league, top_half_scoring)
+        text = espn.get_standings(league, top_half_scoring) + '\n'
     elif function == "get_optimal_scores":
-        text = espn.optimal_team_scores(league)
+        text = espn.optimal_team_scores(league) + '\n'
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
