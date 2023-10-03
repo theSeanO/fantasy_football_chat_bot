@@ -1085,7 +1085,9 @@ def season_trophies(league, extra_trophies):
         moves = (team.acquisitions * 0.5) + (team.drops * 0.5) + team.trades
         if moves > most_moves:
             most_moves = moves
-            moves_score = '%d adds and %d trades' % (team.acquisitions, team.trades)
+            moves_score = str(team.acquisitions) + ' adds' 
+            if team.trades > 0: 
+                moves_score += 'and ' + str(team.trades) + ' trades'
             moves_team = team
 
         for score in team.scores:
@@ -1125,13 +1127,13 @@ def season_trophies(league, extra_trophies):
         for i in matchups:
             best_score_home = optimal_lineup_score(i.home_lineup, starter_counts)
             score_diff_totals[i.home_team] += best_score_home[2]
-            if best_score_home[3] >= 99:
+            if best_score_home[3] >= 95:
                 high_score_pcts[i.home_team] += 1
 
             if (i.away_team != 0):
                 best_score_away = optimal_lineup_score(i.away_lineup, starter_counts)
                 score_diff_totals[i.away_team] += best_score_away[2]
-                if best_score_away[3] >= 99:
+                if best_score_away[3] >= 95:
                     high_score_pcts[i.away_team] += 1
             
             for p in i.home_lineup:
@@ -1183,15 +1185,15 @@ def season_trophies(league, extra_trophies):
     most_high_pcts = [value for key, value in sorted(high_score_pcts.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
     most_high_team = [key for key, value in sorted(high_score_pcts.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
 
-    moves_str = ['**Most Moves**: %s**%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
-    score_str = ['**Highest Score**: %s**%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
-    bsd_str = ['**Best Benching**: %s**%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
-    hpt_str = ['**Most Efficient**: %s**%s** scored >99%% of their best possible score on %d weeks' % (emotes[most_high_team.team_id], most_high_team.team_name, most_high_pcts)]
-    mvp_str = ['**Best Performance**: %s, Week %d, %s**%s** with %s' % (mvp, mvp_week, emotes[mvp_team.team_id], mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['**Worst Performance**: %s, Week %d, %s**%s** with %s' % (lvp, lvp_week, emotes[lvp_team.team_id], lvp_team.team_abbrev, lvp_score)]
-    smvp_str = ['**Season MVP**: %s, %s**%s** with %s' % (smvp, emotes[smvp_team.team_id], smvp_team.team_abbrev, smvp_score)]
-    slvp_str = ['**Season LVP**: %s, %s**%s** with %s' % (slvp, emotes[slvp_team.team_id], slvp_team.team_abbrev, slvp_score)]
+    moves_str = ['🔀 `Most Moves:` %s \n- **%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
+    score_str = ['👑 `Highest Score:` %s \n- **%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
+    bsd_str = ['🪑 `Best Benching:` %s \n- **%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
+    hpt_str = ['🎯 `Most Efficient:` %s \n- **%s** scored >95%% of their best possible score on %d weeks' % (emotes[most_high_team.team_id], most_high_team.team_name, most_high_pcts)]
+    mvp_str = ['🌟 `Best Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_week, mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['💩 `Worst Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_week, lvp_team.team_abbrev, lvp_score)]
+    smvp_str = ['👍 Season MVP: %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
+    slvp_str = ['👎 Season LVP: %s \n- %s, **%s** with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
  
-    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + lvp_str + mvp_str + slvp_str + smvp_str + [' ']
+    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + [' ']
 
     return '\n'.join(text)
