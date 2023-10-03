@@ -91,7 +91,7 @@ def get_standings(league, top_half_scoring=False, week=None):
     standings = []
     if not top_half_scoring:
         standings = league.standings()
-        standings_txt = [f"{pos + 1}. {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
+        standings_txt = [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
             pos, team in enumerate(standings)]
     else:
         # top half scoring can be enabled by default in ESPN now.
@@ -107,7 +107,7 @@ def get_standings(league, top_half_scoring=False, week=None):
             standings.append((wins, t.losses, t.team_name, emotes[t.team_id]))
 
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}. {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
+        standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
 
     text = ['__**Current Standings:**__ '] + standings_txt + ['']
@@ -527,7 +527,7 @@ def combined_power_rankings(league, week=None):
 
     for i in pr:
         if i:
-            ranks += ['%s. %s%s `[%s | %.1f%% | %s]`' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr[i[1]][0])]
+            ranks += ['%s: %s%s `[%s | %.1f%% | %s]`' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr[i[1]][0])]
         pos += 1
 
     text = [''] + ['__**Power Rankings:**__ [PR points | Playoff Chance | Simulated Record]'] + ranks + ['']
@@ -800,7 +800,7 @@ def optimal_team_scores(league, week=None):
 
     i = 1
     for score in best_scores:
-        s = ['%s. %s `%4s: %6.2f [%6.2f - %.2f%%]`' %
+        s = ['%s: %s `%4s: %6.2f [%6.2f - %.2f%%]`' %
                 (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0],
                 best_scores[score][1], best_scores[score][3])]
         results += s
