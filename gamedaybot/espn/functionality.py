@@ -95,7 +95,7 @@ def get_standings(league, top_half_scoring=False, week=None):
         if len(division) > 0:
             div_name = division[0].division_name
             standings_txt += ['**%s**' % (div_name)]
-            standings_txt += [f"{pos + 1:2}. {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
+            standings_txt += [f"{pos + 1}. {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
                 pos, team in enumerate(division)]
             standings_txt += ['']
 
