@@ -1191,8 +1191,8 @@ def season_trophies(league, extra_trophies):
     hpt_str = ['🎯 `Most Efficient:` %s \n- **%s** scored >95%% of their best possible score on %d weeks' % (emotes[most_high_team.team_id], most_high_team.team_name, most_high_pcts)]
     mvp_str = ['🌟 `Best Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_week, mvp_team.team_abbrev, mvp_score)]
     lvp_str = ['💩 `Worst Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_week, lvp_team.team_abbrev, lvp_score)]
-    smvp_str = ['👍 Season MVP: %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
-    slvp_str = ['👎 Season LVP: %s \n- %s, **%s** with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
+    smvp_str = ['👍 `Season MVP:` %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
+    slvp_str = ['👎 `Season LVP:` %s \n- %s, **%s** with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
  
     text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + [' ']
 
