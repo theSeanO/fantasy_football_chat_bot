@@ -527,10 +527,10 @@ def combined_power_rankings(league, week=None):
 
     for i in pr:
         if i:
-            ranks += ['%s. %s%s `[%s | %.1f%% | %s]`' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr[i[1]][0])]
+            ranks += ['%s. %s%s `[%s | %s]`' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], sr[i[1]][0])]
         pos += 1
 
-    text = [''] + ['__**Power Rankings:**__ [PR points | Playoff Chance | Simulated Record]'] + ranks + ['']
+    text = [''] + ['__**Power Rankings:**__ [PR points | Simulated Record]'] + ranks + ['']
 
     if random_phrase == True:
         text += utils.get_random_phrase()
