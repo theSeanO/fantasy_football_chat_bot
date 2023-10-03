@@ -58,8 +58,8 @@ def get_projected_scoreboard(league, week=None):
 
     # Gets current week's scoreboard projections
     box_scores = league.box_scores(week=week)
-    score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, get_projected_total(i.home_lineup),
-                                    get_projected_total(i.away_lineup), i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
+    score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
+                                    i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team]
 
     text = ['__**Approximate Projected Scores**__'] + score
@@ -415,9 +415,9 @@ def get_close_scores(league, week=None):
 
     for i in box_scores:
         if i.away_team:
-            away_projected = get_projected_total(i.away_lineup)
-            home_projected = get_projected_total(i.home_lineup)
-            diffScore = away_projected - home_projected
+            # away_projected = get_projected_total(i.away_lineup)
+            # home_projected = get_projected_total(i.home_lineup)
+            diffScore = i.away_projected - i.home_projected
             if (-11 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 11 and not all_played(i.home_lineup)):
                 score += ['%s`%4s %6.2f - %6.2f %4s`%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
                                                  i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
