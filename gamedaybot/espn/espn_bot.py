@@ -47,7 +47,8 @@ def espn_bot(function):
         if waiver_report and swid != '{1}' and espn_s2 != '1':
             print(espn.get_waiver_report(league, faab) + '\n')
         # print(espn.season_trophies(league, extra_trophies) + '\n')
-        function = "get_final"
+        print(espn.get_scoreboard_short(league, week=league.current_week - 1) + '\n')
+        print(espn.get_trophies(league, extra_trophies, week=league.current_week - 1) + '\n')
         # discord_bot.send_message("Testing")
 
     text = ''
@@ -76,14 +77,16 @@ def espn_bot(function):
     elif function == "season_trophies":
         text = espn.season_trophies(league, extra_trophies)  
     elif function == "get_standings":
-        text = espn.get_standings(league, top_half_scoring) + '\n'
+        text = espn.get_standings(league, top_half_scoring)
     elif function == "get_optimal_scores":
-        text = espn.optimal_team_scores(league) + '\n'
-    elif function == "get_final":
+        text = espn.optimal_team_scores(league)
+    elif function == "get_final_scores":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
         text = espn.get_scoreboard_short(league, week=week)
-        text = text + "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
+    elif function == "get_final_trophies":
+        week = league.current_week - 1
+        text = espn.get_trophies(league, extra_trophies, week=week)
     elif function == "get_waiver_report" and swid != '{1}' and espn_s2 != '1':
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)

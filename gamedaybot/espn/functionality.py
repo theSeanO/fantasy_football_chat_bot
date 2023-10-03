@@ -1002,7 +1002,7 @@ def get_trophies(league, extra_trophies, week=None):
     mvp_str = ['👍 `Mr. Fuckass:` %s \n- %s, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_team.team_abbrev, mvp_score)]
     lvp_str = ['👎 `Mr. Suckass:` %s \n- %s, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_team.team_abbrev, lvp_score)]
 
-    text = ['__**Trophies of the week:**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
+    text = [' '] + ['__**Trophies of the week:**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
         if over_diff > 0 and high_team.team_name != over_team.team_name:
