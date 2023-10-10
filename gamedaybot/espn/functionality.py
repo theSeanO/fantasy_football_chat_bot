@@ -235,13 +235,14 @@ def get_inactives(league, week=None):
         A string containing the list of inactive players, formatted as a list of player names and status.
     """
     users = env_vars.split_users(league)
+    emotes = env_vars.split_emotes(league)
     box_scores = league.box_scores(week=week)
     inactives = []
     text = ''
 
     for i in box_scores:
-        inactives += scan_inactives(i.home_lineup, i.home_team, users)
-        inactives += scan_inactives(i.away_lineup, i.away_team, users)
+        inactives += scan_inactives(i.home_lineup, i.home_team, users, emotes)
+        inactives += scan_inactives(i.away_lineup, i.away_team, users, emotes)
 
     if not inactives:
         return ('')
@@ -288,7 +289,7 @@ def scan_roster(lineup, team, warning, emotes):
                 elif i.projected_points <= warning:
                     player += '**' + str(i.projected_points) + ' pts**'
                 players += [player]
-        elif i.position == 'D/ST' and (i.pro_opponent == 'None' or i.projected_points <= warning):
+        elif i.position == 'D/ST' and i.slot_position !='BE' and (i.pro_opponent == 'None' or i.projected_points <= warning):
             count += 1
             player = i.name + ' - '
             if i.pro_opponent == 'None':
@@ -310,7 +311,7 @@ def scan_roster(lineup, team, warning, emotes):
     return report
 
 
-def scan_inactives(lineup, team, users):
+def scan_inactives(lineup, team, users, emotes):
     """
     Retrieve a list of players from a given fantasy football league that have a status that indicates they're not playing.
 
@@ -332,17 +333,16 @@ def scan_inactives(lineup, team, users):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
+        if i.slot_position != 'BE' and i.slot_position != 'IR':
             if i.pro_opponent == 'None':
                 count +=1
-                players += ['%s %s - **BYE**' % (i.position, i.name)]
+                if i.position == 'D/ST':
+                    players += ['%s - **BYE**' % (i.name)]
+                else:
+                    players += ['%s %s - **BYE**' % (i.position, i.name)]
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
                 count +=1
-                players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
-        elif i.position == 'D/ST' and i.pro_opponent == 'None':
-            count += 1
-            players += ['%s - **BYE**' % (i.name)]
-            
+                players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]            
 
     inactive_list = ""
     inactives = ""
@@ -351,7 +351,7 @@ def scan_inactives(lineup, team, users):
         inactive_list += "* " + p + "\n"
 
     if count > 0:
-        inactives = ['%s**%s** - **%d**: \n%s \n' % (users[team.team_id], team.team_name, count, inactive_list[:-1])]
+        inactives = ['%s%s**%s** - **%d**: \n%s \n' % (users[team.team_id], emotes[team.team_id], team.team_name, count, inactive_list[:-1])]
     
     return inactives
 
@@ -384,7 +384,7 @@ def get_matchups(league, week=None):
             away_team = '%s**%s** (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
             scores += [home_team.lstrip() + ' vs ' + away_team.lstrip()]
 
-    text = ['__**Matchups:**__ '] + scores + [' ']
+    text = ['__**Matchups:**__ '] + scores + ['']
     if random_phrase == True:
         text += utils.get_random_phrase()
 
@@ -810,7 +810,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = [''] + ['__**Best Possible Scores:**__  [Actual - % of optimal]'] + results + [' ']
+    text = [''] + ['__**Best Possible Scores:**__  [Actual - % of optimal]'] + results + ['']
     return '\n'.join(text)
 
 
@@ -1020,9 +1020,9 @@ def get_trophies(league, extra_trophies, week=None):
             text += over_str
         if under_diff < 0 and low_team.team_name != under_team.team_name:
             text += under_str
-        text += mvp_str + lvp_str + get_lucky_trophy(league, week) + [' ']
+        text += mvp_str + lvp_str + get_lucky_trophy(league, week) + ['']
     else:
-        text += [' ']
+        text += ['']
 
     if random_phrase == True:
         text += utils.get_random_phrase()
@@ -1194,6 +1194,6 @@ def season_trophies(league, extra_trophies):
     smvp_str = ['👍 `Season MVP:` %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
     slvp_str = ['👎 `Season LVP:` %s \n- %s, **%s** with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
  
-    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + [' ']
+    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
 
     return '\n'.join(text)
