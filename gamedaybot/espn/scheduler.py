@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from gamedaybot.espn.env_vars import get_env_vars
@@ -109,4 +110,5 @@ def scheduler():
         ready_text += " SWID and ESPN_S2 not provided."
 
     print(ready_text)
+    logging.info(ready_text)
     sched.start()
