@@ -1087,7 +1087,7 @@ def season_trophies(league, extra_trophies):
             most_moves = moves
             moves_score = str(team.acquisitions) + ' adds' 
             if team.trades > 0: 
-                moves_score += 'and ' + str(team.trades) + ' trades'
+                moves_score += ' and ' + str(team.trades) + ' trades'
             moves_team = team
 
         for score in team.scores:
@@ -1118,7 +1118,7 @@ def season_trophies(league, extra_trophies):
     high_score_pcts = {}
     for team in league.teams:
         score_diff_totals[team] = 0
-        high_score_pcts[team] = 0
+        high_score_pcts[team] = [0,0,0]
 
     starter_counts = get_starter_counts(league)
         
@@ -1127,14 +1127,24 @@ def season_trophies(league, extra_trophies):
         for i in matchups:
             best_score_home = optimal_lineup_score(i.home_lineup, starter_counts)
             score_diff_totals[i.home_team] += best_score_home[2]
-            if best_score_home[3] >= 95:
-                high_score_pcts[i.home_team] += 1
+            score_pct = round(best_score_home[3],6)
+            if 95.00 <= score_pct < 99.00:
+                high_score_pcts[i.home_team][0] +=1
+            elif 99.00 <= score_pct < 100.00:
+                high_score_pcts[i.home_team][1] += 1
+            elif score_pct == 100.00:
+                high_score_pcts[i.home_team][2] += 1
 
             if (i.away_team != 0):
                 best_score_away = optimal_lineup_score(i.away_lineup, starter_counts)
                 score_diff_totals[i.away_team] += best_score_away[2]
-                if best_score_away[3] >= 95:
-                    high_score_pcts[i.away_team] += 1
+                score_pct = round(best_score_away[3],6)
+                if 95.00 <= score_pct < 99.00:
+                    high_score_pcts[i.away_team][0] += 1
+                elif 99.00 <= score_pct < 100.00:
+                    high_score_pcts[i.away_team][1] += 1
+                elif score_pct == 100.00:
+                    high_score_pcts[i.away_team][2] += 1
             
             for p in i.home_lineup:
                 if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
@@ -1182,13 +1192,26 @@ def season_trophies(league, extra_trophies):
     best_score_diff = [value for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1])[:1:]][0]
     best_score_team = [key for key, value in sorted(score_diff_totals.items(), key=lambda item: item[1])[:1:]][0]
 
-    most_high_pcts = [value for key, value in sorted(high_score_pcts.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
-    most_high_team = [key for key, value in sorted(high_score_pcts.items(), key=lambda item: item[1], reverse=True)[:1:]][0]
+    most_high_pcts = 0
+    most_high_team = -1
+    high_pct_points = 0
+    high_pct_str = ''
+    for team in high_score_pcts:
+        high_pcts = high_score_pcts[team][0] + high_score_pcts[team][1] + high_score_pcts[team][2]
+        if high_pcts >= most_high_pcts:
+            pct_points = (high_score_pcts[team][0] * 1) + (high_score_pcts[team][1] * 2) + (high_score_pcts[team][2] * 3)
+            if (high_pcts > most_high_pcts) or (high_pcts == most_high_pcts and pct_points > high_pct_points):
+                most_high_pcts = high_pcts
+                high_pct_points = pct_points
+                most_high_team = team
+                high_pct_str = ('%d weeks' % high_pcts)
+                if high_score_pcts[team][2] > 0:
+                    high_pct_str += (' (%d 100%% weeks)' % high_score_pcts[team][2])
 
     moves_str = ['🔀 `Most Moves:` %s \n- **%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
     score_str = ['👑 `Highest Score:` %s \n- **%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
     bsd_str = ['🪑 `Best Benching:` %s \n- **%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
-    hpt_str = ['🎯 `Most Efficient:` %s \n- **%s** scored >95%% of their best possible score on %d weeks' % (emotes[most_high_team.team_id], most_high_team.team_name, most_high_pcts)]
+    hpt_str = ['🎯 `Most Efficient:` %s \n- **%s** scored >95%% of their best possible score on %s' % (emotes[most_high_team.team_id], most_high_team.team_name, high_pct_str)]
     mvp_str = ['🌟 `Best Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_week, mvp_team.team_abbrev, mvp_score)]
     lvp_str = ['💩 `Worst Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_week, lvp_team.team_abbrev, lvp_score)]
     smvp_str = ['👍 `Season MVP:` %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
