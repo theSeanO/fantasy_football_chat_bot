@@ -3,7 +3,7 @@ import pytest
 import sys
 import os
 sys.path.insert(1, os.path.abspath('.'))
-import gamedaybot.utils as utils
+import gamedaybot.utils.util as util
 
 
 class TestUtils:
@@ -13,7 +13,7 @@ class TestUtils:
         expected_output = True
 
         # Act
-        actual_output = utils.str_to_bool(s)
+        actual_output = util.str_to_bool(s)
 
         # Assert
         assert actual_output == expected_output
@@ -24,7 +24,7 @@ class TestUtils:
         expected_output = False
 
         # Act
-        actual_output = utils.str_to_bool(s)
+        actual_output = util.str_to_bool(s)
 
         # Assert
         assert actual_output == expected_output
@@ -35,7 +35,7 @@ class TestUtils:
         expected_output = False
 
         # Act
-        actual_output = utils.str_to_bool(s)
+        actual_output = util.str_to_bool(s)
 
         # Assert
         assert actual_output == expected_output
@@ -47,7 +47,7 @@ class TestUtils:
         expected_output = [s]
 
         # Act
-        actual_output = utils.str_limit_check(s, limit)
+        actual_output = util.str_limit_check(s, limit)
 
         # Assert
         assert actual_output == expected_output
@@ -59,7 +59,7 @@ class TestUtils:
         expected_output = [s]
 
         # Act
-        actual_output = utils.str_limit_check(s, limit)
+        actual_output = util.str_limit_check(s, limit)
 
         # Assert
         assert actual_output == expected_output
@@ -81,7 +81,7 @@ class TestUtils:
             "Adam's Injuried Meatsaber \nADDED TE Evan Engram ($20)\nDROPPED TE Foster Moreau\n\nPAIN TRAIN \nADDED D/ST Chiefs D/ST ($6)\nDROPPED D/ST Ravens D/ST"]
 
         # Act
-        actual_output = utils.str_limit_check(s, limit)
+        actual_output = util.str_limit_check(s, limit)
 
         # Assert
         assert actual_output == expected_output
@@ -92,7 +92,7 @@ class TestUtils:
         expected_output = datetime(2022, 12, 14)
 
         # Act
-        actual_output = utils.str_to_datetime(date_str)
+        actual_output = util.str_to_datetime(date_str)
 
         # Assert
         assert actual_output == expected_output
@@ -103,7 +103,7 @@ class TestUtils:
 
         # Act and Assert
         with pytest.raises(ValueError):
-            utils.str_to_datetime(date_str)
+            util.str_to_datetime(date_str)
 
     def test_str_to_datetime_invalid_date(self):
         # Arrange
@@ -111,7 +111,7 @@ class TestUtils:
 
         # Act and Assert
         with pytest.raises(ValueError):
-            utils.str_to_datetime(date_str)
+            util.str_to_datetime(date_str)
 
     def test_str_to_datetime_invalid_month(self):
         # Arrange
@@ -119,7 +119,7 @@ class TestUtils:
 
         # Act and Assert
         with pytest.raises(ValueError):
-            utils.str_to_datetime(date_str)
+            util.str_to_datetime(date_str)
 
     def test_currently_in_season(self):
         # Arrange
@@ -129,7 +129,7 @@ class TestUtils:
         expected_output = True
 
         # Act
-        actual_output = utils.currently_in_season(start_date, end_date, current_date)
+        actual_output = util.currently_in_season(start_date, end_date, current_date)
 
         # Assert
         assert actual_output == expected_output
@@ -142,7 +142,7 @@ class TestUtils:
         expected_output = False
 
         # Act
-        actual_output = utils.currently_in_season(start_date, end_date, current_date)
+        actual_output = util.currently_in_season(start_date, end_date, current_date)
 
         # Assert
         assert actual_output == expected_output
@@ -155,7 +155,7 @@ class TestUtils:
         expected_output = False
 
         # Act
-        actual_output = utils.currently_in_season(start_date, end_date, current_date)
+        actual_output = util.currently_in_season(start_date, end_date, current_date)
 
         # Assert
         assert actual_output == expected_output
@@ -168,7 +168,7 @@ class TestUtils:
         expected_output = True
 
         # Act
-        actual_output = utils.currently_in_season(start_date, end_date, current_date)
+        actual_output = util.currently_in_season(start_date, end_date, current_date)
 
         # Assert
         assert actual_output == expected_output
@@ -181,7 +181,7 @@ class TestUtils:
         expected_output = True
 
         # Act
-        actual_output = utils.currently_in_season(start_date, end_date, current_date)
+        actual_output = util.currently_in_season(start_date, end_date, current_date)
 
         # Assert
         assert actual_output == expected_output
