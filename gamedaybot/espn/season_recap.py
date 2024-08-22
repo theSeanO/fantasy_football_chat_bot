@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.insert(1, os.path.abspath('.'))
 import gamedaybot.espn.functionality as espn
-import env_vars
+import gamedaybot.espn.env_vars as env_vars
 
 def season_trophies(league, extra_trophies):
     """

@@ -1,6 +1,6 @@
 from datetime import date
 import gamedaybot.utils.util as util
-import env_vars
+import gamedaybot.espn.env_vars as env_vars
 
 random_phrase = env_vars.get_random_phrase()
 
@@ -813,10 +813,11 @@ def optimal_team_scores(league, week=None):
     text = [''] + ['__**Best Possible Scores:**__  [Actual - % of optimal]'] + results + ['']
     return '\n'.join(text)
 
-def get_achievers_trophy(league, week=None):
+def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
     """
     This function returns the overachiever and underachiever of the league
-    based on the difference between the projected score and the actual score.
+    based on the difference between the projected score and the actual score,
+    only if the over/under achievers are not the same as the highest/lowest scorers, respectively.
 
     Parameters
     ----------
@@ -833,8 +834,7 @@ def get_achievers_trophy(league, week=None):
 
     box_scores = league.box_scores(week=week)
     emotes = env_vars.split_emotes(league)
-    high_achiever_str = ['📈 `Overachiever:`']
-    low_achiever_str = ['📉 `Underachiever:`']
+    achiever_str = []
     best_performance = -9999
     worst_performance = 9999
     for i in box_scores:
@@ -856,17 +856,13 @@ def get_achievers_trophy(league, week=None):
                 worst_performance = away_performance
                 under_achiever = i.away_team
 
-    if best_performance > 0:
-        high_achiever_str += ['%s \n- **%s** was %.2f points over their projection' % (emotes[over_achiever.team_id], over_achiever.team_name, best_performance)]
-    else:
-        high_achiever_str += ['\n- No team out performed their projection']
+    if best_performance > 0 and over_achiever.team_id != high_team_id:
+        achiever_str += ['📈 `Overachiever:` %s \n- **%s** was %.2f points over their projection' % (emotes[over_achiever.team_id], over_achiever.team_name, best_performance)]
 
-    if worst_performance < 0:
-        low_achiever_str += ['%s \n- **%s** was %.2f points under their projection' % (emotes[under_achiever.team_id], under_achiever.team_name, abs(worst_performance))]
-    else:
-        low_achiever_str += ['\n- No team was worse than their projection']
+    if worst_performance < 0 and under_achiever.team_id != low_team_id:
+        achiever_str += ['📉 `Underachiever:` %s \n- **%s** was %.2f points under their projection' % (emotes[under_achiever.team_id], under_achiever.team_name, abs(worst_performance))]
 
-    return (high_achiever_str + low_achiever_str)
+    return achiever_str
 
 
 def get_weekly_score_with_win_loss(league, week=None):
@@ -1065,7 +1061,7 @@ def get_trophies(league, extra_trophies, week=None):
     text = ['__**Trophies of the week:**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
-        text += get_mvp_trophies(league, week) + get_lucky_trophy(league, week) + get_achievers_trophy(league, week) + ['']
+        text += get_achievers_trophy(league, low_team.team_id, high_team.team_id, week) + get_lucky_trophy(league, week) + get_mvp_trophies(league, week) + ['']
     else:
         text += ['']
 

@@ -5,7 +5,7 @@ sys.path.insert(1, os.path.abspath('.'))
 from espn_api.football import League
 import gamedaybot.espn.season_recap as recap
 import gamedaybot.espn.functionality as espn
-import gamedaybot.utils.util as util
+from gamedaybot.chat.discord import Discord
 from gamedaybot.espn.env_vars import get_env_vars
 
 data = get_env_vars()
@@ -33,22 +33,19 @@ except KeyError:
     year = 2024
 
 try:
-    top_half_scoring = util.str_to_bool(data['top_half_scoring'])
-except KeyError:
-    top_half_scoring = False
-
-try:
     warning = int(data['score_warn'])
 except KeyError:
     warning = 0
 
 league = League(league_id, year)
+# discord_bot = Discord(data['discord_webhook_url'])
+# discord_bot.send_message('test')
 
 print(espn.get_matchups(league) + '\n')
 print(espn.get_scoreboard_short(league) + '\n')
 print(espn.get_projected_scoreboard(league) + '\n')
 print(espn.get_close_scores(league) + '\n')
-print(espn.get_standings(league, top_half_scoring) + '\n')
+print(espn.get_standings(league) + '\n')
 print(espn.optimal_team_scores(league) + '\n')
 print(espn.combined_power_rankings(league) + '\n')
 print(espn.get_monitor(league, warning) + '\n')
@@ -58,5 +55,5 @@ if swid != '{1}' and espn_s2 != '1':
     faab = league.settings.faab
     print(espn.get_waiver_report(league, faab))
 # print(recap.win_matrix(league) + '\n')
-# print(recap.season_trophies(league, extra_trophies) + '\n')
+# print(recap.season_trophies(league, True) + '\n')
 
