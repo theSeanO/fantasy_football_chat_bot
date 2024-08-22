@@ -297,6 +297,11 @@ def scan_roster(lineup, team, warning, emotes):
             elif i.projected_points <= warning:
                 player += '**' + str(i.projected_points) + ' pts**'
             players += [player]
+        if i.slot_position == 'IR':
+            if i.game_played == 0 and (i.injuryStatus == 'ACTIVE' or i.injuryStatus == 'NORMAL'):
+                if i.projected_points > 0.0:
+                    count += 1
+                    players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
                 
     list = ""
     report = ""
@@ -313,7 +318,8 @@ def scan_roster(lineup, team, warning, emotes):
 
 def scan_inactives(lineup, team, users, emotes):
     """
-    Retrieve a list of players from a given fantasy football league that have a status that indicates they're not playing.
+    Retrieve a list of players from a given fantasy football league that have a status that indicates they're not playing 
+    or if a player is on a team's IR but is eligible for play.
 
     Parameters
     ----------
@@ -342,7 +348,12 @@ def scan_inactives(lineup, team, users, emotes):
                     players += ['%s %s - **BYE**' % (i.position, i.name)]
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
                 count +=1
-                players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]            
+                players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
+        if i.slot_position == 'IR':
+            if i.game_played == 0 and (i.injuryStatus == 'ACTIVE' or i.injuryStatus == 'NORMAL'):
+                if i.projected_points > 0.0:
+                    count += 1
+                    players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
 
     inactive_list = ""
     inactives = ""
@@ -495,12 +506,12 @@ def get_waiver_report(league, faab=False):
 
 def combined_power_rankings(league, week=None):
     """
-    This function returns the power rankings of the teams in the league for a specific week.
+    This function returns the power rankings of the teams in the league for a specific week,
+    along with the change in power ranking number and playoff percentage from the previous week.
     If the week is not provided, it defaults to the current week.
     The power rankings are determined using a 2 step dominance algorithm,
     as well as a combination of points scored and margin of victory.
     It's weighted 80/15/5 respectively.
-    It also runs and adds the simulated record to the list.
 
     Parameters
     ----------
@@ -512,30 +523,59 @@ def combined_power_rankings(league, week=None):
     Returns
     -------
     str
-        A string representing the power rankings
+        A string representing the power rankings with changes from the previous week, playoff change, and simulated records
     """
 
     emotes = env_vars.split_emotes(league)
-    if not week:
-        week = league.current_week
 
-    pr = league.power_rankings(week=week)
+    # Check if the week is provided, if not use the previous week
+    if not week:
+        week = league.current_week - 1
+
+    p_rank_up_emoji = "🟢"
+    p_rank_down_emoji = "🔻"
+    p_rank_same_emoji = "🟰"
+
+    # Get the power rankings for the previous 2 weeks
+    current_rankings = league.power_rankings(week=week)
+    previous_rankings = league.power_rankings(week=week-1) if week > 1 else []
+
+    # Normalize the scores
+    def normalize_rankings(rankings):
+        if not rankings:
+            return []
+        max_score = max(float(score) for score, _ in rankings)
+        return [(f"{99.99 * float(score) / max_score:.2f}", team) for score, team in rankings]
+    
+    normalized_current_rankings = normalize_rankings(current_rankings)
+    normalized_previous_rankings = normalize_rankings(previous_rankings)
+
+    # Convert normalized previous rankings to a dictionary for easy lookup
+    previous_rankings_dict = {team.team_abbrev: score for score, team in normalized_previous_rankings}
+
     sr = sim_record(league, week=week-1)
 
-    ranks = []
+    # Prepare the output string
+    rankings_text = ['__**Power Rankings:**__ [PR Points (%Change) | Playoff Chance | Simulated Record]']
     pos = 1
+    for normalized_current_score, current_team in normalized_current_rankings:
+        team_abbrev = current_team.team_abbrev
+        rank_change_text = ''
 
-    for i in pr:
-        if i:
-            ranks += ['%s: %s%s `[%s | %.1f%% | %s]`' % (pos, emotes[i[1].team_id], i[1].team_name, i[0], i[1].playoff_pct, sr[i[1]][0])]
+        # Check if the team was present in the normalized previous rankings
+        if team_abbrev in previous_rankings_dict:
+            previous_score = previous_rankings_dict[team_abbrev]
+            rank_change_percent = ((float(normalized_current_score) - float(previous_score)) / float(previous_score)) * 100
+            rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
+            rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):.1f}%)"
+
+        rankings_text.append(f"{pos}: {emotes[current_team.team_id]}{current_team.team_name} [{normalized_current_score}{rank_change_text} | {current_team.playoff_pct:.1f}% | {sr[current_team][0]}]")
         pos += 1
 
-    text = [''] + ['__**Power Rankings:**__ [PR points | Playoff Chance | Simulated Record]'] + ranks + ['']
-
     if random_phrase == True:
-        text += util.get_random_phrase()
-
-    return '\n'.join(text)
+        rankings_text += [''] + util.get_random_phrase()
+    
+    return '\n'.join(rankings_text)
 
 
 def sim_record(league, week=None):
