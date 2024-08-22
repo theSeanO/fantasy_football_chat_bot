@@ -190,7 +190,7 @@ def espn_bot(function):
             # do nothing here, empty init message
             pass
     else:
-        text = "Something happened. HALP"
+        text = "Something bad happened. HALP"
 
     logger.debug(data)
     if text != '' and not test:
@@ -202,5 +202,6 @@ def espn_bot(function):
 
 if __name__ == '__main__':
     from gamedaybot.espn.scheduler import scheduler
+
     espn_bot("init")
     scheduler()
