@@ -23,7 +23,6 @@ def get_scoreboard_short(league, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    # Gets current week's scoreboard
     box_scores = league.box_scores(week=week)
     score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
                                     i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
@@ -56,7 +55,6 @@ def get_projected_scoreboard(league, week=None):
         contains information about a single game, including the teams and their projected scores.
     """
 
-    # Gets current week's scoreboard projections
     box_scores = league.box_scores(week=week)
     score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
                                     i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
@@ -212,6 +210,7 @@ def get_inactives(league, week=None):
     str
         A string containing the list of inactive players, formatted as a list of player names and status.
     """
+    
     users = env_vars.split_users(league)
     emotes = env_vars.split_emotes(league)
     box_scores = league.box_scores(week=week)
@@ -365,7 +364,6 @@ def get_matchups(league, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    # Gets current week's Matchups
     matchups = league.box_scores(week=week)
     scores = []
 
@@ -502,7 +500,7 @@ def combined_power_rankings(league, week=None):
     Returns
     -------
     str
-        A string representing the power rankings with changes from the previous week, playoff change, and simulated records
+        A string representing the power rankings with changes from the previous week, playoff chance, and simulated records
     """
 
     emotes = env_vars.split_emotes(league)
@@ -921,6 +919,7 @@ def get_lucky_trophy(league, week=None):
     Returns:
     list: A list containing the lucky and unlucky teams, along with their records for the week.
     """
+
     weekly_scores = get_weekly_score_with_win_loss(league, week=week)
     emotes = env_vars.split_emotes(league)
     losses = 0
@@ -949,7 +948,7 @@ def get_lucky_trophy(league, week=None):
     unlucky_str = ['💀 `Unlucky:` %s \n- **%s** was %s against the league, but still took an L' % (emotes[unlucky_team.team_id], unlucky_team.team_name, unlucky_record)]
     return (lucky_str + unlucky_str)
 
-def get_mvp_trophies(league, week=None):
+def get_mvp_trophy(league, week=None):
     """
     This function returns the weekly most valuable and least valuable players,
     determined by algorithm of: (actual score - projected score)/projected score
@@ -1102,7 +1101,7 @@ def get_trophies(league, extra_trophies, week=None):
     text = ['__**Trophies of the week:**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
-        text += get_achievers_trophy(league, low_team.team_id, high_team.team_id, week) + get_lucky_trophy(league, week) + get_mvp_trophies(league, week) + ['']
+        text += get_achievers_trophy(league, low_team.team_id, high_team.team_id, week) + get_lucky_trophy(league, week) + get_mvp_trophy(league, week) + ['']
     else:
         text += ['']
 
