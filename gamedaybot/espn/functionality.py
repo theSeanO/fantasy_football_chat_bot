@@ -297,11 +297,12 @@ def scan_roster(lineup, team, warning, emotes):
             elif i.projected_points <= warning:
                 player += '**' + str(i.projected_points) + ' pts**'
             players += [player]
-        if i.slot_position == 'IR':
-            if i.game_played == 0 and (i.injuryStatus == 'ACTIVE' or i.injuryStatus == 'NORMAL'):
-                if i.projected_points > 0.0:
-                    count += 1
-                    players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
+            
+        if i.slot_position == 'IR' and \
+            i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
+
+            count += 1
+            players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
                 
     list = ""
     report = ""
@@ -349,11 +350,12 @@ def scan_inactives(lineup, team, users, emotes):
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
                 count +=1
                 players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
-        if i.slot_position == 'IR':
-            if i.game_played == 0 and (i.injuryStatus == 'ACTIVE' or i.injuryStatus == 'NORMAL'):
-                if i.projected_points > 0.0:
-                    count += 1
-                    players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
+
+        if i.slot_position == 'IR' and \
+            i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
+
+            count += 1
+            players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
 
     inactive_list = ""
     inactives = ""
