@@ -422,7 +422,7 @@ def get_close_scores(league, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    # Gets current closest scores (15.999 points or closer)
+    # Gets current closest scores (10.999 points or closer)
     box_scores = league.box_scores(week=week)
     score = []
 
@@ -1061,10 +1061,12 @@ def get_trophies(league, extra_trophies, week=None):
     closest_score = 9999
     close_winner = -1
     close_loser = -1
+    close_emotes = ''
 
     biggest_blowout = -1
     blown_out_team = -1
     ownerer_team = -1
+    blowout_emotes = ''
 
     for i in matchups:
         if i.home_score > high_score:
@@ -1098,11 +1100,16 @@ def get_trophies(league, extra_trophies, week=None):
             else:
                 ownerer_team = i.away_team
                 blown_out_team = i.home_team
+        
+        if emotes[1]:
+            close_emotes = '%s> %s' % (emotes[close_winner.team_id], emotes[close_loser.team_id])
+            blowout_emotes = '%s< %s' % (emotes[blown_out_team.team_id], emotes[ownerer_team.team_id])
+        
 
     high_score_str = ['👑 `Highest score:` %s \n- **%s** with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
     low_score_str = ['💩 `Lowest score:` %s \n- **%s** with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
-    close_score_str = ['🧊 `Closest Win:` %s > %s \n- **%s** barely beat **%s** by a margin of %.2f' % (emotes[close_winner.team_id], emotes[close_loser.team_id], close_winner.team_name, close_loser.team_name, closest_score)]
-    blowout_str = ['💥 `Biggest Loss:` %s < %s \n- **%s** got blown out by **%s** by a margin of %.2f' % (emotes[blown_out_team.team_id], emotes[ownerer_team.team_id], blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
+    close_score_str = ['🧊 `Closest Win:` %s \n- **%s** barely beat **%s** by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
+    blowout_str = ['💥 `Biggest Loss:` %s \n- **%s** got blown out by **%s** by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
 
     text = ['__**Trophies of the week:**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
 
