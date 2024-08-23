@@ -50,6 +50,7 @@ print(espn.optimal_team_scores(league) + '\n')
 print(espn.combined_power_rankings(league) + '\n')
 print(espn.get_monitor(league, warning) + '\n')
 print(espn.get_inactives(league) + '\n')
+print(espn.get_trophies(league, True) + '\n')
 if swid != '{1}' and espn_s2 != '1':
     league = League(league_id, year, espn_s2, swid)
     faab = league.settings.faab
