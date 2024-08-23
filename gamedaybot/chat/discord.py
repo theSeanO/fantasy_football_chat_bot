@@ -57,7 +57,7 @@ class Discord(object):
 
         message = ">>> {0}".format(text)
         template = {
-            "content": message  # limit 3000 chars
+            "content": message  # limit 2000 chars
         }
 
         headers = {'content-type': 'application/json'}
