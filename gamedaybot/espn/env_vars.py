@@ -1,5 +1,4 @@
 import os
-import gamedaybot.espn.functionality as espn
 import gamedaybot.utils.util as util
 
 
