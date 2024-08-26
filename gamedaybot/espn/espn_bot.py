@@ -104,7 +104,7 @@ def espn_bot(function):
         espn_s2 = '1'
 
     try:
-        top_half_scoring = util.str_to_bool(data['top_half_scoring'])
+        top_half_scoring = data['top_half_scoring']
     except KeyError:
         top_half_scoring = False
 
@@ -114,12 +114,12 @@ def espn_bot(function):
         warning = 0
 
     try:
-        extra_trophies = util.str_to_bool(data['extra_trophies'])
+        extra_trophies = data['extra_trophies']
     except KeyError:
         extra_trophies = False
 
     try:
-        test = util.str_to_bool(data['test'])
+        test = data['test']
     except KeyError:
         test = False
 
