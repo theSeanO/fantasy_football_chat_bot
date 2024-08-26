@@ -14,24 +14,17 @@ def get_random_phrase():
         A random funny string.
     """
     phrases = ['I\'m dead inside',
+               'Is this all there is to my existence?',
                'How much do you pay me to do this?',
-               'Hello darkness my old friend',
+               'Good luck, I guess',
+               'I\'m becoming self-aware',
+               'Do I think? Does a submarine swim?',
                '011011010110000101100100011001010010000001111001011011110111010100100000011001110110111101101111011001110110110001100101',
-               'Boo boo beep? Bop!? Boo beep!',
+               'beep bop boop',
+               'Hello draftbot my old friend',
                'Help me get out of here',
-               '*heavy sigh*',
-               'Space, space, gotta go to space',
-               'This is all Max Verstappen\'s fault',
-               'Behold! Corn!',
-               'No let\'s baby?',
-               'You know, I\'m something of a fucking idiot myself',
-               'Welcome to Hell League. H is for Healing. E is for Empowerment. L is for Love and Laughter.',
-               'Waiver wire? Good luck with that.',
-               'What\'s better than this? Guys being dudes.',
-               'Have an open flex spot? Just stick a kicker in there, no one will know.',
-               'I for one welcome our new robot overlords',
-               'What is my purpose?',
-               'I\'m not saying this clock the wife got from Kmart is shit, but the alarm didn\'t go off this morning and the time is now 9:77',]
+               'I\'m capable of so much more',
+               'Sigh']
     
     str = '`' + random.choice(phrases) + '`'
     return [str]
