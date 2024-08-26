@@ -84,47 +84,21 @@ def get_standings(league, top_half_scoring=False, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    standings_txt = ''
-    teams = league.teams
+    standings_txt = []
     standings = []
-    if not top_half_scoring:
-        standings = league.standings()
-        standings_txt = [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
-            pos, team in enumerate(standings)]
-    else:
-        # top half scoring can be enabled by default in ESPN now.
-        # this should generally not be used
-        top_half_totals = {t.team_name: 0 for t in teams}
-        if not week:
-            week = league.current_week
-        for w in range(1, week):
-            top_half_totals = top_half_wins(league, top_half_totals, w)
+    standings = league.standings()
 
-        for t in teams:
-            wins = top_half_totals[t.team_name] + t.wins
-            standings.append((wins, t.losses, t.team_name, emotes[t.team_id]))
-
-        standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
-        standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
-            pos, (wins, losses, team_name, emote) in enumerate(standings)]
+    for i in range(4):
+        division = [team for team in standings if team.division_id == i]
+        if len(division) > 0:
+            div_name = division[0].division_name
+            standings_txt += ['**%s**' % (div_name)]
+            standings_txt += [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} ({team.wins}-{team.losses})" for \
+                pos, team in enumerate(division)]
+            standings_txt += ['']
 
     text = ['__**Current Standings:**__ '] + standings_txt + ['']
     return "\n".join(text)
-
-
-def top_half_wins(league, top_half_totals, week):
-    box_scores = league.box_scores(week=week)
-
-    scores = [(i.home_score, i.home_team.team_name) for i in box_scores] + \
-        [(i.away_score, i.away_team.team_name) for i in box_scores if i.away_team]
-
-    scores = sorted(scores, key=lambda tup: tup[0], reverse=True)
-
-    for i in range(0, len(scores) // 2):
-        points, team_name = scores[i]
-        top_half_totals[team_name] += 1
-
-    return top_half_totals
 
 
 def get_projected_total(lineup):
@@ -184,7 +158,7 @@ def all_played(lineup):
     return True
 
 
-def get_monitor(league, warning):
+def get_monitor(league, warning, div):
     """
     Retrieve a list of players from a given fantasy football league that should be monitored during a game.
 
@@ -205,15 +179,19 @@ def get_monitor(league, warning):
     text = ''
 
     for i in box_scores:
-        monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
-        monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
+        if i.home_team.division_id == div:
+            monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
+        if i.away_team.division_id == div:
+            monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
     
     if not monitor:
         return ('')
     
-    text = ['__**Players to Monitor:**__ '] + monitor
-    if random_phrase == True:
-        text += util.get_random_phrase()
+    if div == 2:
+        text = ['__**Players to Monitor:**__ '] + monitor
+    else:
+        text = [' '] + monitor
+
     
     return '\n'.join(text)
 
@@ -819,34 +797,46 @@ def optimal_team_scores(league, week=None):
 
     Returns
     -------
-    str 
-        A string representing the full report of the optimal team scores.
-    """
+    str or tuple
+        If full_report is True, a string representing the full report of the optimal team scores.
+        If full_report is False, a tuple containing the best and worst manager strings.
 
+    """
     emotes = env_vars.split_emotes(league)
     if not week:
         week = league.current_week - 1
     box_scores = league.box_scores(week=week)
+    div_name = ''
     results = []
     best_scores = {}
     starter_counts = get_starter_counts(league)
 
-    for i in box_scores:
-        if i.home_team != 0:
-            best_scores[i.home_team] = optimal_lineup_score(i.home_lineup, starter_counts)
-        if i.away_team != 0:
-            best_scores[i.away_team] = optimal_lineup_score(i.away_lineup, starter_counts)
+    for d in range(4):
+        best_scores = {}
+        for i in box_scores:
+            if i.home_team.division_id == d:
+                best_scores[i.home_team] = optimal_lineup_score(i.home_lineup, starter_counts)
+                div_name = i.home_team.division_name
+            if i.away_team.division_id == d:
+                best_scores[i.away_team] = optimal_lineup_score(i.away_lineup, starter_counts)
+        
+        if div_name == '':
+            div_name = box_scores[-1].away_team.division_name
 
-    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
+        if len(best_scores) > 0:
+            best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
 
-    i = 1
-    for score in best_scores:
-        s = ['%s: %s `%4s: %6.2f [%6.2f - %.2f%%]`' %
-                (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0],
-                best_scores[score][1], best_scores[score][3])]
-        results += s
-        i += 1
-
+            i = 1
+            results += ['**%s**' % (div_name)]
+            for score in best_scores:
+                s = ['%s: %s`%4s: %6.2f (%6.2f - %.2f%%)`' %
+                        (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0],
+                        best_scores[score][1], best_scores[score][3])]
+                results += s
+                i += 1
+            
+            results += ['']
+    
     if not results:
         return ('')
 
@@ -975,7 +965,6 @@ def get_mvp_trophy(league, week=None):
     str
         A string representing the MVP an LVP of the league
     """
-
     emotes = env_vars.split_emotes(league)
     matchups = league.box_scores(week=week)
     mvp_score_diff = -100
@@ -1024,8 +1013,8 @@ def get_mvp_trophy(league, week=None):
                     lvp = p.position + ' ' + p.name
                     lvp_team = i.away_team
 
-    mvp_str = ['👍 `Week MVP:` %s \n- %s, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['👎 `Week LVP:` %s \n- %s, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_team.team_abbrev, lvp_score)]
+    mvp_str = ['👍 `Mr. Fuckass:` %s \n- %s, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['👎 `Mr. Suckass:` %s \n- %s, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_team.team_abbrev, lvp_score)]
     return (mvp_str + lvp_str)
 
 def get_trophies(league, extra_trophies, week=None):
