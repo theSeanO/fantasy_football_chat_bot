@@ -301,7 +301,7 @@ def scan_roster(lineup, team, warning, emotes):
             i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
             count += 1
-            players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
+            players += ['%s %s - **Not IR eligible**, %d pts' % (i.position, i.name, i.projected_points)]
                 
     list = ""
     report = ""
@@ -354,7 +354,7 @@ def scan_inactives(lineup, team, users, emotes):
             i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
             count += 1
-            players += ['%s %s - **Not on IR**, %d pts' % (i.position, i.name, i.projected_points)]
+            players += ['%s %s - **Not IR eligible**, %d pts' % (i.position, i.name, i.projected_points)]
 
     inactive_list = ""
     inactives = ""
@@ -568,7 +568,7 @@ def combined_power_rankings(league, week=None):
             rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
             rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):.1f}%)"
 
-        rankings_text.append(f"{pos}: {emotes[current_team.team_id]}{current_team.team_name} [{normalized_current_score}{rank_change_text} | {current_team.playoff_pct:.1f}% | {sr[current_team][0]}]")
+        rankings_text.append(f"{pos}: {emotes[current_team.team_id]}`{current_team.team_abbrev:4s} [{normalized_current_score}{rank_change_text} | {current_team.playoff_pct:.1f}% | {sr[current_team][0]}]`")
         pos += 1
 
     if random_phrase == True:
