@@ -29,7 +29,7 @@ def get_scoreboard_short(league, week=None):
              if i.away_team]
 
     if week == league.current_week - 1:
-        text = ['__**Final Score Update:**__ ']
+        text = ['__**Final Score Update**__ ']
     else:
         text = ['__**Score Update**__']
     
@@ -60,7 +60,7 @@ def get_projected_scoreboard(league, week=None):
                                     i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team]
 
-    text = ['__**Approximate Projected Scores**__'] + score
+    text = ['__**Projected Scores**__'] + score
     return '\n'.join(text)
 
 
@@ -108,7 +108,7 @@ def get_standings(league, top_half_scoring=False, week=None):
         standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
 
-    text = ['__**Current Standings:**__ '] + standings_txt + ['']
+    text = ['__**Current Standings**__ '] + standings_txt + ['']
     return "\n".join(text)
 
 
@@ -211,7 +211,7 @@ def get_monitor(league, warning):
     if not monitor:
         return ('')
     
-    text = ['__**Players to Monitor:**__ '] + monitor
+    text = ['__**Players to Monitor**__ '] + monitor
     if random_phrase == True:
         text += util.get_random_phrase()
     
@@ -246,7 +246,7 @@ def get_inactives(league, week=None):
     if not inactives:
         return ('')
 
-    text = ['__**Inactive Players:**__ '] + inactives
+    text = ['__**Inactive Players**__ '] + inactives
     if random_phrase == True:
         text += util.get_random_phrase()
 
@@ -395,7 +395,7 @@ def get_matchups(league, week=None):
             away_team = '%s**%s** (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
             scores += [home_team.lstrip() + ' vs ' + away_team.lstrip()]
 
-    text = ['__**Matchups:**__ '] + scores + ['']
+    text = ['__**Matchups**__ '] + scores + ['']
     if random_phrase == True:
         text += util.get_random_phrase()
 
@@ -425,10 +425,10 @@ def get_close_scores(league, week=None):
 
     for i in box_scores:
         if i.away_team:
-            # away_projected = get_projected_total(i.away_lineup)
-            # home_projected = get_projected_total(i.home_lineup)
-            diffScore = i.away_projected - i.home_projected
-            if (-11 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 11 and not all_played(i.home_lineup)):
+            away_projected = get_projected_total(i.away_lineup)
+            home_projected = get_projected_total(i.home_lineup)
+            diffScore = away_projected - home_projected
+            if (abs(diffScore) <= 11 and (not all_played(i.away_lineup) or not all_played(i.home_lineup))):
                 score += ['%s`%4s %6.2f - %6.2f %4s`%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
                                                  i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
     if not score:
@@ -495,7 +495,7 @@ def get_waiver_report(league, faab=False):
     if not report:
         return ''
         
-    text = ['__**Waiver Report %s:**__' % today] + report + ['']
+    text = ['__**Waiver Report %s**__' % today] + report + ['']
 
     if random_phrase == True:
         text += util.get_random_phrase()
@@ -555,7 +555,7 @@ def combined_power_rankings(league, week=None):
     sr = sim_record(league, week=week-1)
 
     # Prepare the output string
-    rankings_text = ['__**Power Rankings:**__ [PR Points (%Change) | Simulated Record]']
+    rankings_text = ['__**Power Rankings**__ [PR Points (%Change) | Simulated Record]']
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
         team_abbrev = current_team.team_abbrev
@@ -851,7 +851,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = [''] + ['__**Best Possible Scores:**__  [Actual - % of optimal]'] + results + ['']
+    text = [''] + ['__**Best Possible Scores**__  [Actual - % of optimal]'] + results + ['']
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
@@ -1109,7 +1109,7 @@ def get_trophies(league, extra_trophies, week=None):
     close_score_str = ['🧊 `Closest Win:` %s \n- **%s** barely beat **%s** by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
     blowout_str = ['💥 `Biggest Loss:` %s \n- **%s** got blown out by **%s** by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
 
-    text = ['__**Trophies of the week:**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
+    text = ['__**Trophies of the week**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
         text += get_achievers_trophy(league, low_team.team_id, high_team.team_id, week) + get_lucky_trophy(league, week) + get_mvp_trophy(league, week) + ['']
