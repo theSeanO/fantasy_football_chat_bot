@@ -193,7 +193,7 @@ def season_trophies(league, extra_trophies):
     smvp_str = ['👍 `Season Fuckass:` %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
     slvp_str = ['👎 `Season Suckass:` %s \n- %s, **%s** with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
  
-    text = ['__**End of Season Awards:**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
+    text = ['__**End of Season Awards**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
 
     return '\n'.join(text)
 
