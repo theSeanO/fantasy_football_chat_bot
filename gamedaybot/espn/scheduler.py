@@ -94,7 +94,7 @@ def scheduler():
             timezone=my_timezone, replace_existing=True)  
 
     if data['daily_waiver']:
-        sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
+        sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='daily_waiver',
             day_of_week='mon,tue,thu,fri,sat,sun', hour=7, minute=31, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)        
 
