@@ -69,12 +69,8 @@ def scheduler():
         day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_monitor_1'], id='monitor1',
+    sched.add_job(espn_bot, 'cron', ['get_monitor'], id='monitor',
         day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=my_timezone, replace_existing=True)
-    
-    sched.add_job(espn_bot, 'cron', ['get_monitor_2'], id='monitor2',
-        day_of_week='fri', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'cron', ['get_inactives'], id='inactives',

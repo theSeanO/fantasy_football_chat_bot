@@ -148,10 +148,6 @@ def espn_bot(function):
         # text = text + "\n\n" + espn.get_projected_scoreboard(league)
     elif function == "get_monitor":
         text = espn.get_monitor(league, warning)
-    elif function == "get_monitor_1":
-        text = espn.get_monitor(league, warning, 2)
-    elif function == "get_monitor_2":
-        text = espn.get_monitor(league, warning, 3)
     elif function == "get_inactives":
         text = espn.get_inactives(league)
     elif function == "get_scoreboard_short":
