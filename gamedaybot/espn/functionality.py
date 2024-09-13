@@ -589,10 +589,8 @@ def sim_record(league, week=None):
     list: A list containing the head-to-head records for the week.
     """
 
-    lastWeek= league.current_week
-
-    if week:
-        lastWeek = week
+    if not week:
+        week = league.current_week - 1
 
     records = {}
     weekly_records = {}
@@ -601,7 +599,7 @@ def sim_record(league, week=None):
         records[t] = ''
         weekly_records[t] = [0,0,0]
 
-    for i in range(lastWeek):
+    for i in range(week):
         weekNumber = i+1
         box_scores = league.box_scores(weekNumber)
         weekly_scores = {}
@@ -851,7 +849,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = [''] + ['__**Best Possible Scores**__  [Actual - % of optimal]'] + results + ['']
+    text = ['__**Best Possible Scores**__  [Actual - % of optimal]'] + results + [' ']
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
