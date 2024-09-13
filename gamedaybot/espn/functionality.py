@@ -179,19 +179,15 @@ def get_monitor(league, warning, div):
     text = ''
 
     for i in box_scores:
-        if i.home_team.division_id == div:
-            monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
-        if i.away_team.division_id == div:
-            monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
+        monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
+        monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
     
     if not monitor:
         return ('')
     
-    if div == 2:
-        text = ['__**Players to Monitor**__ '] + monitor
-    else:
-        text = [' '] + monitor
-
+    text = ['__**Players to Monitor**__ '] + monitor
+    if random_phrase == True:
+        text += util.get_random_phrase()
     
     return '\n'.join(text)
 
