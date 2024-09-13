@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   gamedaybot:
     build:
@@ -29,8 +27,6 @@ services:
       # RANDOM_PHRASE:
       # #If set to True, when extra trophies will be included when final score update runs
       # EXTRA_TROPHIES: 
-      # #If set to True, will move updates accordingly for a COVID delayed game to Tuesday
-      # TUES_SCHED:
       # #Assign a score value for the Heads Up report to warn users about (default is 0)
       # SCORE_WARNING:
       # #If set to True, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report

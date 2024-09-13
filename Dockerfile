@@ -1,6 +1,6 @@
-FROM python:3.9.9-slim-bullseye
+FROM python:3.10.8-slim-bullseye
 # For Raspberry Pi hosting, use this Python image instead:
-# FROM python:3.9.9-slim-buster
+# FROM python:3.10.8-slim-buster
 
 # Install app
 ADD . /usr/src/gamedaybot
