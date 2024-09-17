@@ -108,7 +108,7 @@ def get_standings(league, top_half_scoring=False, week=None):
         standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
 
-    text = ['__**Current Standings**__ '] + standings_txt + ['']
+    text = ['__**Current Standings**__ '] + standings_txt + ['\n']
     return "\n".join(text)
 
 
@@ -552,7 +552,7 @@ def combined_power_rankings(league, week=None):
     # Convert normalized previous rankings to a dictionary for easy lookup
     previous_rankings_dict = {team.team_abbrev: score for score, team in normalized_previous_rankings}
 
-    sr = sim_record(league, week=week-1)
+    sr = sim_record(league, week)
 
     # Prepare the output string
     rankings_text = ['__**Power Rankings**__ [PR Points (%Change) | Playoff Chance | Simulated Record]']
@@ -849,7 +849,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = ['__**Best Possible Scores**__  [Actual - % of optimal]'] + results + [' ']
+    text = ['__**Best Possible Scores**__  [Actual - % of optimal]'] + results + ['\n']
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
