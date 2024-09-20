@@ -158,7 +158,7 @@ def all_played(lineup):
     return True
 
 
-def get_monitor(league, warning, div):
+def get_monitor(league, warning):
     """
     Retrieve a list of players from a given fantasy football league that should be monitored during a game.
 
