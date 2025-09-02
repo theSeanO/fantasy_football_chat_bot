@@ -277,7 +277,7 @@ def scan_roster(lineup, team, warning, emotes):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'D/ST':
+        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position not in ['D/ST', 'P']:
             if (i.pro_opponent == 'None') or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= warning):
                 count += 1
                 player = i.position + ' ' + i.name + ' - '
@@ -339,7 +339,7 @@ def scan_inactives(lineup, team, users, emotes):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR':
+        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'P':
             if i.pro_opponent == 'None':
                 count +=1
                 if i.position == 'D/ST':
@@ -564,7 +564,7 @@ def combined_power_rankings(league, week=None):
     # Convert normalized previous rankings to a dictionary for easy lookup
     previous_rankings_dict = {team.team_abbrev: score for score, team in normalized_previous_rankings}
 
-    sr = sim_record(league, week=week-1)
+    sr = sim_record(league, week)
 
     # Prepare the output string
     rankings_text = ['#u##b#Power Rankings#b##u# [PR Points (%Change) | Playoff Chance | Simulated Record]']

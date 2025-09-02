@@ -86,7 +86,7 @@ def espn_bot(function):
     try:
         year = int(data['year'])
     except KeyError:
-        year = 2024
+        year = 2025
 
     try:
         swid = data['swid']
@@ -166,9 +166,9 @@ def espn_bot(function):
     elif function == "season_trophies":
         text = recap.season_trophies(league, extra_trophies)  
     elif function == "get_standings":
-        text = espn.get_standings(league, top_half_scoring) + '\n'
+        text = espn.get_standings(league, top_half_scoring)
     elif function == "get_optimal_scores":
-        text = espn.optimal_team_scores(league) + '\n'
+        text = espn.optimal_team_scores(league)
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
