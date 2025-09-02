@@ -86,7 +86,7 @@ def espn_bot(function):
     try:
         year = int(data['year'])
     except KeyError:
-        year = 2024
+        year = 2025
 
     try:
         swid = data['swid']
