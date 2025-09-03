@@ -51,10 +51,12 @@ print(espn.combined_power_rankings(league) + '\n')
 print(espn.get_monitor(league, warning) + '\n')
 print(espn.get_inactives(league) + '\n')
 print(espn.get_trophies(league, True) + '\n')
-if swid != '{1}' and espn_s2 != '1':
-    league = League(league_id, year, espn_s2, swid)
-    faab = league.settings.faab
-    print(espn.get_waiver_report(league, faab))
+print(espn.get_ai_recap(league) + '\n')
+# if swid != '{1}' and espn_s2 != '1':
+#     league = League(league_id, year, espn_s2, swid)
+#     faab = league.settings.faab
+#     print(espn.get_waiver_report(league, faab))
 # print(recap.win_matrix(league) + '\n')
 # print(recap.season_trophies(league, True) + '\n')
+
 

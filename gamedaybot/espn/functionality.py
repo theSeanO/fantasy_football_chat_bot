@@ -1,6 +1,9 @@
 from datetime import date
+from google import genai
+from google.genai import types
 import gamedaybot.utils.util as util
 import gamedaybot.espn.env_vars as env_vars
+import gamedaybot.utils.espn_helper as espn_helper
 
 random_phrase = env_vars.get_random_phrase()
 
@@ -1119,3 +1122,69 @@ def get_player_achievers(league, week=None, return_number=2):
     best = sorted_diffs[:return_number]
     worst = sorted_diffs[-return_number:]
     return best, worst
+
+def generate_espn_summary(league, week):
+    """
+    Generate a human-friendly summary based on the league stats.
+    
+    Args:
+    - league (League): The league object.
+    
+    Returns:
+    - str: A human-friendly summary.
+    """
+
+    emotes = env_vars.split_emotes(league)
+    teams_and_emotes = ['%s %s' % (t.team_name, emotes[t.team_id]) for t in league.teams]
+    standings = league.standings()
+    standings_txt = [f"{pos + 1}: {team.team_name} ({team.wins}-{team.losses})" for \
+            pos, team in enumerate(standings)]
+
+    # Extracting required data using helper functions
+    top_scorer_szn = espn_helper.top_scorer_of_season(league)
+    highest_bench = espn_helper.highest_scoring_benched_player(league, week)
+    top_scorer_week = espn_helper.top_scorer_of_week(league, week)
+    worst_scorer_week = espn_helper.worst_scorer_of_week(league, week)
+    lowest_start = espn_helper.lowest_scoring_starting_player(league, week)
+    biggest_blowout = espn_helper.biggest_blowout_match(league, week)
+    closest_game = espn_helper.closest_game_match(league, week)
+    top_scoring_team_Week = espn_helper.highest_scoring_team(league, week)
+    
+    # Formatting the summary
+    summary = f"""
+    - {teams_and_emotes}
+    - League Standings: {standings_txt}
+    - Top scoring fantasy team this week: {top_scoring_team_Week} 
+    - Top scoring NFL player of the week: {top_scorer_week[0].name} with {top_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_week[2].team_name)}).
+    - Worst scoring NFL player of the week: {worst_scorer_week[0].name} with {worst_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(worst_scorer_week[2].team_name)}).
+    - Top scoring NFL player of the season: {top_scorer_szn[0].name} with {top_scorer_szn[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_szn[2].team_name)}).
+    - Highest scoring benched player: {highest_bench[0].name} with {highest_bench[0].points} points (Rostered by {espn_helper.clean_team_name(highest_bench[1].team_name)})
+    - Lowest scoring starting player of the week: {lowest_start[0].name} with {lowest_start[0].points} points (Rostered by {espn_helper.clean_team_name(lowest_start[1].team_name)})
+    - Biggest blowout match of the week: {espn_helper.clean_team_name(biggest_blowout.home_team.team_name)} ({biggest_blowout.home_score} points) vs {espn_helper.clean_team_name(biggest_blowout.away_team.team_name)} ({biggest_blowout.away_score} points)
+    - Closest game of the week: {espn_helper.clean_team_name(closest_game.home_team.team_name)} ({closest_game.home_score} points) vs {espn_helper.clean_team_name(closest_game.away_team.team_name)} ({closest_game.away_score} points)
+    """
+    
+    return summary.strip()
+
+def get_ai_recap(league, week=None):
+    if not week:
+        week = league.current_week - 1
+        
+    client = genai.Client()
+
+    league_summary = generate_espn_summary(league, week)
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        config=types.GenerateContentConfig(
+            system_instruction = f"You will be provided a summary below containing the most recent stats for a fantasy football league on week {week}. (Playoffs start on week 15.) \
+                The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use ** around it. \
+                The second part of the summary has the win-loss records of every team in order of the current league standings. The following lines have specific statistics from the week and the season so far. \
+                You are tasked with writing a recap of this week's fantasy action. Team the tone engaging, funny, and insightful. \
+                Do not simply repeat every single stat verbatim - be creative while calling out relevant stats. Feel free to make fun of or praise teams, players, and performances. \
+                Keep your recap concise (close to but under 1500 characters), as to not overwhelm the user with stats. \
+                Do not start your recap with a list of all the teams in the league."),
+        contents=league_summary
+    )
+
+    return response.text
