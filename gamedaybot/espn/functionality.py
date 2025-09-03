@@ -1023,66 +1023,51 @@ def get_trophies(league, extra_trophies, week=None):
         week = league.current_week - 1
 
     emotes = env_vars.split_emotes(league)
-    matchups = league.box_scores(week=week)
 
-    low_score = 9999
-    low_team = -1
+    lowest_score = espn_helper.lowest_scoring_team(league, week)
+    low_score = lowest_score[1]
+    low_team = lowest_score[0]
 
-    high_score = -1
-    high_team = -1
+    highest_score = espn_helper.highest_scoring_team(league, week)
+    high_score = highest_score[1]
+    high_team = highest_score[0]
 
-    closest_score = 9999
+    closest_game = espn_helper.closest_game_match(league, week)
+    closest_score = abs(closest_game.home_score - closest_game.away_score)
     close_winner = -1
     close_loser = -1
     close_emotes = ''
 
-    biggest_blowout = -1
+    if closest_game.home_score > closest_game.away_score:
+        close_winner = closest_game.home_team
+        close_loser = closest_game.away_team
+    else:
+        close_winner = closest_game.away_team
+        close_loser = closest_game.home_team
+
+    biggest_blowout = espn_helper.biggest_blowout_match(league, week)
+    biggest_blowout_score = abs(biggest_blowout.home_score - biggest_blowout.away_score)
     blown_out_team = -1
     ownerer_team = -1
     blowout_emotes = ''
 
-    for i in matchups:
-        if i.home_score > high_score:
-            high_score = i.home_score
-            high_team = i.home_team
-        if i.home_score < low_score:
-            low_score = i.home_score
-            low_team = i.home_team
-        if i.away_score > high_score:
-            high_score = i.away_score
-            high_team = i.away_team
-        if i.away_score < low_score:
-            low_score = i.away_score
-            low_team = i.away_team
-
-        if i.away_score - i.home_score != 0 and \
-            abs(i.away_score - i.home_score) < closest_score:
-            closest_score = abs(i.away_score - i.home_score)
-            if i.away_score - i.home_score < 0:
-                close_winner = i.home_team
-                close_loser = i.away_team
-            else:
-                close_winner = i.away_team
-                close_loser = i.home_team
-
-        if abs(i.away_score - i.home_score) > biggest_blowout:
-            biggest_blowout = abs(i.away_score - i.home_score)
-            if i.away_score - i.home_score < 0:
-                ownerer_team = i.home_team
-                blown_out_team = i.away_team
-            else:
-                ownerer_team = i.away_team
-                blown_out_team = i.home_team
+    if biggest_blowout.home_score > biggest_blowout.away_score:
+        ownerer_team = biggest_blowout.home_team
+        blown_out_team = biggest_blowout.away_team
+    else:
+        ownerer_team = biggest_blowout.away_team
+        blown_out_team = biggest_blowout.home_team
         
-        if emotes[1]:
-            close_emotes = '%s> %s' % (emotes[close_winner.team_id], emotes[close_loser.team_id])
-            blowout_emotes = '%s< %s' % (emotes[blown_out_team.team_id], emotes[ownerer_team.team_id])
+    if emotes[1]:
+        close_emotes = '%s> %s' % (emotes[close_winner.team_id], emotes[close_loser.team_id])
+        blowout_emotes = '%s< %s' % (emotes[blown_out_team.team_id], emotes[ownerer_team.team_id])
         
 
     high_score_str = ['👑 #c#Highest score:#c# %s \n- #b#%s#b# with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
     low_score_str = ['💩 #c#Lowest score:#c# %s \n- #b#%s#b# with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
+    
     close_score_str = ['🧊 #c#Closest Win:#c# %s \n- #b#%s#b# barely beat #b#%s#b# by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
-    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n- #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
+    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n- #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout_score)]
 
     text = ['#u##b#Trophies of the week#b##u# '] + high_score_str + low_score_str + close_score_str + blowout_str
 
@@ -1096,32 +1081,6 @@ def get_trophies(league, extra_trophies, week=None):
 
     return '\n'.join(text)
 
-
-def get_player_achievers(league, week=None, return_number=2):
-    """
-    Returns the top and bottom N players who exceeded or fell short of their projection the most in starting lineups for the given week.
-    """
-    if not week:
-        week = league.current_week - 1
-    box_scores = league.box_scores(week=week)
-    player_diffs = []
-    for matchup in box_scores:
-        for team, team_lineup in zip([matchup.home_team, matchup.away_team], [matchup.home_lineup, matchup.away_lineup]):
-            for player in team_lineup:
-                if player.slot_position not in ['BE', 'IR'] and hasattr(player, 'projected_points') and player.projected_points is not None:
-                    diff = round(player.points - player.projected_points, 2)
-                    player_diffs.append({
-                        'name': player.name,
-                        'team': player.proTeam if hasattr(player, 'proTeam') else '',
-                        'fantasy_team': team.team_abbrev if team else '',
-                        'points': player.points,
-                        'projected': player.projected_points,
-                        'diff': diff
-                    })
-    sorted_diffs = sorted(player_diffs, key=lambda x: x['diff'], reverse=True)
-    best = sorted_diffs[:return_number]
-    worst = sorted_diffs[-return_number:]
-    return best, worst
 
 def generate_espn_summary(league, week):
     """
@@ -1154,7 +1113,7 @@ def generate_espn_summary(league, week):
     summary = f"""
     - {teams_and_emotes}
     - League Standings: {standings_txt}
-    - Top scoring fantasy team this week: {top_scoring_team_Week} 
+    - Top scoring fantasy team this week: {top_scoring_team_Week[0].team_name} ({top_scoring_team_Week[1]}).
     - Top scoring NFL player of the week: {top_scorer_week[0].name} with {top_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_week[2].team_name)}).
     - Worst scoring NFL player of the week: {worst_scorer_week[0].name} with {worst_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(worst_scorer_week[2].team_name)}).
     - Top scoring NFL player of the season: {top_scorer_szn[0].name} with {top_scorer_szn[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_szn[2].team_name)}).
@@ -1173,11 +1132,12 @@ def get_ai_recap(league, week=None):
     client = genai.Client()
 
     league_summary = generate_espn_summary(league, week)
+    playoffs_week = league.settings.reg_season_count + 1
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
-            system_instruction = f"You will be provided a summary below containing the most recent stats for a fantasy football league on week {week}. (Playoffs start on week 15.) \
+            system_instruction = f"You will be provided a summary below containing the most recent stats for a fantasy football league on week {week}. (Playoffs start on week {playoffs_week}, with the final week being {playoffs_week+2}.) \
                 The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use ** around it. \
                 The second part of the summary has the win-loss records of every team in order of the current league standings. The following lines have specific statistics from the week and the season so far. \
                 You are tasked with writing a recap of this week's fantasy action. Team the tone engaging, funny, and insightful. \

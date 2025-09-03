@@ -6,19 +6,6 @@ def clean_team_name(name):
     return cleaned_name.strip()
 
 # Step 1: Basic Data Extraction
-def extract_teams_standings(league):
-    """
-    Extract all teams and their standings.
-    
-    Args:
-    - league (League): The league object.
-    
-    Returns:
-    - List[Team]: List of teams in order of their standings.
-    """
-    return league.standings()
-
-
 def extract_players_weekly_scores(league, week):
     """
     Extract all players and their weekly scores for a given week.
@@ -33,51 +20,7 @@ def extract_players_weekly_scores(league, week):
     return league.box_scores(week)
 
 
-def extract_recent_activities(league, size=25, msg_type=None):
-    """
-    Extract all recent league activities.
-    
-    Args:
-    - league (League): The league object.
-    - size (int): Number of recent activities to fetch.
-    - msg_type (str): Type of message ('FA', 'WAIVER', 'TRADED').
-    
-    Returns:
-    - List[Activity]: List of recent league activities.
-    """
-    return league.recent_activity(size=size, msg_type=msg_type)
-
-
-def extract_match_results(league, week):
-    """
-    Extract match results for a given week.
-    
-    Args:
-    - league (League): The league object.
-    - week (int): The week number.
-    
-    Returns:
-    - List[Matchup]: List of matchups for the given week.
-    """
-    return league.scoreboard(week)
-
 # Step 2: Top/Bottom Stats
-
-def top_three_teams(league):
-    """
-    Determines the top 3 teams based on standings.
-    
-    Args:
-    - league (League): The league object.
-    
-    Returns:
-    - List[Team]: List of top 3 teams.
-    """
-    standings = extract_teams_standings(league)
-    # Return the top 3 teams from the standings
-    return standings[:3]
-
-
 def top_scorer_of_week(league, week):
     """
     Determines the top scoring player of a given week.
@@ -178,7 +121,6 @@ def top_scorer_of_season(league):
 
 
 # Step 4: Player Bench/Starting Stats.
-
 def highest_scoring_benched_player(league, current_week):
     """
     Identify the benched player who scored the most points for a given week and the team that rosters them.
@@ -226,7 +168,6 @@ def lowest_scoring_starting_player(league, current_week):
     return current_week_lowest_player
 
 # Step 5: Match Stats
-
 def biggest_blowout_match(league, week):
     """
     Identifies the biggest blowout match of the current week.
@@ -281,15 +222,16 @@ def closest_game_match(league, week):
     return None
 
 
-def highest_scoring_team(league: int, week: int) -> str:
+def highest_scoring_team(league: int, week: int):
     """
-    Returns a formatted string with the top scoring team's name and their score for a given league.
-    
+    Determines the top scoring team of the week.
+
     Parameters:
     - league: An instance of the League class and week number
     
     Returns:
-    - str: Formatted string "Team Name (Score)"
+    - Tuple(Team, float): Top scoring team and their score.
+
     """
     # Get the matchups for the specified week
     matchups = league.scoreboard(week)
@@ -306,4 +248,32 @@ def highest_scoring_team(league: int, week: int) -> str:
             top_team = matchup.away_team
     
     # Return the team name and score in the desired format
-    return f"{top_team.team_name} ({max_score})"
+    return top_team, max_score
+
+def lowest_scoring_team(league: int, week: int):
+    """
+    Determines the worst scoring team of the week.
+    
+    Parameters:
+    - league: An instance of the League class and week number
+    
+    Returns:
+    - Tuple(Team, float): Worst scoring team and their score.
+
+    """
+    # Get the matchups for the specified week
+    matchups = league.scoreboard(week)
+    
+    # Determine the team with the highest score for the week
+    low_score = 9999999
+    low_team = None
+    for matchup in matchups:
+        if matchup.home_score < low_score:
+            low_score = matchup.home_score
+            low_team = matchup.home_team
+        if matchup.away_score < low_score:
+            low_score = matchup.away_score
+            low_team = matchup.away_team
+    
+    # Return the team name and score in the desired format
+    return low_team, low_score
