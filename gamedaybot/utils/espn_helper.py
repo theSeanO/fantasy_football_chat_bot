@@ -161,9 +161,10 @@ def lowest_scoring_starting_player(league, current_week):
 
     for box_score in box_scores:
         for player in box_score.home_lineup + box_score.away_lineup:
-            if player.slot_position != 'BE' and player.points < current_week_lowest_points:
-                current_week_lowest_points = player.points
-                current_week_lowest_player = (player, box_score.home_team if player in box_score.home_lineup else box_score.away_team)
+            if player.slot_position != 'BE' and player.slot_position != 'IR':
+                if player.points < current_week_lowest_points:
+                    current_week_lowest_points = player.points
+                    current_week_lowest_player = (player, box_score.home_team if player in box_score.home_lineup else box_score.away_team)
 
     return current_week_lowest_player
 

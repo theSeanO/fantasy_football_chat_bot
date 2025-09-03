@@ -1082,7 +1082,7 @@ def get_trophies(league, extra_trophies, week=None):
     return '\n'.join(text)
 
 
-def generate_espn_summary(league, week):
+def generate_espn_summary(league, week=None):
     """
     Generate a human-friendly summary based on the league stats.
     
@@ -1092,9 +1092,11 @@ def generate_espn_summary(league, week):
     Returns:
     - str: A human-friendly summary.
     """
+    if not week:
+        week = league.current_week - 1
 
     emotes = env_vars.split_emotes(league)
-    teams_and_emotes = ['%s %s' % (t.team_name, emotes[t.team_id]) for t in league.teams]
+    teams_and_emotes = ['%s: %s' % (t.team_name, emotes[t.team_id]) for t in league.teams]
     standings = league.standings()
     standings_txt = [f"{pos + 1}: {team.team_name} ({team.wins}-{team.losses})" for \
             pos, team in enumerate(standings)]
@@ -1108,14 +1110,16 @@ def generate_espn_summary(league, week):
     biggest_blowout = espn_helper.biggest_blowout_match(league, week)
     closest_game = espn_helper.closest_game_match(league, week)
     top_scoring_team_Week = espn_helper.highest_scoring_team(league, week)
+    low_scoring_team_Week = espn_helper.lowest_scoring_team(league, week)
     
     # Formatting the summary
     summary = f"""
     - {teams_and_emotes}
     - League Standings: {standings_txt}
     - Top scoring fantasy team this week: {top_scoring_team_Week[0].team_name} ({top_scoring_team_Week[1]}).
+    - Lowest scoring fantasy team this week: {low_scoring_team_Week[0].team_name} ({low_scoring_team_Week[1]}).
     - Top scoring NFL player of the week: {top_scorer_week[0].name} with {top_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_week[2].team_name)}).
-    - Worst scoring NFL player of the week: {worst_scorer_week[0].name} with {worst_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(worst_scorer_week[2].team_name)}).
+    - Lowest scoring NFL player of the week: {worst_scorer_week[0].name} with {worst_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(worst_scorer_week[2].team_name)}).
     - Top scoring NFL player of the season: {top_scorer_szn[0].name} with {top_scorer_szn[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_szn[2].team_name)}).
     - Highest scoring benched player: {highest_bench[0].name} with {highest_bench[0].points} points (Rostered by {espn_helper.clean_team_name(highest_bench[1].team_name)})
     - Lowest scoring starting player of the week: {lowest_start[0].name} with {lowest_start[0].points} points (Rostered by {espn_helper.clean_team_name(lowest_start[1].team_name)})
@@ -1138,12 +1142,13 @@ def get_ai_recap(league, week=None):
         model="gemini-2.5-flash",
         config=types.GenerateContentConfig(
             system_instruction = f"You will be provided a summary below containing the most recent stats for a fantasy football league on week {week}. (Playoffs start on week {playoffs_week}, with the final week being {playoffs_week+2}.) \
-                The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use ** around it. \
-                The second part of the summary has the win-loss records of every team in order of the current league standings. The following lines have specific statistics from the week and the season so far. \
-                You are tasked with writing a recap of this week's fantasy action. Team the tone engaging, funny, and insightful. \
+                The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use ** around it, and include the emote code in front of the name. \
+                The second line of the summary has the win-loss records of every team in order of the current league standings. \
+                The rest of the lines have specific statistics from the week and the season so far. \
+                You are tasked with writing a recap of this week's fantasy action. Keep the tone engaging, funny, and insightful. \
                 Do not simply repeat every single stat verbatim - be creative while calling out relevant stats. Feel free to make fun of or praise teams, players, and performances. \
-                Keep your recap concise (close to but under 1500 characters), as to not overwhelm the user with stats. \
-                Do not start your recap with a list of all the teams in the league."),
+                Keep your recap concise (close to but under 1800 characters), as to not overwhelm the user with stats. \
+                Do not start your recap with a list of all the teams in the league. Do not mention the playoffs until they are 3 weeks away."),
         contents=league_summary
     )
 
