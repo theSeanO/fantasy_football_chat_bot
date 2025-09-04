@@ -107,8 +107,12 @@ def get_standings(league, top_half_scoring=False, week=None):
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
         standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
+        
+    title = ['#u##b#Current Standings#b##u#']
+    if league.scoringPeriodId > league.finalScoringPeriod:
+        title = ['#u##b#Final Standings#b##u#']
 
-    text = ['#u##b#Current Standings#b##u# '] + standings_txt + ['']
+    text = title + standings_txt + ['']
     return "\n".join(text)
 
 
@@ -541,7 +545,10 @@ def combined_power_rankings(league, week=None):
 
     # Check if the week is provided, if not use the previous week
     if not week:
-        week = league.current_week - 1
+        if league.scoringPeriodId > league.finalScoringPeriod:
+            week = league.finalScoringPeriod
+        else: 
+            week = league.current_week - 1
 
     p_rank_up_emoji = "🟢"
     p_rank_down_emoji = "🔻"
@@ -567,7 +574,10 @@ def combined_power_rankings(league, week=None):
     sr = sim_record(league, week)
 
     # Prepare the output string
-    rankings_text = ['#u##b#Power Rankings#b##u# [PR Points (%Change) | Playoff Chance | Simulated Record]']
+    title = '#u##b#Power Rankings#b##u#'
+    if week == league.finalScoringPeriod:
+        title = '#u##b#Final Power Rankings#b##u#'
+    rankings_text = [title + ' [PR Points (%Change) | Playoff Chance | Simulated Record]']
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
         team_abbrev = current_team.team_abbrev
@@ -797,7 +807,11 @@ def optimal_team_scores(league, week=None):
 
     emotes = env_vars.split_emotes(league)
     if not week:
-        week = league.current_week - 1
+        if league.scoringPeriodId > league.finalScoringPeriod:
+            week = league.finalScoringPeriod
+        else: 
+            week = league.current_week - 1
+            
     box_scores = league.box_scores(week=week)
     results = []
     best_scores = {}

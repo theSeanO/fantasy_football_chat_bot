@@ -136,7 +136,7 @@ def espn_bot(function):
         broadcast_message = None
 
     # always let init and broadcast run
-    if function not in ["init", "broadcast", "win_matrix", "season_trophies"] and (league.scoringPeriodId > league.finalScoringPeriod or league.scoringPeriodId < league.firstScoringPeriod):
+    if function not in ["init", "broadcast", "win_matrix", "season_trophies"] and league.scoringPeriodId > (league.finalScoringPeriod + 1):
         logger.info("Not in active season")
         return
 
