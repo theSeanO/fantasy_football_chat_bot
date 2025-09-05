@@ -143,7 +143,7 @@ def get_env_vars():
 
     return data
 
-def get_ai_values():
+def get_ai_vars():
     data = {}
     try:
         data['base_api_url'] = os.environ["BASE_API_URL"]
