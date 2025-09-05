@@ -184,16 +184,16 @@ def season_trophies(league, extra_trophies):
                 if high_score_pcts[team][2] > 0:
                     high_pct_str += (' (%d 100%% weeks)' % high_score_pcts[team][2])
 
-    moves_str = ['🔀 `Most Moves:` %s \n- **%s** with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
-    score_str = ['👑 `Highest Score:` %s \n- **%s** with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
-    bsd_str = ['🪑 `Best Benching:` %s \n- **%s** only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
-    hpt_str = ['🎯 `Most Efficient:` %s \n- **%s** scored >95%% of their best possible score on %s' % (emotes[most_high_team.team_id], most_high_team.team_name, high_pct_str)]
-    mvp_str = ['🌟 `Best Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_week, mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['💩 `Worst Performance:` %s \n- %s, Week %d, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_week, lvp_team.team_abbrev, lvp_score)]
-    smvp_str = ['👍 `Season MVP:` %s \n- %s, **%s** with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
-    slvp_str = ['👎 `Season LVP:` %s \n- %s, **%s** with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
+    moves_str = ['🔀 #c#Most Moves:#c# %s \n- #b#%s#b# with %s' % (emotes[moves_team.team_id], moves_team.team_name, moves_score)]
+    score_str = ['👑 #c#Highest Score:#c# %s \n- #b#%s#b# with %.2f points on Week %d' % (emotes[score_team.team_id], score_team.team_name, high_score, score_week)]
+    bsd_str = ['🪑 #c#Best Benching:#c# %s \n- #b#%s#b# only left %.2f possible points on the bench' % (emotes[best_score_team.team_id], best_score_team.team_name, best_score_diff)]
+    hpt_str = ['🎯 #c#Most Efficient:#c# %s \n- #b#%s#b# scored >95%% of their best possible score on %s' % (emotes[most_high_team.team_id], most_high_team.team_name, high_pct_str)]
+    mvp_str = ['🌟 #c#Best Performance:#c# %s \n- %s, Week %d, #b#%s#b# with %s' % (emotes[mvp_team.team_id], mvp, mvp_week, mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['💩 #c#Worst Performance:#c# %s \n- %s, Week %d, #b#%s#b# with %s' % (emotes[lvp_team.team_id], lvp, lvp_week, lvp_team.team_abbrev, lvp_score)]
+    smvp_str = ['👍 #c#Season MVP:#c# %s \n- %s, #b#%s#b# with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
+    slvp_str = ['👎 #c#Season LVP:#c# %s \n- %s, #b#%s#b# with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
  
-    text = ['__**End of Season Awards**__ '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
+    text = ['#u##b#End of Season Awards#b##u# '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
 
     return '\n'.join(text)
 
@@ -228,10 +228,10 @@ def win_matrix(league):
 
     team_record = dict(sorted(team_record.items(), key=lambda item: item[1][0] / item[1][1], reverse=True))
 
-    standings_txt = ["__**Final Sim Records**__"]
+    standings_txt = ["#u##b#Final Sim Records#b##u#"]
     pos = 1
     for team in team_record:
-        standings_txt += [f"{pos:2}: {emotes[team_record[team][2]]}`{team:4} ({team_record[team][0]}-{team_record[team][1]})`"]
+        standings_txt += [f"{pos:2}: {emotes[team_record[team][2]]}#c#{team:4} ({team_record[team][0]}-{team_record[team][1]})#c#"]
         pos += 1
 
     return '\n'.join(standings_txt)
