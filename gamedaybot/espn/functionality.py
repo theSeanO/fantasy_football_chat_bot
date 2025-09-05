@@ -1132,7 +1132,7 @@ def get_ai_recap(league, week=None):
     if not week:
         week = league.current_week - 1
 
-    ai_vars = env_vars.get_ai_values()
+    ai_vars = env_vars.get_ai_vars()
     base_api_url = ai_vars['base_api_url']
     api_key = ai_vars['api_key']
     model = ai_vars['model_name']
