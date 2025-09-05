@@ -24,14 +24,14 @@ def get_scoreboard_short(league, week=None):
 
     emotes = env_vars.split_emotes(league)
     box_scores = league.box_scores(week=week)
-    score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
+    score = ['%s#c#%4s %6.2f - %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
                                     i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team]
 
     if week == league.current_week - 1:
-        text = ['__**Final Score Update**__ ']
+        text = ['#u##b#Final Score Update#b##u# ']
     else:
-        text = ['__**Score Update**__']
+        text = ['#u##b#Score Update#b##u#']
     
     text += score
     return '\n'.join(text)
@@ -56,11 +56,11 @@ def get_projected_scoreboard(league, week=None):
     """
 
     box_scores = league.box_scores(week=week)
-    score = ['%s`%4s %6.2f - %6.2f %4s` %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
+    score = ['%s#c#%4s %6.2f - %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
                                     i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team]
 
-    text = ['__**Projected Scores**__'] + score
+    text = ['#u##b#Approximate Projected Scores#b##u#'] + score
     return '\n'.join(text)
 
 
@@ -107,8 +107,12 @@ def get_standings(league, top_half_scoring=False, week=None):
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
         standings_txt = [f"{pos + 1}: {emote}{team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for \
             pos, (wins, losses, team_name, emote) in enumerate(standings)]
+        
+    title = ['#u##b#Current Standings#b##u#']
+    if league.scoringPeriodId > league.finalScoringPeriod:
+        title = ['#u##b#Final Standings#b##u#']
 
-    text = ['__**Current Standings**__ '] + standings_txt + ['\n']
+    text = title + standings_txt + ['']
     return "\n".join(text)
 
 
@@ -211,7 +215,7 @@ def get_monitor(league, warning):
     if not monitor:
         return ('')
     
-    text = ['__**Players to Monitor**__ '] + monitor
+    text = ['#u##b#Players to Monitor#b##u# '] + monitor
     if random_phrase == True:
         text += util.get_random_phrase()
     
@@ -246,7 +250,7 @@ def get_inactives(league, week=None):
     if not inactives:
         return ('')
 
-    text = ['__**Inactive Players**__ '] + inactives
+    text = ['#u##b#Inactive Players#b##u# '] + inactives
     if random_phrase == True:
         text += util.get_random_phrase()
 
@@ -282,26 +286,26 @@ def scan_roster(lineup, team, warning, emotes):
                 count += 1
                 player = i.position + ' ' + i.name + ' - '
                 if i.pro_opponent == 'None':
-                    player += '**BYE**'
+                    player += '#b#BYE#b#'
                 elif i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL':
-                    player += '**' + i.injuryStatus.title().replace('_', ' ') + '**'
+                    player += '#b#' + i.injuryStatus.title().replace('_', ' ') + '#b#'
                 elif i.projected_points <= warning:
-                    player += '**' + str(i.projected_points) + ' pts**'
+                    player += '#b#' + str(i.projected_points) + ' pts#b#'
                 players += [player]
         elif i.position == 'D/ST' and i.slot_position !='BE' and (i.pro_opponent == 'None' or i.projected_points <= warning):
             count += 1
             player = i.name + ' - '
             if i.pro_opponent == 'None':
-                player += '**BYE**'
+                player += '#b#BYE#b#'
             elif i.projected_points <= warning:
-                player += '**' + str(i.projected_points) + ' pts**'
+                player += '#b#' + str(i.projected_points) + ' pts#b#'
             players += [player]
             
         if i.slot_position == 'IR' and \
             i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
             count += 1
-            players += ['%s %s - **Not IR eligible**, %d pts' % (i.position, i.name, i.projected_points)]
+            players += ['%s %s - #b#Not on IR#b#, %d pts' % (i.position, i.name, i.projected_points)]
                 
     list = ""
     report = ""
@@ -310,7 +314,7 @@ def scan_roster(lineup, team, warning, emotes):
         list += "* " + p + "\n"
 
     if count > 0:
-        s = '%s**%s** - **%d**: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])
+        s = '%s#b#%s#b# - #b#%d#b#: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])
         report =  [s.lstrip()]
 
     return report
@@ -343,27 +347,27 @@ def scan_inactives(lineup, team, users, emotes):
             if i.pro_opponent == 'None':
                 count +=1
                 if i.position == 'D/ST':
-                    players += ['%s - **BYE**' % (i.name)]
+                    players += ['%s - #b#BYE#b#' % (i.name)]
                 else:
-                    players += ['%s %s - **BYE**' % (i.position, i.name)]
+                    players += ['%s %s - #b#BYE#b#' % (i.position, i.name)]
             elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
                 count +=1
-                players += ['%s %s - **%s**, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
+                players += ['%s %s - #b#%s#b#, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
 
         if i.slot_position == 'IR' and \
             i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
             count += 1
-            players += ['%s %s - **Not IR eligible**, %d pts' % (i.position, i.name, i.projected_points)]
+            players += ['%s %s - #b#Not on IR#b#, %d pts' % (i.position, i.name, i.projected_points)]
 
     inactive_list = ""
     inactives = ""
 
     for p in players:
-        inactive_list += "* " + p + "\n"
+        inactive_list += "> " + p + "\n"
 
     if count > 0:
-        inactives = ['%s%s**%s** - **%d**: \n%s \n' % (users[team.team_id], emotes[team.team_id], team.team_name, count, inactive_list[:-1])]
+        inactives = ['%s%s#b#%s#b# - #b#%d#b#: \n%s \n' % (users[team.team_id], emotes[team.team_id], team.team_name, count, inactive_list[:-1])]
     
     return inactives
 
@@ -391,11 +395,11 @@ def get_matchups(league, week=None):
 
     for i in matchups:
         if i.away_team:
-            home_team = '%s**%s** (%s-%s)' % (emotes[i.home_team.team_id], i.home_team.team_name, i.home_team.wins, i.home_team.losses)
-            away_team = '%s**%s** (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
+            home_team = '%s#b#%s#b# (%s-%s)' % (emotes[i.home_team.team_id], i.home_team.team_name, i.home_team.wins, i.home_team.losses)
+            away_team = '%s#b#%s#b# (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
             scores += [home_team.lstrip() + ' vs ' + away_team.lstrip()]
 
-    text = ['__**Matchups**__ '] + scores + ['']
+    text = ['#u##b#Matchups#b##u# '] + scores + ['']
     if random_phrase == True:
         text += util.get_random_phrase()
 
@@ -425,77 +429,89 @@ def get_close_scores(league, week=None):
 
     for i in box_scores:
         if i.away_team:
-            away_projected = get_projected_total(i.away_lineup)
-            home_projected = get_projected_total(i.home_lineup)
-            diffScore = away_projected - home_projected
-            if (abs(diffScore) <= 11 and (not all_played(i.away_lineup) or not all_played(i.home_lineup))):
-                score += ['%s`%4s %6.2f - %6.2f %4s`%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
+            # away_projected = get_projected_total(i.away_lineup)
+            # home_projected = get_projected_total(i.home_lineup)
+            diffScore = i.away_projected - i.home_projected
+            if (-11 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 11 and not all_played(i.home_lineup)):
+                score += ['%s#c#%4s %6.2f - %6.2f %4s#c#%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
                                                  i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
     if not score:
         return('')
-    text = ['__**Projected Close Scores**__'] + score
+    text = ['#u##b#Projected Close Scores#b##u#'] + score
     return '\n'.join(text)
 
 
-def get_waiver_report(league, faab=False):
+def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
     """
-    This function generates a waiver report for a given league.
-    The report lists all the waiver transactions that occurred on the current day,
-    including the team that made the transaction, the player added and the player dropped (if applicable).
+    Generate a waiver report for a given league and scoring period.
+
+    The report lists all waiver transactions that occurred on the specified date (defaults to today),
+    including the team that made the transaction, the player(s) added, and the player(s) dropped (if applicable).
+    If faab is True, the report will include FAAB amount spent and will be sorted from largest to smallest FAAB bid.
 
     Parameters
     ----------
-    league: object
-        The league object for which the report is being generated
+    league : object
+        The league object for which the report is being generated.
     faab : bool, optional
-        A flag to indicate whether the report should include FAAB amount spent, by default False.
+        If True, include FAAB amount spent and sort report by FAAB descending. Defaults to False.
+    scoring_period : int, optional
+        The scoring period to query transactions for. Defaults to league.scoringPeriodId.
+    test_date : str, optional
+        Date string (YYYY-MM-DD) to simulate 'today' for testing historical transactions. Defaults to current date.
 
     Returns
     -------
     str
-        A string containing the waiver report
+        A formatted string containing the waiver report.
     """
 
+
+    # Allow testing with a specific scoring period and date
+    if scoring_period is None:
+        scoring_period = league.scoringPeriodId
+    transactions = league.transactions(scoring_period, types={'WAIVER'})
     # Get the recent activity of the league
     emotes = env_vars.split_emotes(league)
     activities = league.recent_activity(50)
     # Initialize an empty list to store the report
     report = []
-    # Get the current date
-    today = date.today().strftime('%Y-%m-%d')
+    report_items = []  # For sorting if faab
+    today = test_date if test_date else date.today().strftime('%Y-%m-%d')
     text = ''
 
-    # Iterate through each activity
-    for activity in activities:
-        actions = activity.actions
-        d2 = date.fromtimestamp(activity.date/1000).strftime('%Y-%m-%d')
-        if d2 == today:  # only get waiver activites from today
-            if len(actions) == 1 and actions[0][1] == 'WAIVER ADDED':
-                if faab:
-                    s = '%s**%s** \n* ADDED%s %s ($%s)\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, actions[0][3])
-                else:
-                    s = '%s**%s** \n* ADDED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
-                report += [s.lstrip()]
-            elif len(actions) > 1:
-                if actions[0][1] == 'WAIVER ADDED' or  actions[1][1] == 'WAIVER ADDED':
-                    if actions[0][1] == 'WAIVER ADDED':
-                        if faab:
-                            s = '%s**%s** \n* ADDED%s %s ($%s)\n * DROPPED %s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, actions[0][3], ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name)
-                        else:
-                            s = '%s**%s** \n* ADDED%s %s, \n * DROPPED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name)
+    for txn in transactions:
+        # Only include transactions matching the test date and type WAIVER
+        txn_date = None
+        if txn.date:
+            txn_date = date.fromtimestamp(txn.date / 1000).strftime('%Y-%m-%d')
+        if txn_date == today and txn.status == 'EXECUTED':
+            team_name = txn.team.team_name
+            faab_amount = txn.bid_amount if hasattr(txn, 'bid_amount') else 0
+            add_str = ''
+            drop_str = ''
+            for item in txn.items:
+                if item.type == 'ADD':
+                    if faab:
+                        add_str += f"ADDED {league.player_info(item.player).position} - {item.player} (${faab_amount})\n"
                     else:
-                        if faab:
-                            s = '%s**%s** \n* ADDED%s %s ($%s)\n * DROPPED %s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name, actions[1][3], ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
-                        else:
-                            s = '%s**%s** \n* ADDED%s %s, \n * DROPPED%s %s\n' % (emotes[actions[0][0].team_id], actions[0][0].team_name, ' '+actions[1][2].position if actions[1][2].position != 'D/ST' else '', actions[1][2].name, ' '+actions[0][2].position if actions[0][2].position != 'D/ST' else '', actions[0][2].name)
-                    report += [s.lstrip()]
+                        add_str += f"ADDED {league.player_info(item.player).position} - {item.player}\n"
+                elif item.type == 'DROP':
+                    drop_str += f"DROPPED {league.player_info(item.player).position} - {item.player}\n"
+            s = f"{team_name} \n{add_str}{drop_str}"
+            if faab:
+                report_items.append((faab_amount, s.lstrip()))
+            else:
+                report.append(s.lstrip())
 
-    report.reverse()
+    if faab:
+        # Sort by faab_amount descending
+        report_items.sort(key=lambda x: x[0], reverse=True)
+        report = [item[1] for item in report_items]
 
-    if not report:
-        return ''
-        
-    text = ['__**Waiver Report %s**__' % today] + report + ['']
+    # Only return a report if there are transactions
+    if report:
+        text = ['#u##b#Waiver Report %s#b##u#' % today] + report + ['']
 
     if random_phrase == True:
         text += util.get_random_phrase()
@@ -529,7 +545,10 @@ def combined_power_rankings(league, week=None):
 
     # Check if the week is provided, if not use the previous week
     if not week:
-        week = league.current_week - 1
+        if league.scoringPeriodId > league.finalScoringPeriod:
+            week = league.finalScoringPeriod
+        else: 
+            week = league.current_week - 1
 
     p_rank_up_emoji = "🟢"
     p_rank_down_emoji = "🔻"
@@ -555,7 +574,10 @@ def combined_power_rankings(league, week=None):
     sr = sim_record(league, week)
 
     # Prepare the output string
-    rankings_text = ['__**Power Rankings**__ [PR Points (%Change) | Playoff Chance | Simulated Record]']
+    title = '#u##b#Power Rankings#b##u#'
+    if week == league.finalScoringPeriod:
+        title = '#u##b#Final Power Rankings#b##u#'
+    rankings_text = [title + ' [PR Points (%Change) | Playoff Chance | Simulated Record]']
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
         team_abbrev = current_team.team_abbrev
@@ -785,7 +807,11 @@ def optimal_team_scores(league, week=None):
 
     emotes = env_vars.split_emotes(league)
     if not week:
-        week = league.current_week - 1
+        if league.scoringPeriodId > league.finalScoringPeriod:
+            week = league.finalScoringPeriod
+        else: 
+            week = league.current_week - 1
+            
     box_scores = league.box_scores(week=week)
     results = []
     best_scores = {}
@@ -801,7 +827,7 @@ def optimal_team_scores(league, week=None):
 
     i = 1
     for score in best_scores:
-        s = ['%s: %s `%4s: %6.2f [%6.2f - %.2f%%]`' %
+        s = ['%s: %s #c#%4s: %6.2f [%6.2f - %.2f%%]#c#' %
                 (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0],
                 best_scores[score][1], best_scores[score][3])]
         results += s
@@ -811,7 +837,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = ['__**Best Possible Scores**__  [Actual - % of optimal]'] + results + ['\n']
+    text = [''] + ['#u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['']
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
@@ -858,10 +884,10 @@ def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
                 under_achiever = i.away_team
 
     if best_performance > 0 and over_achiever.team_id != high_team_id:
-        achiever_str += ['📈 `Overachiever:` %s \n- **%s** was %.2f points over their projection' % (emotes[over_achiever.team_id], over_achiever.team_name, best_performance)]
+        achiever_str += ['📈 #c#Overachiever:#c# %s \n- #b#%s#b# was %.2f points over their projection' % (emotes[over_achiever.team_id], over_achiever.team_name, best_performance)]
 
     if worst_performance < 0 and under_achiever.team_id != low_team_id:
-        achiever_str += ['📉 `Underachiever:` %s \n- **%s** was %.2f points under their projection' % (emotes[under_achiever.team_id], under_achiever.team_name, abs(worst_performance))]
+        achiever_str += ['📉 #c#Underachiever:#c# %s \n- #b#%s#b# was %.2f points under their projection' % (emotes[under_achiever.team_id], under_achiever.team_name, abs(worst_performance))]
 
     return achiever_str
 
@@ -914,8 +940,8 @@ def get_lucky_trophy(league, week=None):
         wins += 1
 
 
-    lucky_str = ['🍀 `Lucky:` %s \n- **%s** was %s against the league, but got the win' % (emotes[lucky_team.team_id], lucky_team.team_name, lucky_record)]
-    unlucky_str = ['💀 `Unlucky:` %s \n- **%s** was %s against the league, but still took an L' % (emotes[unlucky_team.team_id], unlucky_team.team_name, unlucky_record)]
+    lucky_str = ['🍀 #c#Lucky:#c# %s \n- #b#%s#b# was %s against the league, but got the win' % (emotes[lucky_team.team_id], lucky_team.team_name, lucky_record)]
+    unlucky_str = ['💀 #c#Unlucky:#c# %s \n- #b#%s#b# was %s against the league, but still took an L' % (emotes[unlucky_team.team_id], unlucky_team.team_name, unlucky_record)]
     return (lucky_str + unlucky_str)
 
 def get_mvp_trophy(league, week=None):
@@ -984,8 +1010,8 @@ def get_mvp_trophy(league, week=None):
                     lvp = p.position + ' ' + p.name
                     lvp_team = i.away_team
 
-    mvp_str = ['👍 `Week MVP:` %s \n- %s, **%s** with %s' % (emotes[mvp_team.team_id], mvp, mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['👎 `Week LVP:` %s \n- %s, **%s** with %s' % (emotes[lvp_team.team_id], lvp, lvp_team.team_abbrev, lvp_score)]
+    mvp_str = ['👍 #c#Week MVP:#c# %s \n- %s, #b#%s#b# with %s' % (emotes[mvp_team.team_id], mvp, mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['👎 #c#Week LVP:#c# %s \n- %s, #b#%s#b# with %s' % (emotes[lvp_team.team_id], lvp, lvp_team.team_abbrev, lvp_score)]
     return (mvp_str + lvp_str)
 
 def get_trophies(league, extra_trophies, week=None):
@@ -1064,12 +1090,12 @@ def get_trophies(league, extra_trophies, week=None):
             blowout_emotes = '%s< %s' % (emotes[blown_out_team.team_id], emotes[ownerer_team.team_id])
         
 
-    high_score_str = ['👑 `Highest score:` %s \n- **%s** with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
-    low_score_str = ['💩 `Lowest score:` %s \n- **%s** with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
-    close_score_str = ['🧊 `Closest Win:` %s \n- **%s** barely beat **%s** by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
-    blowout_str = ['💥 `Biggest Loss:` %s \n- **%s** got blown out by **%s** by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
+    high_score_str = ['👑 #c#Highest score:#c# %s \n- #b#%s#b# with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
+    low_score_str = ['💩 #c#Lowest score:#c# %s \n- #b#%s#b# with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
+    close_score_str = ['🧊 #c#Closest Win:#c# %s \n- #b#%s#b# barely beat #b#%s#b# by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
+    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n- #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
 
-    text = ['__**Trophies of the week**__ '] + high_score_str + low_score_str + close_score_str + blowout_str
+    text = ['#u##b#Trophies of the week#b##u# '] + high_score_str + low_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
         text += get_achievers_trophy(league, low_team.team_id, high_team.team_id, week) + get_lucky_trophy(league, week) + get_mvp_trophy(league, week) + ['']
@@ -1080,3 +1106,30 @@ def get_trophies(league, extra_trophies, week=None):
         text += util.get_random_phrase()
 
     return '\n'.join(text)
+
+
+def get_player_achievers(league, week=None, return_number=2):
+    """
+    Returns the top and bottom N players who exceeded or fell short of their projection the most in starting lineups for the given week.
+    """
+    if not week:
+        week = league.current_week - 1
+    box_scores = league.box_scores(week=week)
+    player_diffs = []
+    for matchup in box_scores:
+        for team, team_lineup in zip([matchup.home_team, matchup.away_team], [matchup.home_lineup, matchup.away_lineup]):
+            for player in team_lineup:
+                if player.slot_position not in ['BE', 'IR'] and hasattr(player, 'projected_points') and player.projected_points is not None:
+                    diff = round(player.points - player.projected_points, 2)
+                    player_diffs.append({
+                        'name': player.name,
+                        'team': player.proTeam if hasattr(player, 'proTeam') else '',
+                        'fantasy_team': team.team_abbrev if team else '',
+                        'points': player.points,
+                        'projected': player.projected_points,
+                        'diff': diff
+                    })
+    sorted_diffs = sorted(player_diffs, key=lambda x: x['diff'], reverse=True)
+    best = sorted_diffs[:return_number]
+    worst = sorted_diffs[-return_number:]
+    return best, worst

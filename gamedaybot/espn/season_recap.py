@@ -213,22 +213,25 @@ def win_matrix(league):
         A string of the standings in the format of "position. team abbreviation (wins-losses)"
     """
 
-    team_record = {team.team_abbrev: [0, 0] for team in league.teams}
+    emotes = env_vars.split_emotes(league)
+    team_record = {team.team_abbrev: [0, 0, 0] for team in league.teams}
 
-    for week in range(1, league.current_week):
+    for week in range(1, league.current_week + 1):
         scores = espn.get_weekly_score_with_win_loss(league=league, week=week)
         losses = 0
+
         for team in scores:
             team_record[team.team_abbrev][0] += len(scores) - 1 - losses
             team_record[team.team_abbrev][1] += losses
             losses += 1
+            team_record[team.team_abbrev][2] = team.team_id
 
     team_record = dict(sorted(team_record.items(), key=lambda item: item[1][0] / item[1][1], reverse=True))
 
-    standings_txt = ["Standings if everyone played every team every week"]
+    standings_txt = ["__**Final Sim Records**__"]
     pos = 1
     for team in team_record:
-        standings_txt += [f"{pos:2}. {team:4} ({team_record[team][0]}-{team_record[team][1]})"]
+        standings_txt += [f"{pos:2}: {emotes[team_record[team][2]]}`{team:4} ({team_record[team][0]}-{team_record[team][1]})`"]
         pos += 1
 
     return '\n'.join(standings_txt)
