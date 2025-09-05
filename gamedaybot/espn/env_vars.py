@@ -143,6 +143,24 @@ def get_env_vars():
 
     return data
 
+def get_ai_values():
+    data = {}
+    try:
+        data['base_api_url'] = os.environ["BASE_API_URL"]
+    except KeyError:
+        pass
+
+    try:
+        data['model_name'] = os.environ["MODEL_NAME"]
+    except KeyError:
+        pass
+    
+    try:
+        data['api_key'] = os.environ["GEMINI_API_KEY"]
+    except KeyError:
+        pass
+
+    return data
 
 def get_random_phrase():
     random_phrase = False

@@ -1,6 +1,5 @@
 from datetime import date
-from google import genai
-from google.genai import types
+import requests
 import gamedaybot.utils.util as util
 import gamedaybot.espn.env_vars as env_vars
 import gamedaybot.utils.espn_helper as espn_helper
@@ -1132,24 +1131,38 @@ def generate_espn_summary(league, week=None):
 def get_ai_recap(league, week=None):
     if not week:
         week = league.current_week - 1
-        
-    client = genai.Client()
+
+    ai_vars = env_vars.get_ai_values()
+    base_api_url = ai_vars['base_api_url']
+    api_key = ai_vars['api_key']
+    model = ai_vars['model_name']
+
+    url = f"{base_api_url}/{model}:generateContent"
 
     league_summary = generate_espn_summary(league, week)
     playoffs_week = league.settings.reg_season_count + 1
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        config=types.GenerateContentConfig(
-            system_instruction = f"You will be provided a summary below containing the most recent stats for a fantasy football league on week {week}. (Playoffs start on week {playoffs_week}, with the final week being {playoffs_week+2}.) \
+    instruction = f"You are a fantasy football commissioner. You will be provided a summary containing the most recent stats for a fantasy football league on week {week}. \
+                (Playoffs start on week {playoffs_week}, with the final week being {playoffs_week+2}.) \
                 The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use ** around it, and include the emote code in front of the name. \
                 The second line of the summary has the win-loss records of every team in order of the current league standings. \
                 The rest of the lines have specific statistics from the week and the season so far. \
                 You are tasked with writing a recap of this week's fantasy action. Keep the tone engaging, funny, and insightful. \
                 Do not simply repeat every single stat verbatim - be creative while calling out relevant stats. Feel free to make fun of or praise teams, players, and performances. \
-                Keep your recap concise (close to but under 1800 characters), as to not overwhelm the user with stats. \
-                Do not start your recap with a list of all the teams in the league. Do not mention the playoffs until they are 3 weeks away."),
-        contents=league_summary
-    )
+                Keep your recap concise (close to but under 1600 characters), as to not overwhelm the user with stats. \
+                Do not start your recap with a list of all the teams in the league. Do not mention the playoffs until they are 3 weeks away."
 
-    return response.text
+    payload = {
+        "system_instruction": {"parts": {"text": instruction}},
+        "contents": [{"role": "user", "parts": [{"text": league_summary}]}],
+        "generation_config": {"temperature": 1, "topP": 1},
+    }
+
+    headers = {"Content-Type": "application/json", "x-goog-api-key": api_key}
+    response = requests.post(url, json=payload, headers=headers)
+    response.raise_for_status()
+    content_data = response.json()
+    
+    ai_recap = content_data['candidates'][0]['content']['parts'][0]['text']
+
+    return ai_recap
