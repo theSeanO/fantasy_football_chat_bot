@@ -55,6 +55,7 @@ if swid != '{1}' and espn_s2 != '1':
     league = League(league_id, year, espn_s2, swid)
     faab = league.settings.faab
     print(espn.get_waiver_report(league, faab))
+# print(recap.final_power_rankings(league) + '\n')
 # print(recap.win_matrix(league) + '\n')
 # print(recap.season_trophies(league, True) + '\n')
 

@@ -136,7 +136,7 @@ def espn_bot(function):
         broadcast_message = None
 
     # always let init and broadcast run
-    if function not in ["init", "broadcast", "win_matrix", "season_trophies"] and league.scoringPeriodId > (league.finalScoringPeriod + 1):
+    if function not in ["init", "broadcast", "win_matrix", "final_power_rankings", "season_trophies"] and league.scoringPeriodId > (league.finalScoringPeriod + 1):
         logger.info("Not in active season")
         return
 
@@ -161,10 +161,6 @@ def espn_bot(function):
         text = espn.combined_power_rankings(league)
     elif function == "get_trophies":
         text = espn.get_trophies(league)
-    elif function == "win_matrix":
-        text = recap.win_matrix(league)
-    elif function == "season_trophies":
-        text = recap.season_trophies(league, extra_trophies)  
     elif function == "get_standings":
         text = espn.get_standings(league, top_half_scoring)
     elif function == "get_optimal_scores":
@@ -177,6 +173,12 @@ def espn_bot(function):
     elif function == "get_waiver_report":
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
+    elif function == "final_power_rankings":
+        text = recap.final_power_rankings(league)
+    elif function == "win_matrix":
+        text = recap.win_matrix(league)
+    elif function == "season_trophies":
+        text = recap.season_trophies(league, extra_trophies)  
     elif function == "broadcast":
         try:
             text = broadcast_message

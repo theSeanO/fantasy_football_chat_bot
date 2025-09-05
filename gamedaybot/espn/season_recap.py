@@ -235,3 +235,53 @@ def win_matrix(league):
         pos += 1
 
     return '\n'.join(standings_txt)
+
+def final_power_rankings(league, week=None):
+
+    emotes = env_vars.split_emotes(league)
+
+    # Check if the week is provided, if not use the final week
+    if not week:
+        if league.scoringPeriodId >= league.finalScoringPeriod:
+            week = league.finalScoringPeriod
+
+    p_rank_up_emoji = "🟢"
+    p_rank_down_emoji = "🔻"
+    p_rank_same_emoji = "🟰"
+
+    # Get the power rankings for the previous 2 weeks
+    current_rankings = league.power_rankings(week=week)
+    previous_rankings = league.power_rankings(week=week-1) if week > 1 else []
+
+    # Normalize the scores
+    def normalize_rankings(rankings):
+        if not rankings:
+            return []
+        max_score = max(float(score) for score, _ in rankings)
+        return [(f"{99.99 * float(score) / max_score:.2f}", team) for score, team in rankings]
+    
+    normalized_current_rankings = normalize_rankings(current_rankings)
+    normalized_previous_rankings = normalize_rankings(previous_rankings)
+
+    # Convert normalized previous rankings to a dictionary for easy lookup
+    previous_rankings_dict = {team.team_abbrev: score for score, team in normalized_previous_rankings}
+
+    # Prepare the output string
+    title = '#u##b#Final Power Rankings#b##u#'
+    rankings_text = [title + ' [PR Points (%Change)]']
+    pos = 1
+    for normalized_current_score, current_team in normalized_current_rankings:
+        team_abbrev = current_team.team_abbrev
+        rank_change_text = ''
+
+        # Check if the team was present in the normalized previous rankings
+        if team_abbrev in previous_rankings_dict:
+            previous_score = previous_rankings_dict[team_abbrev]
+            rank_change_percent = ((float(normalized_current_score) - float(previous_score)) / float(previous_score)) * 100
+            rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
+            rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):.1f}%)"
+
+        rankings_text.append(f"{pos}: {emotes[current_team.team_id]}`{current_team.team_abbrev:4s} [{normalized_current_score}{rank_change_text}]`")
+        pos += 1
+    
+    return '\n'.join(rankings_text)

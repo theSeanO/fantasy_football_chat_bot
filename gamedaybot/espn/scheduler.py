@@ -90,13 +90,17 @@ def scheduler():
             day_of_week='mon,tue,thu,fri,sat,sun', hour=7, minute=31, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)        
         
-    # jobs for final day    
+    # jobs for final day
+    sched.add_job(espn_bot, 'cron', ['final_power_rankings'], id='final_power_rankings',
+        run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30, 5), 
+        timezone=my_timezone, replace_existing=True)
+
     sched.add_job(espn_bot, 'date', ['win_matrix'], id='win_matrix',
-        run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30), 
+        run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30, 10), 
         timezone=my_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'date', ['season_trophies'], id='season_trophies',
-        run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 31), 
+        run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30, 20), 
         timezone=my_timezone, replace_existing=True)
 
     try:

@@ -545,10 +545,7 @@ def combined_power_rankings(league, week=None):
 
     # Check if the week is provided, if not use the previous week
     if not week:
-        if league.scoringPeriodId > league.finalScoringPeriod:
-            week = league.finalScoringPeriod
-        else: 
-            week = league.current_week - 1
+        week = league.current_week - 1
 
     p_rank_up_emoji = "🟢"
     p_rank_down_emoji = "🔻"
@@ -575,8 +572,6 @@ def combined_power_rankings(league, week=None):
 
     # Prepare the output string
     title = '#u##b#Power Rankings#b##u#'
-    if week == league.finalScoringPeriod:
-        title = '#u##b#Final Power Rankings#b##u#'
     rankings_text = [title + ' [PR Points (%Change) | Playoff Chance | Simulated Record]']
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
