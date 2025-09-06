@@ -214,8 +214,6 @@ def get_monitor(league, warning):
         return ('')
     
     text = ['#u##b#Players to Monitor#b##u# '] + monitor
-    if random_phrase == True:
-        text += util.get_random_phrase()
     
     return '\n'.join(text)
 
@@ -249,8 +247,6 @@ def get_inactives(league, week=None):
         return ('')
 
     text = ['#u##b#Inactive Players#b##u# '] + inactives
-    if random_phrase == True:
-        text += util.get_random_phrase()
 
     return '\n'.join(text)
 
