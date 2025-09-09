@@ -176,6 +176,8 @@ def espn_bot(function):
     elif function == "get_final_trophies":
         week = league.current_week - 1
         text = espn.get_trophies(league, extra_trophies, week=week)
+    elif function == "get_ai_recap":
+        text = espn.get_ai_recap(league)
     elif function == "get_waiver_report":
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)

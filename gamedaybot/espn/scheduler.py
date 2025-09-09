@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from gamedaybot.espn.env_vars import get_env_vars
+from gamedaybot.espn.env_vars import get_ai_vars
 from gamedaybot.espn.espn_bot import espn_bot
 
 
@@ -18,6 +19,7 @@ def scheduler():
     None
     """
     data = get_env_vars()
+    ai_data = get_ai_vars()
     game_timezone = 'America/New_York'
     sched = BlockingScheduler(job_defaults={'misfire_grace_time': 15 * 60})
     ff_start_date = data['ff_start_date']
@@ -47,6 +49,10 @@ def scheduler():
     
     sched.add_job(espn_bot, 'cron', ['get_final_trophies'], id='final_trophies',
         day_of_week='tue', hour=7, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=my_timezone, replace_existing=True)
+    
+    sched.add_job(espn_bot, 'cron', ['get_ai_recap'], id='ai_recap',
+        day_of_week='tue', hour=8, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'cron', ['get_standings'], id='standings',
@@ -108,7 +114,13 @@ def scheduler():
         if data['swid'] and data['espn_s2']:
             ready_text += " SWID and ESPN_S2 provided."
     except KeyError:
-        ready_text += " SWID and ESPN_S2 not provided."
+        ready_text += ""
+
+    try:
+        if ai_data['base_api_url'] and ai_data['model_name'] and ai_data['api_key']:
+            ready_text += " AI requirements provided."
+    except KeyError:
+        ready_text += ""
 
     print(ready_text)
     logging.info(ready_text)
