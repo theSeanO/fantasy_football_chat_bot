@@ -941,8 +941,8 @@ def get_mvp_trophy(league, week=None):
     best = players[0][0]
     worst = players[1][0]
 
-    mvp_score = f"{best['points']} ({best['projected']}, {best['proj_diff']} diff ratio)"
-    lvp_score = f"{worst['points']} ({worst['projected']}, {worst['proj_diff']} diff ratio)"
+    mvp_score = f"{best['points']} points ({best['projected']} proj, {best['proj_diff']} diff ratio)"
+    lvp_score = f"{worst['points']} points ({worst['projected']} proj, {worst['proj_diff']} diff ratio)"
 
     mvp_str = ['👍 #c#Mr. Fuckass:#c# %s \n#p# %s, #b#%s#b# with %s\n' % (emotes[best['fantasy_team'].team_id], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
     lvp_str = ['👎 #c#Mr. Suckass:#c# %s \n#p# %s, #b#%s#b# with %s\n' % (emotes[worst['fantasy_team'].team_id], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
