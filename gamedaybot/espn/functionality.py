@@ -1113,7 +1113,7 @@ def get_ai_recap(league, week=None):
                 The rest of the lines have specific statistics from the week and the season so far. \
                 You are tasked with writing a recap of this week's fantasy action. Keep the tone engaging, funny, and insightful. \
                 Do not simply repeat every single stat verbatim - be creative while calling out relevant stats. Feel free to make fun of or praise teams, players, and performances. \
-                Keep your recap concise (close to but under 1800 characters), as to not overwhelm the user with stats. \
+                Keep your recap concise (close to but under 1600 characters), as to not overwhelm the user with stats. \
                 Do not start your recap with a list of all the teams in the league. If you want to write an intro, keep it under 150 characters. \
                 Do not mention the playoffs until they are 3 weeks away."
 
