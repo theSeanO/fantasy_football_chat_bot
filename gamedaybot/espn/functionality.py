@@ -1078,13 +1078,14 @@ def generate_espn_summary(league, week=None):
     summary = f"""
     - {teams_and_emotes}
     - League Standings: {standings_txt}
-    - Top scoring fantasy team this week: {top_scoring_team_Week[0].team_name} ({top_scoring_team_Week[1]}).
-    - Lowest scoring fantasy team this week: {low_scoring_team_Week[0].team_name} ({low_scoring_team_Week[1]}).
-    - Top scoring NFL player of the week: {top_scorer_week[0].name} with {top_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_week[2].team_name)}).
-    - Lowest scoring NFL player of the week: {worst_scorer_week[0].name} with {worst_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(worst_scorer_week[2].team_name)}).
-    - Top scoring NFL player of the season: {top_scorer_szn[0].name} with {top_scorer_szn[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_szn[2].team_name)}).
-    - Highest scoring benched player: {highest_bench[0].name} with {highest_bench[0].points} points (Rostered by {espn_helper.clean_team_name(highest_bench[1].team_name)})
-    - Lowest scoring starting player of the week: {lowest_start[0].name} with {lowest_start[0].points} points (Rostered by {espn_helper.clean_team_name(lowest_start[1].team_name)})
+    - Top scoring fantasy team of the season: {league.top_scorer().team_name} ({league.top_scorer().points_for})
+    - Top scoring fantasy team this week: {top_scoring_team_Week[0].team_name} ({top_scoring_team_Week[1]})
+    - Lowest scoring fantasy team this week: {low_scoring_team_Week[0].team_name} ({low_scoring_team_Week[1]})
+    - Top scoring NFL player of the week: {top_scorer_week[0].name} ({top_scorer_week[0].position}) with {top_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_week[2].team_name)})
+    - Lowest scoring NFL player of the week: {worst_scorer_week[0].name} ({worst_scorer_week[0].position}) with {worst_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(worst_scorer_week[2].team_name)})
+    - Top scoring NFL player of the season: {top_scorer_szn[0].name} ({top_scorer_szn[0].position}) with {top_scorer_szn[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_szn[2].team_name)})
+    - Highest scoring benched player: {highest_bench[0].name} ({highest_bench[0].position}) with {highest_bench[0].points} points (Rostered by {espn_helper.clean_team_name(highest_bench[1].team_name)})
+    - Lowest scoring starting player of the week: {lowest_start[0].name} ({lowest_start[0].position}) with {lowest_start[0].points} points (Rostered by {espn_helper.clean_team_name(lowest_start[1].team_name)})
     - Biggest blowout match of the week: {espn_helper.clean_team_name(biggest_blowout.home_team.team_name)} ({biggest_blowout.home_score} points) vs {espn_helper.clean_team_name(biggest_blowout.away_team.team_name)} ({biggest_blowout.away_score} points)
     - Closest game of the week: {espn_helper.clean_team_name(closest_game.home_team.team_name)} ({closest_game.home_score} points) vs {espn_helper.clean_team_name(closest_game.away_team.team_name)} ({closest_game.away_score} points)
     """
@@ -1106,14 +1107,15 @@ def get_ai_recap(league, week=None):
     playoffs_week = league.settings.reg_season_count + 1
 
     instruction = f"You are a fantasy football commissioner. You will be provided a summary containing the most recent stats for a fantasy football league on week {week}. \
-                (Playoffs start on week {playoffs_week}, with the final week being {playoffs_week+2}.) \
-                The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use ** around it, and include the emote code in front of the name. \
+                (Playoffs start on week {playoffs_week}, with the finals on week {playoffs_week+2}.) \
+                The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use \"#b#\" around it, and include the emote code and a space in front of the name. \
                 The second line of the summary has the win-loss records of every team in order of the current league standings. \
                 The rest of the lines have specific statistics from the week and the season so far. \
                 You are tasked with writing a recap of this week's fantasy action. Keep the tone engaging, funny, and insightful. \
                 Do not simply repeat every single stat verbatim - be creative while calling out relevant stats. Feel free to make fun of or praise teams, players, and performances. \
-                Keep your recap concise (close to but under 1600 characters), as to not overwhelm the user with stats. \
-                Do not start your recap with a list of all the teams in the league. Do not mention the playoffs until they are 3 weeks away."
+                Keep your recap concise (close to but under 1800 characters), as to not overwhelm the user with stats. \
+                Do not start your recap with a list of all the teams in the league. If you want to write an intro, keep it under 150 characters. \
+                Do not mention the playoffs until they are 3 weeks away."
 
     payload = {
         "system_instruction": {"parts": {"text": instruction}},
@@ -1128,7 +1130,9 @@ def get_ai_recap(league, week=None):
     
     ai_recap = content_data['candidates'][0]['content']['parts'][0]['text']
 
-    return ai_recap
+    text = ['#u##b#Weekly Recap#b##u# '] + [ai_recap]
+
+    return '\n'.join(text)
 
 def get_player_achievers(league, week=None, return_number=2):
     """
