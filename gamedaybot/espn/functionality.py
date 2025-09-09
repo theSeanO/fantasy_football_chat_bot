@@ -871,10 +871,10 @@ def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
                 under_achiever = i.away_team
 
     if best_performance > 0 and over_achiever.team_id != high_team_id:
-        achiever_str += ['📈 #c#Overachiever:#c# %s \n#p# #b#%s#b# was %.2f points over their projection' % (emotes[over_achiever.team_id], over_achiever.team_name, best_performance)]
+        achiever_str += ['📈 #c#Overachiever:#c# %s \n#p# #b#%s#b# was %.2f points over their projection\n' % (emotes[over_achiever.team_id], over_achiever.team_name, best_performance)]
 
     if worst_performance < 0 and under_achiever.team_id != low_team_id:
-        achiever_str += ['📉 #c#Underachiever:#c# %s \n#p# #b#%s#b# was %.2f points under their projection' % (emotes[under_achiever.team_id], under_achiever.team_name, abs(worst_performance))]
+        achiever_str += ['📉 #c#Underachiever:#c# %s \n#p# #b#%s#b# was %.2f points under their projection\n' % (emotes[under_achiever.team_id], under_achiever.team_name, abs(worst_performance))]
 
     return achiever_str
 
@@ -927,8 +927,8 @@ def get_lucky_trophy(league, week=None):
         wins += 1
 
 
-    lucky_str = ['🍀 #c#Lucky:#c# %s \n#p# #b#%s#b# was %s against the league, but got the win' % (emotes[lucky_team.team_id], lucky_team.team_name, lucky_record)]
-    unlucky_str = ['💀 #c#Unlucky:#c# %s \n#p# #b#%s#b# was %s against the league, but still took an L' % (emotes[unlucky_team.team_id], unlucky_team.team_name, unlucky_record)]
+    lucky_str = ['🍀 #c#Lucky:#c# %s \n#p# #b#%s#b# was %s against the league, but got the win\n' % (emotes[lucky_team.team_id], lucky_team.team_name, lucky_record)]
+    unlucky_str = ['💀 #c#Unlucky:#c# %s \n#p# #b#%s#b# was %s against the league, but still took an L\n' % (emotes[unlucky_team.team_id], unlucky_team.team_name, unlucky_record)]
     return (lucky_str + unlucky_str)
 
 def get_mvp_trophy(league, week=None):
@@ -950,55 +950,17 @@ def get_mvp_trophy(league, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    matchups = league.box_scores(week=week)
-    mvp_score_diff = -100
-    mvp_proj = -100
-    mvp_score = ''
-    mvp = ''
-    mvp_team = -1
 
-    lvp_score_diff = 999
-    lvp_proj = 999
-    lvp_score = ''
-    lvp = ''
-    lvp_team = -1
+    players = get_player_achievers(league, week=week, return_number=1)
 
-    for i in matchups:
-        for p in i.home_lineup:
-            if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
-                score_diff = (p.points - p.projected_points)/p.projected_points
-                proj_diff = p.points - p.projected_points
-                if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
-                    mvp_score_diff = score_diff
-                    mvp_proj = proj_diff
-                    mvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
-                    mvp = p.position + ' ' + p.name
-                    mvp_team = i.home_team
-                elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
-                    lvp_score_diff = score_diff
-                    lvp_proj = proj_diff
-                    lvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
-                    lvp = p.position + ' ' + p.name
-                    lvp_team = i.home_team
-        for p in i.away_lineup:
-            if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
-                score_diff = (p.points - p.projected_points)/p.projected_points
-                proj_diff = p.points - p.projected_points
-                if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
-                    mvp_score_diff = score_diff
-                    mvp_proj = proj_diff
-                    mvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
-                    mvp = p.position + ' ' + p.name
-                    mvp_team = i.away_team
-                elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
-                    lvp_score_diff = score_diff
-                    lvp_proj = proj_diff
-                    lvp_score = '%.2f points (%.2f proj, %.2f diff ratio)' % (p.points, p.projected_points, score_diff)
-                    lvp = p.position + ' ' + p.name
-                    lvp_team = i.away_team
+    best = players[0][0]
+    worst = players[1][0]
 
-    mvp_str = ['👍 #c#Week MVP:#c# %s \n#p# %s, #b#%s#b# with %s' % (emotes[mvp_team.team_id], mvp, mvp_team.team_abbrev, mvp_score)]
-    lvp_str = ['👎 #c#Week LVP:#c# %s \n#p# %s, #b#%s#b# with %s' % (emotes[lvp_team.team_id], lvp, lvp_team.team_abbrev, lvp_score)]
+    mvp_score = f"{best['points']} points ({best['projected']} proj, {best['proj_diff']} diff ratio)"
+    lvp_score = f"{worst['points']} points ({worst['projected']} proj, {worst['proj_diff']} diff ratio)"
+
+    mvp_str = ['👍 #c#Week MVP:#c# %s \n#p# %s, #b#%s#b# with %s\n' % (emotes[best['fantasy_team'].team_id], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
+    lvp_str = ['👎 #c#Week LVP:#c# %s \n#p# %s, #b#%s#b# with %s\n' % (emotes[worst['fantasy_team'].team_id], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
     return (mvp_str + lvp_str)
 
 def get_trophies(league, extra_trophies, week=None):
@@ -1077,10 +1039,10 @@ def get_trophies(league, extra_trophies, week=None):
             blowout_emotes = '%s< %s' % (emotes[blown_out_team.team_id], emotes[ownerer_team.team_id])
         
 
-    high_score_str = ['👑 #c#Highest score:#c# %s \n#p# #b#%s#b# with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
-    low_score_str = ['💩 #c#Lowest score:#c# %s \n#p# #b#%s#b# with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
-    close_score_str = ['🧊 #c#Closest Win:#c# %s \n#p# #b#%s#b# barely beat #b#%s#b# by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
-    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n#p# #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
+    high_score_str = ['👑 #c#Highest score:#c# %s \n#p# #b#%s#b# with %.2f points\n' % (emotes[high_team.team_id], high_team.team_name, high_score)]
+    low_score_str = ['💩 #c#Lowest score:#c# %s \n#p# #b#%s#b# with %.2f points\n' % (emotes[low_team.team_id], low_team.team_name, low_score)]
+    close_score_str = ['🧊 #c#Closest Win:#c# %s \n#p# #b#%s#b# barely beat #b#%s#b# by a margin of %.2f\n' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
+    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n#p# #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f\n' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
 
     text = ['#u##b#Trophies of the week#b##u# '] + high_score_str + low_score_str + close_score_str + blowout_str
 
@@ -1106,17 +1068,19 @@ def get_player_achievers(league, week=None, return_number=2):
     for matchup in box_scores:
         for team, team_lineup in zip([matchup.home_team, matchup.away_team], [matchup.home_lineup, matchup.away_lineup]):
             for player in team_lineup:
-                if player.slot_position not in ['BE', 'IR'] and hasattr(player, 'projected_points') and player.projected_points is not None:
+                if player.slot_position not in ['BE', 'IR'] and hasattr(player, 'projected_points') and player.projected_points is not None and player.position != 'D/ST':
                     diff = round(player.points - player.projected_points, 2)
+                    proj_diff = round(diff/player.projected_points, 2)
                     player_diffs.append({
                         'name': player.name,
                         'team': player.proTeam if hasattr(player, 'proTeam') else '',
-                        'fantasy_team': team.team_abbrev if team else '',
+                        'fantasy_team': team if team else None,
                         'points': player.points,
                         'projected': player.projected_points,
-                        'diff': diff
+                        'diff': diff,
+                        'proj_diff': proj_diff
                     })
-    sorted_diffs = sorted(player_diffs, key=lambda x: x['diff'], reverse=True)
+    sorted_diffs = sorted(player_diffs, key=lambda x: x['proj_diff'], reverse=True)
     best = sorted_diffs[:return_number]
     worst = sorted_diffs[-return_number:]
     return best, worst
