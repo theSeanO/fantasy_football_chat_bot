@@ -48,7 +48,7 @@ def scheduler():
         timezone=my_timezone, replace_existing=True)
     
     sched.add_job(espn_bot, 'cron', ['get_ai_recap'], id='ai_recap',
-        day_of_week='tue', hour=7, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
+        day_of_week='tue', hour=8, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'cron', ['get_standings'], id='standings',
@@ -109,13 +109,13 @@ def scheduler():
         if data['swid'] and data['espn_s2']:
             ready_text += " SWID and ESPN_S2 provided."
     except KeyError:
-        ready_text += " SWID and ESPN_S2 not provided."
+        ready_text += ""
 
     try:
         if ai_data['base_api_url'] and ai_data['model_name'] and ai_data['api_key']:
             ready_text += " AI requirements provided."
     except KeyError:
-        ready_text += " AI requirements not provided."
+        ready_text += ""
 
     print(ready_text)
     logging.info(ready_text)
