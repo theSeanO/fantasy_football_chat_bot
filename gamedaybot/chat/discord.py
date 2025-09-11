@@ -55,7 +55,7 @@ class Discord(object):
             If there is an error with the POST request.
         """
 
-        message = ">>> {0}".format(replace_formatting(text))
+        message = "{0}".format(replace_formatting(text))
         template = {
             "content": message  # limit 2000 chars
         }
@@ -76,7 +76,8 @@ class Discord(object):
 def replace_formatting(text):
     text = text.replace('#u#', '__') # Underline
     text = text.replace('#b#', '**') # Bold
-    text = text.replace('#c#', '`')  # Code Block
+    text = text.replace('#c#', '`')  # Code block
     text = text.replace('#p#', '*')  # Bullet point
+    text = text.replace('#q#', '> ') # Quote block
 
     return text
