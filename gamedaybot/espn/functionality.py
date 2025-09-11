@@ -110,7 +110,7 @@ def get_standings(league, top_half_scoring=False, week=None):
         
     title = ['#u##b#Current Standings#b##u#']
 
-    text = title + standings_txt + ['']
+    text = title + standings_txt + ['‎']
     return "\n".join(text)
 
 
@@ -309,7 +309,7 @@ def scan_roster(lineup, team, warning, emotes):
 
     if count > 0:
         s = '%s#b#%s#b# - #b#%d#b#: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])
-        report =  [s.lstrip()]
+        report =  [s.lstrip() + '\n']
 
     return report
 
@@ -824,7 +824,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = [''] + ['#u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['']
+    text = ['#u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['‎']
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
