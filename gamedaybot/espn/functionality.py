@@ -451,12 +451,16 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
             drop_str = ''
             for item in txn.items:
                 if item.type == 'ADD':
+                    position = league.player_info(item.player).position
+                    pos_str = f'- {league.player_info(item.player).proTeam} {position}' if position != 'D/ST' else ''
                     if faab:
-                        add_str += f"#p# ADDED {league.player_info(item.player).position} - {item.player} (${faab_amount})\n"
+                        add_str += f"#p# ADDED {item.player} {pos_str} (${faab_amount}) \n"
                     else:
-                        add_str += f"#p# ADDED {league.player_info(item.player).position} - {item.player}\n"
+                        add_str += f"#p# ADDED {item.player} {pos_str} \n"
                 elif item.type == 'DROP':
-                    drop_str += f"\u0009#p# DROPPED {league.player_info(item.player).position} - {item.player}\n"
+                    position = league.player_info(item.player).position
+                    pos_str = f'- {league.player_info(item.player).proTeam} {position}' if position != 'D/ST' else ''
+                    drop_str += f"\u0009#p# DROPPED {item.player} {pos_str} \n"
             s = f"{team_name} \n{add_str}{drop_str}"
             if faab:
                 report_items.append((faab_amount, s.lstrip()))
@@ -928,8 +932,8 @@ def get_mvp_trophy(league, week=None):
     mvp_score = f"{best['points']} points ({best['projected']} proj, {best['proj_diff']} diff ratio)"
     lvp_score = f"{worst['points']} points ({worst['projected']} proj, {worst['proj_diff']} diff ratio)"
 
-    mvp_str = ['👍 #c#Week MVP:#c# %s \n#p# %s, #b#%s#b# with %s' % (emotes[best['fantasy_team'].team_id], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
-    lvp_str = ['👎 #c#Week LVP:#c# %s \n#p# %s, #b#%s#b# with %s' % (emotes[worst['fantasy_team'].team_id], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
+    mvp_str = ['👍 #c#Week MVP:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[best['fantasy_team'].team_id], best['position'], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
+    lvp_str = ['👎 #c#Week LVP:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[worst['fantasy_team'].team_id], worst['position'], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
     return (mvp_str + lvp_str)
 
 def get_trophies(league, extra_trophies, week=None):
@@ -1043,6 +1047,7 @@ def get_player_achievers(league, week=None, return_number=2):
                     player_diffs.append({
                         'name': player.name,
                         'team': player.proTeam if hasattr(player, 'proTeam') else '',
+                        'position': player.position,
                         'fantasy_team': team if team else None,
                         'points': player.points,
                         'projected': player.projected_points,
