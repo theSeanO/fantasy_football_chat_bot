@@ -1043,7 +1043,7 @@ def get_player_achievers(league, week=None, return_number=2):
             for player in team_lineup:
                 if player.slot_position not in ['BE', 'IR'] and hasattr(player, 'projected_points') and player.projected_points is not None and player.position != 'D/ST':
                     diff = round(player.points - player.projected_points, 2)
-                    proj_diff = round(diff/player.projected_points, 2)
+                    proj_diff = round(diff/player.projected_points, 2) if player.projected_points != 0 else 0
                     player_diffs.append({
                         'name': player.name,
                         'team': player.proTeam if hasattr(player, 'proTeam') else '',
