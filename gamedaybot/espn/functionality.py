@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 import gamedaybot.utils.util as util
 import gamedaybot.espn.env_vars as env_vars
 
@@ -465,16 +465,98 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
             if faab:
                 report_items.append((faab_amount, s.lstrip()))
             else:
-                report.append(s.lstrip())
+                report_items.append((datetime.fromtimestamp(txn.date / 1000), s.lstrip()))
 
     if faab:
         # Sort by faab_amount descending
         report_items.sort(key=lambda x: x[0], reverse=True)
         report = [item[1] for item in report_items]
+    else:
+        report_items.sort(key=lambda x: x[0])
+        report = [item[1] for item in report_items]
 
     # Only return a report if there are transactions
     if report:
         text = [f'#q##u##b#Waiver Report {today}#b##u#'] + report
+
+    return '\n'.join(text)
+
+
+def get_transaction_report(league, faab=False, scoring_period=None, test_date=None):
+    """
+    Generate a transaction report for a given league and scoring period.
+
+    The report lists all non-waiver transactions that occurred on the specified date (defaults to yesterday),
+    including the team that made the transaction, the player(s) added, and the player(s) dropped (if applicable).
+    If faab is True, the report will include FAAB amount spent and will be sorted from largest to smallest FAAB bid.
+
+    Parameters
+    ----------
+    league : object
+        The league object for which the report is being generated.
+    faab : bool, optional
+        If True, include FAAB amount spent and sort report by FAAB descending. Defaults to False.
+    scoring_period : int, optional
+        The scoring period to query transactions for. Defaults to league.scoringPeriodId.
+    test_date : str, optional
+        Date string (YYYY-MM-DD) to simulate 'today' for testing historical transactions. Defaults to current date.
+
+    Returns
+    -------
+    str
+        A formatted string containing the waiver report.
+    """
+
+    # Allow testing with a specific scoring period and date
+    if scoring_period is None:
+        scoring_period = league.scoringPeriodId
+    transactions = league.transactions(scoring_period, types={'FREEAGENT'})
+    report = []
+    emotes = env_vars.split_emotes(league)
+    report_items = []  # For sorting if faab
+    today = datetime.strptime(test_date, '%Y-%m-%d') if test_date else date.today()
+    today = (today - timedelta(days=1)).strftime('%Y-%m-%d')
+    text = ''
+
+    for txn in transactions:
+        # Only include transactions matching the test date and type WAIVER
+        txn_date = None
+        if txn.date:
+            txn_date = date.fromtimestamp(txn.date / 1000).strftime('%Y-%m-%d')
+        if txn_date == today and txn.status == 'EXECUTED':
+            team_name = f'{emotes[txn.team.team_id]}#b#{txn.team.team_name}#b#'
+            faab_amount = txn.bid_amount if hasattr(txn, 'bid_amount') else 0
+            add_str = ''
+            drop_str = ''
+            for item in txn.items:
+                if item.type == 'ADD':
+                    position = league.player_info(item.player).position
+                    pos_str = f'- {league.player_info(item.player).proTeam} {position}' if position != 'D/ST' else ''
+                    if faab:
+                        add_str += f"#p# ADDED {item.player} {pos_str} (${faab_amount}) \n"
+                    else:
+                        add_str += f"#p# ADDED {item.player} {pos_str} \n"
+                elif item.type == 'DROP':
+                    position = league.player_info(item.player).position
+                    pos_str = f'- {league.player_info(item.player).proTeam} {position}' if position != 'D/ST' else ''
+                    drop_str += f"\u0009#p# DROPPED {item.player} {pos_str} \n"
+            s = f"{team_name} \n{add_str}{drop_str}"
+            if faab:
+                report_items.append((faab_amount, s.lstrip()))
+            else:
+                report_items.append((datetime.fromtimestamp(txn.date / 1000), s.lstrip()))
+
+    if faab:
+        # Sort by faab_amount descending
+        report_items.sort(key=lambda x: x[0], reverse=True)
+        report = [item[1] for item in report_items]
+    else:
+        report_items.sort(key=lambda x: x[0])
+        report = [item[1] for item in report_items]
+
+    # Only return a report if there are transactions
+    if report:
+        text = [f'#q##u##b#Transaction Report {today}#b##u#'] + report
 
     return '\n'.join(text)
 
