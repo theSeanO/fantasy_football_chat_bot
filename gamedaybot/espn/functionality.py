@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import gamedaybot.utils.util as util
 import gamedaybot.espn.env_vars as env_vars
 
@@ -465,11 +465,15 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
             if faab:
                 report_items.append((faab_amount, s.lstrip()))
             else:
-                report.append(s.lstrip())
+                report_items.append((datetime.fromtimestamp(txn.date / 1000), s.lstrip()))
 
     if faab:
         # Sort by faab_amount descending
         report_items.sort(key=lambda x: x[0], reverse=True)
+        report = [item[1] for item in report_items]
+    else:
+        # Sort by time executed
+        report_items.sort(key=lambda x: x[0])
         report = [item[1] for item in report_items]
 
     # Only return a report if there are transactions
