@@ -472,6 +472,7 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         report_items.sort(key=lambda x: x[0], reverse=True)
         report = [item[1] for item in report_items]
     else:
+        # Sort by time executed
         report_items.sort(key=lambda x: x[0])
         report = [item[1] for item in report_items]
 
