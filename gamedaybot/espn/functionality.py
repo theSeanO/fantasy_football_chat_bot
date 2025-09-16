@@ -1080,12 +1080,12 @@ def get_ai_recap(league, week=None):
 
     instruction = f"You are a fantasy football commissioner. You will be provided a summary containing the most recent stats for a fantasy football league on week {week}. \
                 (Playoffs start on week {playoffs_week}, with the finals on week {playoffs_week+2}.) \
-                The first line of the summary will include a list of each team's name and their emote code. When you use a team name, please use \"#b#\" around it, and include the emote code and a space in front of the name. \
+                The first line of the summary will include a list of each team's name and their emote code. Please use \"#b#\" on both sides of any team name you use, and include the emote code and a space in front of the name. \
                 The second line of the summary has the win-loss records of every team in order of the current league standings. \
                 The rest of the lines have specific statistics from the week and the season so far. \
                 You are tasked with writing a recap of this week's fantasy action. Keep the tone engaging, funny, and insightful. \
                 Do not simply repeat every single stat verbatim - be creative while calling out relevant stats. Feel free to make fun of or praise teams, players, and performances. \
-                Keep your recap concise (close to but under 1600 characters), as to not overwhelm the user with stats. \
+                Keep your recap concise (close to but STRICTLY UNDER 1800 characters, counting spaces), as to not overwhelm the user with stats, and to fit inside the message character limit. \
                 Do not start your recap with a list of all the teams in the league. If you want to write an intro, keep it under 150 characters. \
                 Do not mention the playoffs until they are 3 weeks away."
 
