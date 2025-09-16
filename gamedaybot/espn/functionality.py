@@ -553,7 +553,7 @@ def combined_power_rankings(league, week=None):
             previous_score = previous_rankings_dict[team_abbrev]
             rank_change_percent = ((float(normalized_current_score) - float(previous_score)) / float(previous_score)) * 100
             rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
-            rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):.1f}%)"
+            rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):4.1f}%)"
 
         s = '%s. %s #c#%4s: %s%s [%4.1f%% | %s]#c#' % (pos, emotes[current_team.team_id], current_team.team_abbrev, normalized_current_score, rank_change_text, current_team.playoff_pct, sr[current_team][0])
         rankings_text.append(s)
