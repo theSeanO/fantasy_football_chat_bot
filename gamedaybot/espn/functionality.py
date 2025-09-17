@@ -97,11 +97,11 @@ def get_standings(league, top_half_scoring=False, week=None):
             standings_txt += ['**%s**' % (div_name)]
             standings_txt += [f"{pos + 1}: {emotes[team.team_id]}{team.team_name} #c#[{team.wins}-{team.losses} | {team.points_for:.2f}]#c#" for \
                 pos, team in enumerate(division)]
-            standings_txt += ['']
+            standings_txt += ['\u200e']
         
     title = ['#q##u##b#Current Standings#b##u# [Record | Points for]']    
 
-    text = title + standings_txt + ['\u200e']
+    text = title + standings_txt
     return "\n".join(text)
 
 
@@ -815,13 +815,13 @@ def optimal_team_scores(league, week=None):
                 results += s
                 i += 1
             
-            results += ['']
+            results += ['\u200e']
     
     if not results:
         return ('')
 
 
-    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['\u200e']
+    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
