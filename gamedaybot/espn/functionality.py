@@ -541,7 +541,7 @@ def combined_power_rankings(league, week=None):
     sr = sim_record(league, week)
 
     # Prepare the output string
-    title = '#u##b#Power Rankings#b##u#'
+    title = '#q##u##b#Power Rankings#b##u#'
     rankings_text = [title + ' PR Pts (%Δ) [Sim Record]']
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
