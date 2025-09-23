@@ -106,7 +106,7 @@ def top_scorer_of_season(league):
     
     max_score = float('-inf')
     top_player = None
-    team = None
+    top_team = None
     
     # Iterating over all teams in the league
     for team in league.teams:
@@ -115,9 +115,9 @@ def top_scorer_of_season(league):
             if player.total_points > max_score:
                 max_score = player.total_points
                 top_player = player
-                team = team
+                top_team = team
                 
-    return top_player, max_score, team
+    return top_player, max_score, top_team
 
 
 # Step 4: Player Bench/Starting Stats.
