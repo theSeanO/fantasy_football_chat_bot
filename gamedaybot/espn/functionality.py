@@ -1056,12 +1056,12 @@ def generate_espn_summary(league, week=None):
     - Top scoring fantasy team of the season: {league.top_scorer().team_name} ({league.top_scorer().points_for})
     - Top scoring fantasy team this week: {top_scoring_team_Week[0].team_name} ({top_scoring_team_Week[1]})
     - Lowest scoring fantasy team this week: {low_scoring_team_Week[0].team_name} ({low_scoring_team_Week[1]})
-    - Top scoring NFL player of the week: {top_scorer_week[0].name} ({top_scorer_week[0].position}) with {top_scorer_week[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_week[2].team_name)})
-    - Top scoring NFL player of the season: {top_scorer_szn[0].name} ({top_scorer_szn[0].position}) with {top_scorer_szn[1]} points (Rostered by {espn_helper.clean_team_name(top_scorer_szn[2].team_name)})
-    - Highest scoring benched player: {highest_bench[0].name} ({highest_bench[0].position}) with {highest_bench[0].points} points (Rostered by {espn_helper.clean_team_name(highest_bench[1].team_name)})
-    - Lowest scoring starting player of the week: {lowest_start[0].name} ({lowest_start[0].position}) with {lowest_start[0].points} points (Rostered by {espn_helper.clean_team_name(lowest_start[1].team_name)})
-    - Biggest blowout match of the week: {espn_helper.clean_team_name(biggest_blowout.home_team.team_name)} ({biggest_blowout.home_score} points) vs {espn_helper.clean_team_name(biggest_blowout.away_team.team_name)} ({biggest_blowout.away_score} points)
-    - Closest game of the week: {espn_helper.clean_team_name(closest_game.home_team.team_name)} ({closest_game.home_score} points) vs {espn_helper.clean_team_name(closest_game.away_team.team_name)} ({closest_game.away_score} points)
+    - Top scoring NFL player of the week: {top_scorer_week[0].name} ({top_scorer_week[0].position}) with {top_scorer_week[1]} points (Rostered by {top_scorer_week[2].team_name})
+    - Top scoring NFL player of the season: {top_scorer_szn[0].name} ({top_scorer_szn[0].position}) with {top_scorer_szn[1]} points (Rostered by {top_scorer_szn[2].team_name})
+    - Highest scoring benched player: {highest_bench[0].name} ({highest_bench[0].position}) with {highest_bench[0].points} points (Rostered by {highest_bench[1].team_name})
+    - Lowest scoring starting player of the week: {lowest_start[0].name} ({lowest_start[0].position}) with {lowest_start[0].points} points (Rostered by {lowest_start[1].team_name})
+    - Biggest blowout match of the week: {biggest_blowout.home_team.team_name} ({biggest_blowout.home_score} points) vs {biggest_blowout.away_team.team_name} ({biggest_blowout.away_score} points)
+    - Closest game of the week: {closest_game.home_team.team_name} ({closest_game.home_score} points) vs {closest_game.away_team.team_name} ({closest_game.away_score} points)
     """
     
     return summary.strip()
