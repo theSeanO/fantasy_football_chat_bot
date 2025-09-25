@@ -107,7 +107,101 @@ Make sure to include a space before the comma before each user and emote ID, it'
 <details>
   <summary>Click to expand!</summary>
 
+These instructions will get you a copy of the project up and running
+on your local machine for development and testing purposes.
+
+### Installing for development
+With Docker:
+```bash
+git clone https://github.com/dtcarls/fantasy_football_chat_bot
+
+cd fantasy_football_chat_bot
+
+docker build -t fantasy_football_chat_bot .
+```
+
+Without Docker:
+
+```bash
+git clone https://github.com/dtcarls/fantasy_football_chat_bot
+
+cd fantasy_football_chat_bot
+
+pip install -r requirements.txt
+```
+
+### Environment Variables
+|Var|Type|Required|Default|Description|
+|---|----|--------|-------|-----------|
+|BOT_ID|String|For GroupMe|None|This is your Bot ID from the GroupMe developers page|
+|SLACK_WEBHOOK_URL|String|For Slack|None|This is your Webhook URL from the Slack App page|
+|DISCORD_WEBHOOK_URL|String|For Discord|None|This is your Webhook URL from the Discord Settings page|
+|LEAGUE_ID|String|Yes|None|This is your ESPN league id|
+|START_DATE|Date|Yes|Start of current season (YYYY-MM-DD)|This is when the bot will start paying attention and sending messages to your chat.|
+|END_DATE|Date|Yes|End of current season (YYYY-MM-DD)|This is when the bot will stop paying attention and stop sending messages to your chat.|
+|LEAGUE_YEAR|String|Yes|Currernt Year (YYYY)|ESPN League year to look at|
+|TIMEZONE|String|Yes|America/New_York|The timezone that the messages will look to send in.|
+|INIT_MSG|String|No|None|The message that the bot will say when it is started.|
+|TOP_HALF_SCORING|Bool|No|False|If set to True, when standings are posted on Wednesday it will also include being in the top half of your league for points and you receive an additional "win" for it.|
+|RANDOM_PHRASE|Bool|No|False|If set to True, when matchups are posted on Tuesday it will also include a random phrase|
+|MONITOR_REPORT|Bool|No|False|If set to True, will provide a report of players in starting lineup that are Questionable, Doubtful, Out, or projected for less than 4 points|
+|WAIVER_REPORT|Bool|No|False|If set to True, will provide a waiver report of add/drops. :warning: ESPN_S2 and SWID are required for this to work :warning:|
+|DAILY_WAIVER|Bool|No|False|If set to True, will provide a waiver report of add/drops daily. :warning: ESPN_S2 and SWID are required for this to work :warning:|
+|ESPN_S2|String|For Private leagues|None|Used for private leagues. See [Private Leagues Section](#private-leagues) for documentation|
+|SWID|String|For Private leagues|None|Used for private leagues. (Can be defined with or without {}) See [Private Leagues Section](#private-leagues) for documentation|
+
+### Running with Docker
+
+Use BOT_ID if using Groupme, DISCORD_WEBHOOK_URL if using Discord, and SLACK_WEBHOOK_URL if using Slack (or multiple to get messages in multiple places)
+
+```bash
+>>> export BOT_ID=[enter your GroupMe Bot ID]
+>>> export WEBHOOK_URL=[enter your Webhook URL]
+>>> export LEAGUE_ID=[enter ESPN league ID]
+>>> export LEAGUE_YEAR=[enter league year]
+>>> cd fantasy_football_chat_bot
+>>> docker run --rm=True \
+-e BOT_ID=$BOT_ID \
+-e LEAGUE_ID=$LEAGUE_ID \
+-e LEAGUE_YEAR=$LEAGUE_YEAR \
+fantasy_football_chat_bot
+```
+
+Alternatively, utilize docker compose and fill in your variables into docker-compose.yml
+```bash
+docker-compose up -d
+```
+
+### Running without Docker
+
+Use BOT_ID if using Groupme, DISCORD_WEBHOOK_URL if using Discord, and SLACK_WEBHOOK_URL if using Slack (or multiple to get messages in multiple places)
+
+```bash
+>>> export BOT_ID=[enter your GroupMe Bot ID]
+>>> export WEBHOOK_URL=[enter your Webhook URL]
+>>> export LEAGUE_ID=[enter ESPN league ID]
+>>> export LEAGUE_YEAR=[enter league year]
+>>> python3 gamedaybot/espn/espn_bot.py
+```
+
+### Running the tests
+
+Automated tests for this package are included in the `tests` directory. After installation,
+you can run these tests by changing the directory to the `gamedaybot` directory and running the following:
+
+```bash
+# install test dependencies then run tests
+pip install -r requirements-test.txt
+pytest -q
+```
+</details>
+
+#### Private Leagues
+
 For private league you will need to get your swid and espn_s2.
+You can use this chrome extension: https://chromewebstore.google.com/detail/espn-private-league-setup/bjmalaafoepfooflcnhjejnopgefjgia?authuser=0&hl=en
+
+Or manually:
 You can find these two values after logging into your espn fantasy football account on espn's website.
 (Chrome Browser)
 Right click anywhere on the website and click inspect option.
@@ -132,17 +226,11 @@ How are power ranks calculated?
 
 * They are calculated using 2 step dominance, as well as a combination of points scored and margin of victory. Weighted 80/15/5 respectively. I wouldn't so much pay attention to the actual number but more of the gap between teams. Full source of the calculations can be seen here: https://github.com/cwendt94/ff-espn-api/commit/61f8a34de5c42196ba0b1552aa25282297f070c5
 
-Is there a version of this for Yahoo/CBS/NFL/[insert other site]?
-
-* No, this would require a significant rework for other sites.
-
-I'm not getting the init message
-
-* Check your environmental variables, especially your Discord Webhook URL. 
-
-I keep getting the init message
-
-* Remove your init message and it will stop. The init message is really for first setup to ensure it is working.
+What fantasy sites do you support?
+* ESPN Public
+* ESPN Private
+* Sleeper (gamedaybot.com)
+* Yahoo (gamedaybot.com) (Coming soon)
 
 How do I set another timezone?
 
