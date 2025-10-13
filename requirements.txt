@@ -5,3 +5,6 @@ requests>=2.0.0,<3.0.0
 urllib3==2.2.3
 espn_api>=0.45.1
 datetime
+discord.py
+python-dotenv
+aiosqlite==0.20.0
