@@ -304,17 +304,12 @@ async def matchups_slash(interaction: discord.Interaction):
             ephemeral=True
         )
         return
-    
-    await interaction.followup.send(
-        f"I’ll post the matchups in {channel.mention} when it’s ready.",
-        ephemeral=True
-    )
 
     # Build league + robust current week
     league = await build_league_from_settings(settings)
     matchups = espn.get_matchups(league)
 
-    await channel.send(replace_formatting(matchups))
+    await interaction.followup.send(replace_formatting(matchups), ephemeral=True)
 
 
 # ---------- Entrypoint ----------
