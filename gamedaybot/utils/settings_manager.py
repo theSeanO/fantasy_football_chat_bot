@@ -1,6 +1,7 @@
 # settings_manager.py
-import aiosqlite
 import os
+import aiosqlite
+import discord
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -27,7 +28,15 @@ async def init_db():
                 autopost_enabled INTEGER DEFAULT 0
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS user_settings (
+                user_id TEXT PRIMARY KEY,
+                league_id TEXT,
+                team_id TEXT
+            )
+        """)
         await db.commit()
+
 
 async def set_guild_settings(guild_id, league_id, season, swid, espn_s2, channel_id):
     await init_db()
@@ -43,8 +52,10 @@ async def set_guild_settings(guild_id, league_id, season, swid, espn_s2, channel
         """, (str(guild_id), league_id, season, swid, espn_s2, channel_id, str(guild_id)))
         await db.commit()
 
-async def get_guild_settings(guild_id):
+async def get_guild_settings(interaction: discord.Interaction):
     await init_db()
+    guild_id = str(interaction.guild.id)
+    settings = None
     async with aiosqlite.connect(DB_PATH) as db:
         async with db.execute("""
             SELECT league_id, season, swid, espn_s2, channel_id, autopost_enabled
@@ -53,7 +64,7 @@ async def get_guild_settings(guild_id):
         """, (str(guild_id),)) as cursor:
             row = await cursor.fetchone()
             if row:
-                return {
+                settings = {
                     "league_id": int(row[0]),
                     "season": int(row[1]),
                     "swid": row[2],
@@ -61,7 +72,49 @@ async def get_guild_settings(guild_id):
                     "channel_id": int(row[4]),
                     "autopost_enabled": bool(row[5])
                 }
-            return None
+
+    if settings == None:
+        await interaction.followup.send("❌ This server hasn't been set up. Use `/setup` first.", ephemeral=True)
+        return
+    
+    return settings
+        
+async def set_user_settings(user_id, league_id, team_id):
+    await init_db()
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            INSERT OR REPLACE INTO user_settings (
+                user_id, league_id, team_id
+            )
+            VALUES (
+                ?, ?, ?
+            )
+        """, (str(user_id), league_id, team_id,))
+        await db.commit()
+
+async def get_user_settings(interaction: discord.Interaction):
+    await init_db()
+    user_id = str(interaction.user.id)
+    team = None
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute("""
+            SELECT user_id, league_id, team_id
+            FROM user_settings
+            WHERE user_id = ?
+        """, (str(user_id),)) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                team = {
+                    "user_id": int(row[0]),
+                    "league_id": int(row[1]),
+                    "team_id": row[2]
+                }
+    
+    if team == None:
+        await interaction.followup.send("❌ No team saved yet. Use `/teams` to view, then `/set_team`.", ephemeral=True)
+        return
+    
+    return team
 
 async def set_autopost(guild_id, enabled):
     await init_db()
