@@ -3,7 +3,6 @@ import sys
 import asyncio
 import discord
 import typing
-from collections import defaultdict
 from discord.ext import commands
 from discord import app_commands, Embed
 from dotenv import load_dotenv
@@ -15,6 +14,7 @@ import gamedaybot.utils.bot_util as bot_util
 from gamedaybot.utils.WeekNavigator import WeekNavigator
 from gamedaybot.chat.discord import replace_formatting
 from gamedaybot.espn.env_vars import split_emotes
+from gamedaybot.utils.util import contains_emoji
 
 from espn_api.football import League
 from gamedaybot.utils.settings_manager import (
@@ -389,6 +389,47 @@ async def top_scorers_overall(interaction: discord.Interaction):
     # Send with navigator
     view = WeekNavigator(week_pages) if len(week_pages) > 1 else None
     await interaction.followup.send(embeds=week_pages[-1], view=view, ephemeral=True)
+
+# Team's schedule, with scores for completed games
+@app_commands.guild_only()
+@bot.tree.command(name="team_schedule", description="Your team's schedule and scores.")
+async def team_schedule(interaction: discord.Interaction):
+    await interaction.response.defer(thinking=True, ephemeral=True)
+    embeds: list[discord.Embed] = []
+
+    settings = await get_guild_settings(interaction)
+    league = await bot_util.build_league_from_settings(settings)
+    final_week = league.settings.reg_season_count
+
+    s = await get_user_settings(interaction)    
+    team = league.teams[int(s['team_id']) - 1]
+    long_name = len(max(league.teams, key=lambda team: len(team.team_name)).team_name)
+    schedule = team.schedule
+    scores = team.scores
+    outcomes = team.outcomes
+
+    lines = []
+    for wk in range(0, final_week):
+        opp = schedule[wk]
+        if contains_emoji(opp.team_name):
+            padding = ' ' * (long_name - len(opp.team_name)) + '\u2004\u200a'
+        else:
+            padding = ' ' * (2 + (long_name - len(opp.team_name)))
+        if outcomes[wk] == 'W':
+            line = f"**W**\u2006 | `{opp.team_name} {padding} {scores[wk]:6.2f} - {opp.scores[wk]:6.2f}`"
+        elif outcomes[wk] == 'L':
+            line = f"**L**\u2005\u2009 | `{opp.team_name} {padding} {scores[wk]:6.2f} - {opp.scores[wk]:6.2f}`"
+        else: 
+            line = f"\u3000 | *{opp.team_name}*"
+        lines.append(line)
+    
+    e = Embed(
+        title=f"Season schedule for {team.team_name} ({team.wins}-{team.losses})",
+        description="\n".join(lines)
+    )
+    embeds.append(e)
+
+    await interaction.followup.send(embeds=embeds, ephemeral=True)
 
 # List of teams
 @app_commands.guild_only()

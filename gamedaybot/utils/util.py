@@ -1,5 +1,6 @@
 import os
 import random
+import emoji
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -48,6 +49,11 @@ def str_to_bool(check: str) -> bool:
         return False
     return check.lower().strip() in ("yes", "true", "t", "1")
 
+def contains_emoji(check: str) -> bool:
+    for char in check:
+        if emoji.is_emoji(char):
+            return True
+    return False
 
 def str_limit_check(text: str, limit: int):
     """

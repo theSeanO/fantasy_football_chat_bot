@@ -300,9 +300,6 @@ async def build_weekly_top_embeds(league: League, week: int, position: str, star
     precision = await detect_scoring_precision(league)
     positions = [position] if position else DESIRED_POSITIONS
 
-    embeds: list[discord.Embed] = []
-    precision = await detect_scoring_precision(league)
-
     best = { } if position else {p: None for p in positions} 
     week_boxes = await espn_call(league.box_scores, week=week)
 
