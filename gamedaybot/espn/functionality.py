@@ -1017,3 +1017,33 @@ def get_trophies(league, extra_trophies, week=None):
         text += util.get_random_phrase()
 
     return '\n'.join(text)
+
+
+def get_player_achievers(league, week=None, return_number=2):
+    """
+    Returns the top and bottom N players who exceeded or fell short of their projection the most in starting lineups for the given week.
+    """
+    if not week:
+        week = league.current_week - 1
+    box_scores = league.box_scores(week=week)
+    player_diffs = []
+    for matchup in box_scores:
+        for team, team_lineup in zip([matchup.home_team, matchup.away_team], [matchup.home_lineup, matchup.away_lineup]):
+            for player in team_lineup:
+                if player.slot_position not in ['BE', 'IR'] and hasattr(player, 'projected_points') and player.projected_points is not None and player.position != 'D/ST':
+                    diff = round(player.points - player.projected_points, 2)
+                    proj_diff = round(diff/player.projected_points, 2) if player.projected_points != 0 else 0
+                    player_diffs.append({
+                        'name': player.name,
+                        'team': player.proTeam if hasattr(player, 'proTeam') else '',
+                        'position': player.position,
+                        'fantasy_team': team if team else None,
+                        'points': player.points,
+                        'projected': player.projected_points,
+                        'diff': diff,
+                        'proj_diff': proj_diff
+                    })
+    sorted_diffs = sorted(player_diffs, key=lambda x: x['proj_diff'], reverse=True)
+    best = sorted_diffs[:return_number]
+    worst = sorted_diffs[-return_number:]
+    return best, worst
