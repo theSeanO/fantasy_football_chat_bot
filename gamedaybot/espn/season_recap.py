@@ -231,7 +231,7 @@ def win_matrix(league):
     standings_txt = ["#u##b#Final Sim Records#b##u#"]
     pos = 1
     for team in team_record:
-        standings_txt += [f"{pos:2}: {emotes[team_record[team][2]]}#c#{team:4} ({team_record[team][0]}-{team_record[team][1]})#c#"]
+        standings_txt += ['%s. %s #c#%4s: [%d - %d]#c#' % (pos, emotes[team_record[team][2]], team, team_record[team][0], team_record[team][1])]
         pos += 1
 
     return '\n'.join(standings_txt)

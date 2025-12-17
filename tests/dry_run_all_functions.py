@@ -47,6 +47,6 @@ printr(espn.get_monitor(league, warning) + '\n')
 printr(espn.get_inactives(league, test_week) + '\n')
 printr(espn.get_trophies(league, True, test_week) + '\n')
 printr(espn.get_waiver_report(league, faab))
-# print(recap.win_matrix(league) + '\n')
-# print(recap.season_trophies(league, True) + '\n')
+print(recap.win_matrix(league) + '\n')
+print(recap.season_trophies(league, True) + '\n')
 

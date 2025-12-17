@@ -250,31 +250,32 @@ def scan_roster(lineup, team, warning, emotes):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position not in ['D/ST', 'P']:
-            if (i.pro_opponent == 'None') or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= warning):
+        if i.game_played <= 0:
+            if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position not in ['D/ST', 'P']:
+                if (i.pro_opponent == 'None') or (i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL') or (i.projected_points <= warning):
+                    count += 1
+                    player = i.position + ' ' + i.name + ' - '
+                    if i.pro_opponent == 'None':
+                        player += '#b#BYE#b#'
+                    elif i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL':
+                        player += '#b#' + i.injuryStatus.title().replace('_', ' ') + '#b#'
+                    elif i.projected_points <= warning:
+                        player += '#b#' + str(i.projected_points) + ' pts#b#'
+                    players += [player]
+            elif i.position == 'D/ST' and i.slot_position !='BE' and (i.pro_opponent == 'None' or i.projected_points <= warning):
                 count += 1
-                player = i.position + ' ' + i.name + ' - '
+                player = i.name + ' - '
                 if i.pro_opponent == 'None':
                     player += '#b#BYE#b#'
-                elif i.injuryStatus != 'ACTIVE' and i.injuryStatus != 'NORMAL':
-                    player += '#b#' + i.injuryStatus.title().replace('_', ' ') + '#b#'
                 elif i.projected_points <= warning:
                     player += '#b#' + str(i.projected_points) + ' pts#b#'
                 players += [player]
-        elif i.position == 'D/ST' and i.slot_position !='BE' and (i.pro_opponent == 'None' or i.projected_points <= warning):
-            count += 1
-            player = i.name + ' - '
-            if i.pro_opponent == 'None':
-                player += '#b#BYE#b#'
-            elif i.projected_points <= warning:
-                player += '#b#' + str(i.projected_points) + ' pts#b#'
-            players += [player]
-            
-        if i.slot_position == 'IR' and \
-            i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
+                
+            if i.slot_position == 'IR' and \
+                i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
-            count += 1
-            players += ['%s %s - #b#Not on IR#b#, %d pts' % (i.position, i.name, i.projected_points)]
+                count += 1
+                players += ['%s %s - #b#Not on IR#b#, %d pts' % (i.position, i.name, i.projected_points)]
                 
     list = ""
     report = ""
@@ -312,22 +313,23 @@ def scan_inactives(lineup, team, users, emotes):
     count = 0
     players = []
     for i in lineup:
-        if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'P':
-            if i.pro_opponent == 'None':
-                count +=1
-                if i.position == 'D/ST':
-                    players += ['%s - #b#BYE#b#' % (i.name)]
-                else:
-                    players += ['%s %s - #b#BYE#b#' % (i.position, i.name)]
-            elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
-                count +=1
-                players += ['%s %s - #b#%s#b#, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
+        if i.game_played <= 0:
+            if i.slot_position != 'BE' and i.slot_position != 'IR' and i.position != 'P':
+                if i.pro_opponent == 'None':
+                    count +=1
+                    if i.position == 'D/ST':
+                        players += ['%s - #b#BYE#b#' % (i.name)]
+                    else:
+                        players += ['%s %s - #b#BYE#b#' % (i.position, i.name)]
+                elif i.game_played == 0 and (i.injuryStatus == 'OUT' or i.injuryStatus == 'DOUBTFUL' or i.projected_points <= 0):
+                    count +=1
+                    players += ['%s %s - #b#%s#b#, %d pts' % (i.position, i.name, i.injuryStatus.title().replace('_', ' '), i.projected_points)]
 
-        if i.slot_position == 'IR' and \
-            i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
+            if i.slot_position == 'IR' and \
+                i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
-            count += 1
-            players += ['%s %s - #b#Not on IR#b#, %d pts' % (i.position, i.name, i.projected_points)]
+                count += 1
+                players += ['%s %s - #b#Not on IR#b#, %d pts' % (i.position, i.name, i.projected_points)]
 
     inactive_list = ""
     inactives = ""
@@ -518,6 +520,10 @@ def combined_power_rankings(league, week=None):
     if not week:
         week = league.current_week - 1
 
+    is_playoffs = False
+    if week > league.settings.reg_season_count:
+        is_playoffs = True
+
     p_rank_up_emoji = "🟢"
     p_rank_down_emoji = "🔻"
     p_rank_same_emoji = "🟰"
@@ -547,7 +553,11 @@ def combined_power_rankings(league, week=None):
 
     # Prepare the output string
     title = '#q##u##b#Power Rankings#b##u#'
-    rankings_text = [title + ' PR Pts (%Δ) [PO Chance | Sim Record]']
+    if (is_playoffs):
+        rankings_text = [title + ' PR Pts (%Δ) [Sim Record]']
+    else:
+        rankings_text = [title + ' PR Pts (%Δ) [PO Chance | Sim Record]']
+
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
         team_abbrev = current_team.team_abbrev
@@ -560,7 +570,10 @@ def combined_power_rankings(league, week=None):
             rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
             rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):4.1f}%)"
 
-        s = '%s. %s #c#%4s: %s%s [%4.1f%% | %s]#c#' % (pos, emotes[current_team.team_id], current_team.team_abbrev, normalized_current_score, rank_change_text, current_team.playoff_pct, sr[current_team][0])
+        if (is_playoffs):
+            s = '%s. %s #c#%4s: %s%s [%s]#c#' % (pos, emotes[current_team.team_id], current_team.team_abbrev, normalized_current_score, rank_change_text, sr[current_team][0])
+        else:
+            s = '%s. %s #c#%4s: %s%s [%4.1f%% | %s]#c#' % (pos, emotes[current_team.team_id], current_team.team_abbrev, normalized_current_score, rank_change_text, current_team.playoff_pct, sr[current_team][0])
         rankings_text.append(s)
         pos += 1
 
