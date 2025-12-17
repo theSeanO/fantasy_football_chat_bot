@@ -50,7 +50,9 @@ def str_to_bool(check: str) -> bool:
     bool
         The boolean value of the string.
     """
-    return check.lower() in ("yes", "true", "t", "1")
+    if (check is None) or (not isinstance(check, str)):
+        return False
+    return check.lower().strip() in ("yes", "true", "t", "1")
 
 
 def str_limit_check(text: str, limit: int):
@@ -71,6 +73,9 @@ def str_limit_check(text: str, limit: int):
     """
 
     split_str = []
+
+    if (limit <= 0) or (not isinstance(limit, int)):
+        raise ValueError("Limit must be a positive integer.")
 
     if len(text) > limit:
         part_one = text[:limit].split('\n')
@@ -103,7 +108,9 @@ def str_to_datetime(date_str: str) -> datetime:
     """
 
     date_format = "%Y-%m-%d"
-    return datetime.strptime(date_str, date_format)
+    if (date_str is None) or (not isinstance(date_str, str)):
+        raise ValueError("Date string must be a non-empty string in the format 'YYYY-MM-DD'.")
+    return datetime.strptime(date_str.strip(), date_format)
 
 
 def currently_in_season(season_start_date=None, season_end_date=None, current_date=datetime.now()):
@@ -139,6 +146,11 @@ def currently_in_season(season_start_date=None, season_end_date=None, current_da
         season_end_date = str(os.environ["END_DATE"])
     except KeyError:
         pass
+
+    if (season_start_date is None) or (not isinstance(season_start_date, str)):
+        raise ValueError("Date string must be a non-empty string in the format 'YYYY-MM-DD'.")
+    if (season_end_date is None) or (not isinstance(season_end_date, str)):
+        raise ValueError("Date string must be a non-empty string in the format 'YYYY-MM-DD'.")
     return current_date >= str_to_datetime(season_start_date) and current_date <= str_to_datetime(season_end_date)
 
 
