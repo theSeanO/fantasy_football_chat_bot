@@ -5,23 +5,23 @@ sys.path.insert(1, os.path.abspath('.'))
 from espn_api.football import League
 import gamedaybot.espn.season_recap as recap
 import gamedaybot.espn.functionality as espn
+from gamedaybot.chat.discord import Discord
+from gamedaybot.chat.discord import replace_formatting
+from gamedaybot.espn.env_vars import get_env_vars
 
-league_id = os.environ['LEAGUE_ID']
+data = get_env_vars()
+
+league_id = data['league_id']
 
 try:
-    year = int(os.environ['LEAGUE_YEAR'])
+    year = int(data['year'])
 except KeyError:
     year = 2025
 
 try:
-    warning = int(os.environ['SCORE_WARNING'])
+    warning = int(data['score_warn'])
 except KeyError:
     warning = 0
-
-try:
-    extra_trophies = bool(os.environ["EXTRA_TROPHIES"])
-except KeyError: 
-    extra_trophies = True
 
 try:
     test_week = int(os.environ["TEST_WEEK"])
@@ -30,17 +30,23 @@ except KeyError:
 
 league = League(league_id, year)
 faab = league.settings.faab
+# discord_bot = Discord(data['discord_webhook_url'])
+# discord_bot.send_message('test')
 
-print(espn.get_scoreboard_short(league, week=test_week))
-print(espn.get_projected_scoreboard(league, week=test_week))
-print(espn.get_standings(league, week=test_week))
-print(espn.get_close_scores(league, week=test_week))
-print(espn.get_monitor(league, warning=warning))
-print(espn.get_matchups(league, week=test_week))
-print(espn.combined_power_rankings(league, week=test_week))
-print(espn.get_trophies(league, week=test_week))
-print(espn.optimal_team_scores(league, week=test_week))
-print(espn.get_waiver_report(league, faab=faab))
+def printr(text):
+    print(replace_formatting(text))
 
-print(recap.win_matrix(league))
-print(recap.season_trophies(league))
+printr(espn.get_matchups(league, test_week) + '\n')
+printr(espn.get_scoreboard_short(league, test_week) + '\n')
+printr(espn.get_projected_scoreboard(league, test_week) + '\n')
+printr(espn.get_close_scores(league, test_week) + '\n')
+printr(espn.get_standings(league, False, test_week) + '\n')
+printr(espn.optimal_team_scores(league, test_week) + '\n')
+printr(espn.combined_power_rankings(league, test_week) + '\n')
+printr(espn.get_monitor(league, warning) + '\n')
+printr(espn.get_inactives(league, test_week) + '\n')
+printr(espn.get_trophies(league, True, test_week) + '\n')
+printr(espn.get_waiver_report(league, faab))
+print(recap.win_matrix(league) + '\n')
+print(recap.season_trophies(league, True) + '\n')
+
