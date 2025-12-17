@@ -98,9 +98,9 @@ def get_standings(league, top_half_scoring=False, week=None):
                 pos, team in enumerate(division)]
             standings_txt += ['\u200e']
         
-    title = ['#q##u##b#Current Standings#b##u# [Record | Points for]']    
+    title = ['#q##u##b#Current Standings#b##u# [Record | Points for]']
 
-    text = title + standings_txt
+    text = title + standings_txt + ['\u200e']
     return "\n".join(text)
 
 
@@ -820,7 +820,7 @@ def optimal_team_scores(league, week=None):
         return ('')
 
 
-    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results
+    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['\u200e']
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
@@ -1021,7 +1021,7 @@ def get_trophies(league, extra_trophies, week=None):
     high_score_str = ['👑 #c#Highest score:#c# %s \n#p# #b#%s#b# with %.2f points' % (emotes[high_team.team_id], high_team.team_name, high_score)]
     low_score_str = ['💩 #c#Lowest score:#c# %s \n#p# #b#%s#b# with %.2f points' % (emotes[low_team.team_id], low_team.team_name, low_score)]
     close_score_str = ['🧊 #c#Closest Win:#c# %s \n#p# #b#%s#b# barely beat #b#%s#b# by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
-    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n#p# #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout_score)]
+    blowout_str = ['💥 #c#Biggest Loss:#c# %s \n#p# #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
 
     text = ['#q##u##b#Trophies of the week#b##u# '] + high_score_str + low_score_str + close_score_str + blowout_str
 
