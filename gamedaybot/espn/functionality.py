@@ -798,26 +798,25 @@ def optimal_team_scores(league, week=None):
     starter_counts = get_starter_counts(league)
 
     for i in box_scores:
-        if i.home_team != 0:
-            best_scores[i.home_team] = optimal_lineup_score(i.home_lineup, starter_counts)
-        if i.away_team != 0:
-            best_scores[i.away_team] = optimal_lineup_score(i.away_lineup, starter_counts)
+        home = i.home_team
+        away = i.away_team
 
-    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
+        if not home or not away:
+            continue
 
-    i = 1
-    for score in best_scores:
-        s = ['%s. %s #c#%4s: %6.2f [%6.2f - %.2f%%]#c#' %
-                (i, emotes[score.team_id], score.team_abbrev, best_scores[score][0],
-                best_scores[score][1], best_scores[score][3])]
-        results += s
-        i += 1
+        home_optimal = optimal_lineup_score(i.home_lineup, starter_counts)
+        away_optimal = optimal_lineup_score(i.away_lineup, starter_counts)
+
+        s = ['%s #c#%4s: %6.2f [%6.2f - %.2f%%]#c# \n%s #c#%4s: %6.2f [%6.2f - %.2f%%]#c#'
+                % (emotes[home.team_id], home.team_abbrev, home_optimal[0], home_optimal[1], home_optimal[3],
+                    emotes[away.team_id], away.team_abbrev, away_optimal[0], away_optimal[1], away_optimal[3])]
+        results += s + ['\u200e']
 
     if not results:
         return ('')
 
 
-    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['\u200e']
+    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results
     return '\n'.join(text)
 
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
