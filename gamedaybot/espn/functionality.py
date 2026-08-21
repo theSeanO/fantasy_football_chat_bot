@@ -36,6 +36,7 @@ def get_scoreboard_short(league, week=None):
     text += score
     return '\n'.join(text)
 
+
 def get_projected_scoreboard(league, week=None):
     emotes = env_vars.split_emotes(league)
     """
@@ -354,13 +355,16 @@ def get_matchups(league, week=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    matchups = league.box_scores(week=week)
+    box_scores = league.box_scores(week=week)
     scores = []
 
-    for i in matchups:
-        if i.away_team:
-            home_team = '%s#b#%s#b# (%s-%s)' % (emotes[i.home_team.team_id], i.home_team.team_name, i.home_team.wins, i.home_team.losses)
-            away_team = '%s#b#%s#b# (%s-%s)' % (emotes[i.away_team.team_id], i.away_team.team_name, i.away_team.wins, i.away_team.losses)
+    for i in box_scores:
+        home = i.home_team
+        away = i.away_team
+
+        if home and away:
+            home_team = '%s#b#%s#b# (%s-%s)' % (emotes[home.team_id], home.team_name, home.wins, home.losses)
+            away_team = '%s#b#%s#b# (%s-%s)' % (emotes[away.team_id], away.team_name, away.wins, away.losses)
             scores += [home_team.lstrip() + ' vs ' + away_team.lstrip()]
 
     text = ['#q##u##b#Matchups#b##u# '] + scores + ['']
@@ -392,13 +396,14 @@ def get_close_scores(league, week=None):
     score = []
 
     for i in box_scores:
-        if i.away_team:
-            # away_projected = get_projected_total(i.away_lineup)
-            # home_projected = get_projected_total(i.home_lineup)
+        home = i.home_team
+        away = i.away_team
+
+        if home and away:
             diffScore = i.away_projected - i.home_projected
             if (-11 < diffScore <= 0 and not all_played(i.away_lineup)) or (0 <= diffScore < 11 and not all_played(i.home_lineup)):
-                score += ['%s#c#%4s %6.2f - %6.2f %4s#c#%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_projected,
-                                                 i.away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
+                score += ['%s#c#%4s %6.2f - %6.2f %4s#c#%s' % (emotes[home.team_id], home.team_abbrev, i.home_projected,
+                                                 i.away_projected, away.team_abbrev, emotes[away.team_id])]
     if not score:
         return('')
     text = ['#q##u##b#Projected Close Scores#b##u#'] + score
@@ -819,6 +824,7 @@ def optimal_team_scores(league, week=None):
     text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results
     return '\n'.join(text)
 
+
 def get_achievers_trophy(league, low_team_id, high_team_id, week=None):
     """
     This function returns the overachiever and underachiever of the league
@@ -923,6 +929,7 @@ def get_lucky_trophy(league, week=None):
     unlucky_str = ['💀 #c#Unlucky:#c# %s \n#p# #b#%s#b# was %s against the league, but still took an L' % (emotes[unlucky_team.team_id], unlucky_team.team_name, unlucky_record)]
     return (lucky_str + unlucky_str)
 
+
 def get_mvp_trophy(league, week=None):
     """
     This function returns the weekly most valuable and least valuable players,
@@ -954,6 +961,7 @@ def get_mvp_trophy(league, week=None):
     mvp_str = ['👍 #c#Week MVP:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[best['fantasy_team'].team_id], best['position'], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
     lvp_str = ['👎 #c#Week LVP:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[worst['fantasy_team'].team_id], worst['position'], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
     return (mvp_str + lvp_str)
+
 
 def get_trophies(league, extra_trophies, week=None):
     """
