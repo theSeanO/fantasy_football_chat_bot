@@ -434,7 +434,10 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
     # Allow testing with a specific scoring period and date
     if scoring_period is None:
         scoring_period = league.scoringPeriodId
-    transactions = league.transactions(scoring_period, types={'WAIVER'})
+    try:
+        transactions = league.transactions(scoring_period, types={'WAIVER'})
+    except:
+        return('')
     report = []
     emotes = env_vars.split_emotes(league)
     report_items = []  # For sorting if faab
