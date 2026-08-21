@@ -12,11 +12,13 @@ from gamedaybot.espn.env_vars import get_env_vars
 data = get_env_vars()
 
 league_id = data['league_id']
+swid = data['swid']
+espn_s2 = data['espn_s2']
 
 try:
     year = int(data['year'])
 except KeyError:
-    year = 2025
+    year = 2026
 
 try:
     warning = int(data['score_warn'])
@@ -28,7 +30,7 @@ try:
 except KeyError: 
     test_week = None
 
-league = League(league_id, year)
+league = League(league_id, year, espn_s2, swid)
 faab = league.settings.faab
 # discord_bot = Discord(data['discord_webhook_url'])
 # discord_bot.send_message('test')

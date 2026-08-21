@@ -7,14 +7,14 @@ def get_env_vars():
     try:
         ff_start_date = os.environ["START_DATE"]
     except KeyError:
-        ff_start_date = '2025-09-03'
+        ff_start_date = '2026-09-08'
 
     data['ff_start_date'] = ff_start_date
 
     try:
         ff_end_date = os.environ["END_DATE"]
     except KeyError:
-        ff_end_date = '2026-01-04'
+        ff_end_date = '2027-01-06'
 
     data['ff_end_date'] = ff_end_date
 
@@ -75,7 +75,7 @@ def get_env_vars():
     try:
         year = int(os.environ["LEAGUE_YEAR"])
     except KeyError:
-        year = 2025
+        year = 2026
 
     data['year'] = year
 

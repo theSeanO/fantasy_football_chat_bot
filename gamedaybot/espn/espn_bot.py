@@ -9,7 +9,6 @@ import gamedaybot.espn.functionality as espn
 import gamedaybot.espn.season_recap as recap
 
 from espn_api.football import League
-import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -86,7 +85,7 @@ def espn_bot(function):
     try:
         year = int(data['year'])
     except KeyError:
-        year = 2025
+        year = 2026
 
     try:
         swid = data['swid']
