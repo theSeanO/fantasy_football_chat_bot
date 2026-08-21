@@ -21,14 +21,13 @@ def get_scoreboard_short(league, week=None):
         A list of dictionaries representing the games on the scoreboard for the given week. Each dictionary contains
         information about a single game, including the teams and their scores.
     """
-
     emotes = env_vars.split_emotes(league)
     box_scores = league.box_scores(week=week)
     score = ['%s#c#%4s %6.2f - %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
                                     i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team]
 
-    if week == league.current_week - 1:
+    if week == league.current_week - 1 or week == len(league.settings.matchup_periods):
         text = ['#q##u##b#Final Score Update#b##u# ']
     else:
         text = ['#q##u##b#Score Update#b##u#']
@@ -980,7 +979,10 @@ def get_trophies(league, extra_trophies, week=None):
         A string representing the trophies
     """
     if not week:
-        week = league.current_week - 1
+        if league.current_week == len(league.settings.matchup_periods):
+            week = len(league.settings.matchup_periods)
+        else:
+            week = league.current_week - 1
 
     emotes = env_vars.split_emotes(league)
     matchups = league.box_scores(week=week)

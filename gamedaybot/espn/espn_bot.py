@@ -160,10 +160,6 @@ def espn_bot(function):
         text = espn.combined_power_rankings(league)
     elif function == "get_trophies":
         text = espn.get_trophies(league)
-    elif function == "win_matrix":
-        text = recap.win_matrix(league)
-    elif function == "season_trophies":
-        text = recap.season_trophies(league, extra_trophies)  
     elif function == "get_standings":
         text = espn.get_standings(league, top_half_scoring)
     elif function == "get_optimal_scores":
@@ -172,10 +168,18 @@ def espn_bot(function):
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
         text = espn.get_scoreboard_short(league, week=week)
-        text = text + "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
+        text += "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
     elif function == "get_waiver_report":
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
+    elif function == "final_final":
+        week = len(league.settings.matchup_periods)
+        text = espn.get_scoreboard_short(league, week=week)
+        text += "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
+    elif function == "win_matrix":
+        text = recap.win_matrix(league)
+    elif function == "season_trophies":
+        text = recap.season_trophies(league, extra_trophies)  
     elif function == "broadcast":
         try:
             text = broadcast_message
