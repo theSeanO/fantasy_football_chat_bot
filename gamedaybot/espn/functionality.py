@@ -95,7 +95,6 @@ def get_scoreboard_short(league, week=None, box_scores=None):
         A list of dictionaries representing the games on the scoreboard for the given week. Each dictionary contains
         information about a single game, including the teams and their scores.
     """
-
     emotes = env_vars.split_emotes(league)
     if box_scores is None:
         box_scores = fetch_box_scores(league, week=week)
@@ -106,7 +105,7 @@ def get_scoreboard_short(league, week=None, box_scores=None):
     if not score:
         return util.NO_MATCHUP_DATA
 
-    if week == league.current_week - 1:
+    if week == league.current_week - 1 or week == len(league.settings.matchup_periods):
         text = ['#q##u##b#Final Score Update#b##u# ']
     else:
         text = ['#q##u##b#Score Update#b##u#']
@@ -1094,19 +1093,16 @@ def optimal_team_scores(league, week=None):
     for i in box_scores:
         if is_bye_box(i):
             continue
-        best_scores[i.home_team] = optimal_lineup_score(i.home_lineup, starter_counts)
-        best_scores[i.away_team] = optimal_lineup_score(i.away_lineup, starter_counts)
+        home = i.home_team
+        away = i.away_team
 
-    best_scores = {key: value for key, value in sorted(best_scores.items(), key=lambda item: item[1][3], reverse=True)}
+        home_optimal = optimal_lineup_score(i.home_lineup, starter_counts)
+        away_optimal = optimal_lineup_score(i.away_lineup, starter_counts)
 
-    i = 1
-    for score in best_scores:
-        formatted_pos = '%2s' % i
-        s = ['%2s: %s #c#%4s: %6.2f [%6.2f - %.2f%%]#c#' %
-                (formatted_pos.replace(' ', '\u2002'), emotes[score.team_id], score.team_abbrev, best_scores[score][0],
-                best_scores[score][1], best_scores[score][3])]
-        results += s
-        i += 1
+        s = ['%s #c#%4s: %6.2f [%6.2f - %.2f%%]#c# \n%s #c#%4s: %6.2f [%6.2f - %.2f%%]#c#'
+                % (emotes[home.team_id], home.team_abbrev, home_optimal[0], home_optimal[1], home_optimal[3],
+                    emotes[away.team_id], away.team_abbrev, away_optimal[0], away_optimal[1], away_optimal[3])]
+        results += s + ['\u200e']
 
     if not results:
         return ('')
@@ -1286,7 +1282,10 @@ def get_trophies(league, extra_trophies, week=None, box_scores=None):
         A string representing the trophies
     """
     if not week:
-        week = league.current_week - 1
+        if league.current_week == len(league.settings.matchup_periods):
+            week = len(league.settings.matchup_periods)
+        else:
+            week = league.current_week - 1
 
     emotes = env_vars.split_emotes(league)
     if box_scores is None:
