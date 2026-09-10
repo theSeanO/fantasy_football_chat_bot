@@ -3,5 +3,5 @@ flake8==3.3.0
 apscheduler>=3.3.0,<4.0.0
 requests>=2.0.0,<3.0.0
 urllib3==2.2.3
-espn_api>=0.45.1
+espn_api>=0.46.0
 datetime
