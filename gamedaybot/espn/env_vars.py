@@ -1,4 +1,5 @@
 import os
+import gamedaybot.espn.functionality as espn
 import gamedaybot.utils.util as util
 
 
@@ -14,7 +15,7 @@ def get_env_vars():
     try:
         ff_end_date = os.environ["END_DATE"]
     except KeyError:
-        ff_end_date = '2027-01-06'
+        ff_end_date = '2027-01-10'
 
     data['ff_end_date'] = ff_end_date
 
@@ -49,35 +50,19 @@ def get_env_vars():
 
     data['close_scores_threshold'] = close_scores_threshold
 
-    str_limit = 40000  # slack char limit
-
-    try:
-        bot_id = os.environ["BOT_ID"]
-        str_limit = 1000
-    except KeyError:
-        bot_id = 1
-
-    try:
-        slack_webhook_url = os.environ["SLACK_WEBHOOK_URL"]
-    except KeyError:
-        slack_webhook_url = 1
+    str_limit = 2000  # discord char limit
 
     try:
         discord_webhook_url = os.environ["DISCORD_WEBHOOK_URL"]
-        str_limit = 2000
     except KeyError:
         discord_webhook_url = 1
 
-    if (len(str(bot_id)) <= 1 and
-        len(str(slack_webhook_url)) <= 1 and
-            len(str(discord_webhook_url)) <= 1):
+    if (len(str(discord_webhook_url)) <= 1):
         # Ensure that there's info for at least one messaging platform,
         # use length of str in case of blank but non null env variable
         raise Exception("No messaging platform info provided. Be sure one of BOT_ID, SLACK_WEBHOOK_URL, or DISCORD_WEBHOOK_URL env variables are set")
 
     data['str_limit'] = str_limit
-    data['bot_id'] = bot_id
-    data['slack_webhook_url'] = slack_webhook_url
     data['discord_webhook_url'] = discord_webhook_url
 
     data['league_id'] = os.environ["LEAGUE_ID"]
@@ -115,8 +100,6 @@ def get_env_vars():
 
     data['test'] = test
 
-    data['random_phrase'] = get_random_phrase()
-
     try:
         waiver_report = util.str_to_bool(os.environ["WAIVER_REPORT"])
     except KeyError:
@@ -145,16 +128,6 @@ def get_env_vars():
         pass
 
     return data
-
-
-def get_random_phrase():
-    random_phrase = False
-    try:
-        random_phrase = util.str_to_bool(os.environ["RANDOM_PHRASE"])
-    except KeyError:
-        random_phrase = False
-
-    return random_phrase
 
 
 def split_emotes(league):

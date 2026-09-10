@@ -37,8 +37,8 @@ def scheduler():
     #waiver report:                      wed-sun morning at 7:30am local time.
     #season end trophies:                on the End Date provided at 7:30am local time.
 
-    sched.add_job(espn_bot, 'cron', ['get_scoreboard_short'], id='scoreboard2',
-        day_of_week='sun', hour='16,20', start_date=ff_start_date, end_date=ff_end_date,
+    sched.add_job(espn_bot, 'cron', ['get_close_scores'], id='close_scores',
+        day_of_week='sun,mon', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     
     sched.add_job(espn_bot, 'cron', ['get_final'], id='final',
@@ -57,38 +57,31 @@ def scheduler():
         day_of_week='tue', hour=18, minute=30, second=10, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
+    waiver_days = '*' if data['daily_waiver'] else 'wed'
+    sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
+                  day_of_week=waiver_days, hour=7, minute=31, start_date=ff_start_date, end_date=ff_end_date,
+                  timezone=my_timezone, replace_existing=True)
+
     sched.add_job(espn_bot, 'cron', ['get_matchups'], id='matchups',
         day_of_week='thu', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=game_timezone, replace_existing=True)
-
-    sched.add_job(espn_bot, 'cron', ['get_projected_scoreboard'], id='proj_scoreboard',
-        day_of_week='thu', hour=18, minute=30, second=3, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=game_timezone, replace_existing=True)
-
-    sched.add_job(espn_bot, 'cron', ['get_monitor'], id='_monitor',
-        day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=my_timezone, replace_existing=True)
-
-    sched.add_job(espn_bot, 'cron', ['get_inactives'], id='inactives',
-        day_of_week='sun', hour=12, minute=5, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
 
     sched.add_job(espn_bot, 'cron', ['get_scoreboard_short'], id='scoreboard1',
         day_of_week='fri,mon', hour=7, minute=30, start_date=ff_start_date, end_date=ff_end_date,
         timezone=my_timezone, replace_existing=True)
 
-    sched.add_job(espn_bot, 'cron', ['get_close_scores'], id='close_scores',
-        day_of_week='sun,mon', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
-        timezone=game_timezone, replace_existing=True)
-    
-    sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='waiver_report',
-            day_of_week='wed', hour=7, minute=31, start_date=ff_start_date, end_date=ff_end_date,
-            timezone=my_timezone, replace_existing=True)  
+    if data['monitor_report']:
+        sched.add_job(espn_bot, 'cron', ['get_monitor'], id='_monitor',
+            day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
+            timezone=my_timezone, replace_existing=True)
 
-    if data['daily_waiver']:
-        sched.add_job(espn_bot, 'cron', ['get_waiver_report'], id='daily_waiver',
-            day_of_week='mon,tue,thu,fri,sat,sun', hour=7, minute=31, start_date=ff_start_date, end_date=ff_end_date,
-            timezone=my_timezone, replace_existing=True)        
+        sched.add_job(espn_bot, 'cron', ['get_inactives'], id='inactives',
+            day_of_week='sun', hour=12, minute=5, start_date=ff_start_date, end_date=ff_end_date,
+            timezone=game_timezone, replace_existing=True)
+
+    sched.add_job(espn_bot, 'cron', ['get_scoreboard_short'], id='scoreboard2',
+        day_of_week='sun', hour='16,20', start_date=ff_start_date, end_date=ff_end_date,
+        timezone=game_timezone, replace_existing=True)
         
     # jobs for final day    
     sched.add_job(espn_bot, 'date', ['win_matrix'], id='win_matrix',

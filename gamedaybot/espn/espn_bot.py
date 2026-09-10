@@ -1,5 +1,4 @@
 import os
-# For local use
 import sys
 sys.path.insert(1, os.path.abspath('.'))
 import gamedaybot.utils.util as util
@@ -7,7 +6,6 @@ from gamedaybot.chat.discord import Discord
 from gamedaybot.espn.env_vars import get_env_vars
 import gamedaybot.espn.functionality as espn
 import gamedaybot.espn.season_recap as recap
-
 from espn_api.football import League
 import logging
 
@@ -85,7 +83,6 @@ def espn_bot(function):
         year = int(data['year'])
     except KeyError:
         year = 2026
-        year = 2026
 
     try:
         swid = data['swid']
@@ -148,9 +145,11 @@ def espn_bot(function):
         if text != util.NO_MATCHUP_DATA:
             text = text + "\n\n" + espn.get_projected_scoreboard(league, box_scores=box_scores)
     elif function == "get_monitor":
-        text = espn.get_monitor(league, warning)
+        box_scores = espn.fetch_box_scores(league)
+        text = espn.get_monitor(league, warning, box_scores=box_scores)
     elif function == "get_inactives":
-        text = espn.get_inactives(league)
+        box_scores = espn.fetch_box_scores(league)
+        text = espn.get_inactives(league, box_scores=box_scores)
     elif function == "get_scoreboard_short":
         box_scores = espn.fetch_box_scores(league)
         text = espn.get_scoreboard_short(league, box_scores=box_scores)
@@ -175,8 +174,12 @@ def espn_bot(function):
     elif function == "get_final":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
-        text = espn.get_scoreboard_short(league, week=week)
-        text = text + "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
+        box_scores = espn.fetch_box_scores(league, week=week)
+        scores = espn.get_scoreboard_short(league, week=week, box_scores=box_scores)
+        if scores == util.NO_MATCHUP_DATA:
+            text = scores
+        else:
+            text = scores + "\n\n" + espn.get_trophies(league, extra_trophies, week=week, box_scores=box_scores)
     elif function == "get_waiver_report":
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
