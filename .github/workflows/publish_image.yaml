@@ -85,6 +85,8 @@ jobs:
           load: true
           push: false
           tags: ${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Test image
         run: |
@@ -105,8 +107,10 @@ jobs:
       - name: Push image to registry
         uses: docker/build-push-action@v4
         with:
+          context: .
           push: true
           tags: ${{ env.TAGS }}
+          cache-from: type=gha
 
       # Last, so a build or test failure never leaves a release pointing at an
       # image that was never published. Creating this with GITHUB_TOKEN is
