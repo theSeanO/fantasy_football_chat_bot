@@ -26,6 +26,11 @@ except KeyError:
     warning = 0
 
 try:
+    threshold = int(data['close_scores_threshold'])
+except KeyError:
+    threshold = espn.CLOSE_SCORES_DEFAULT_THRESHOLD
+
+try:
     test_week = int(os.environ["TEST_WEEK"])
 except KeyError: 
     test_week = None

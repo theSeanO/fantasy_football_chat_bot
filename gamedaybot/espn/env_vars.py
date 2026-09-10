@@ -117,7 +117,7 @@ def get_env_vars():
     try:
         score_warn = int(os.environ["SCORE_WARNING"])
     except KeyError:
-        score_warn = 0
+        score_warn = 3
 
     data['score_warn'] = score_warn
 
