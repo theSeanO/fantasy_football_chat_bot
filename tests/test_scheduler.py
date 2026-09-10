@@ -17,7 +17,7 @@ def jobs(monkeypatch):
     environment the tests happen to run in.
     """
     monkeypatch.setenv('LEAGUE_ID', '1234567')
-    monkeypatch.setenv('BOT_ID', 'x' * 20)
+    monkeypatch.setenv('DISCORD_WEBHOOK_URL', 'x' * 20)
     monkeypatch.setattr(BlockingScheduler, 'start', lambda self, *a, **kw: None)
 
     built = {}
@@ -85,7 +85,9 @@ class TestScheduleShape:
         monkeypatch.delenv('MONITOR_REPORT', raising=False)
         assert set(jobs()) == {
             'close_scores', 'power_rankings', 'final', 'standings',
-            'waiver_report', 'matchups', 'scoreboard1', 'monitor', 'scoreboard2',
+            'waiver_report', 'matchups', 'scoreboard1', 'monitor', 'inactives',
+            'scoreboard2', 'optimal_scores', 'season_trophies',
+            'win_matrix', 'final_final'
         }
 
     def test_monitor_report_can_be_disabled(self, jobs, monkeypatch):
@@ -93,12 +95,13 @@ class TestScheduleShape:
         assert 'monitor' not in jobs()
 
     @pytest.mark.parametrize('job_id,expected_day', [
-        ('close_scores', 'mon'),
+        ('close_scores', 'sun,mon'),
         ('power_rankings', 'tue'),
         ('final', 'tue'),
-        ('standings', 'wed'),
+        ('standings', 'tue'),
         ('matchups', 'thu'),
-        ('monitor', 'sun'),
+        ('monitor', 'fri'),
+        ('inactives', 'sun'),
         ('scoreboard2', 'sun'),
     ])
     def test_job_days(self, jobs, monkeypatch, job_id, expected_day):

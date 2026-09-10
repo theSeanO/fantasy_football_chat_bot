@@ -168,7 +168,7 @@ class TestStringToDatetime:
             util.str_to_datetime("2022-09")
 
     def test_str_to_datetime_non_string_input(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             util.str_to_datetime(123)
 
     def test_str_to_datetime_whitespace_in_date_string(self):
@@ -226,7 +226,7 @@ class TestCurrentlyInSeason:
             util.currently_in_season("2022-09-01", "Dec 31, 2022", datetime(2022, 10, 15))
 
     def test_currently_in_season_non_string_start_date(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             util.currently_in_season(123, "2022-12-31", datetime(2022, 10, 15))
 
     def test_currently_in_season_non_string_end_date(self):

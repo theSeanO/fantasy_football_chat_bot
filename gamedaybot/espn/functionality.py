@@ -340,14 +340,14 @@ def scan_roster(lineup, team, warning, emotes):
 
             elif i.projected_points <= warning and i.game_played == 0:
                 count += 1
-                player = i.position + ' ' + i.name + '#b#' + str(i.projected_points) + ' pts#b#'
+                player = i.position + ' ' + i.name + ' - #b#' + str(i.projected_points) + ' points#b#'
                 players += [player]
 
         if i.slot_position == 'IR' and \
             i.injuryStatus != 'INJURY_RESERVE' and i.injuryStatus != 'OUT':
 
             count += 1
-            player = i.position + ' ' + i.name + ' - #b#Not IR eligible#b#, ' + str(i.projected_points) + ' pts'
+            player = i.position + ' ' + i.name + ' - #b#Not IR eligible#b#, ' + str(i.projected_points) + ' points'
             players += [player]
                 
     list = ""
@@ -702,19 +702,12 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
                 adds.append(f"#p# ADDED {position} - {item.player} (${faab_amount}{callout})")
 
         block = f"{team_name} \n" + ''.join(f"{move}\n" for move in adds + drops)
-        if faab:
-            entries.append((faab_amount, block.lstrip()))
-        else:
-            entries.append((datetime.fromtimestamp(txn.date / 1000), block.lstrip()))
+        entries.append((faab_amount, block.lstrip()))
 
     if faab:
         # Sort by faab_amount descending
         entries.sort(key=lambda entry: entry[0], reverse=True)
-    else:
-        # Sort by time executed
-        entries.sort(key=lambda x: x[0])
-        entries = [item[1] for item in entries]
-
+        
     # Only return a report if there are transactions
     if not entries:
         return ''

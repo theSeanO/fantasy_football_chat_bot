@@ -29,8 +29,9 @@ class FakePlayer:
 
 
 class FakeTeam:
-    def __init__(self, team_name='Test Team'):
+    def __init__(self, team_name='Test Team', team_id=0):
         self.team_name = team_name
+        self.team_id = team_id
 
 
 def flagged(lineup, team_name='Test Team'):
@@ -39,7 +40,7 @@ def flagged(lineup, team_name='Test Team'):
     Lines are right-stripped: scan_roster's format string puts a trailing
     space on the last line, which is not what these tests are about.
     """
-    report = espn.scan_roster(lineup, FakeTeam(team_name))
+    report = espn.scan_roster(lineup, FakeTeam(team_name, 0), warning=3, emotes=['',''])
     if not report:
         return []
     return [line.rstrip() for line in report[0].splitlines()[1:] if line.strip()]
@@ -52,16 +53,16 @@ class TestScanRoster:
         assert flagged([FakePlayer(name='Healthy')]) == []
 
     def test_scan_roster_clean_lineup_returns_empty(self):
-        assert espn.scan_roster([FakePlayer(name='Healthy')], FakeTeam()) == ''
+        assert espn.scan_roster([FakePlayer(name='Healthy')], FakeTeam(), warning=3, emotes=['','']) == ''
 
     # Injury statuses
     def test_scan_roster_flags_questionable(self):
         assert flagged([FakePlayer(position='QB', name='Hurt', injuryStatus='QUESTIONABLE')]) == \
-            ['QB Hurt - Questionable']
+            ['* QB Hurt - #b#Questionable#b#']
 
     def test_scan_roster_underscored_status_is_titled(self):
         assert flagged([FakePlayer(position='RB', name='Doubt', injuryStatus='INJURY_RESERVE')]) == \
-            ['RB Doubt - Injury Reserve']
+            ['* RB Doubt - #b#Injury Reserve#b#']
 
     def test_scan_roster_normal_status_not_flagged(self):
         assert flagged([FakePlayer(injuryStatus='NORMAL')]) == []
@@ -73,18 +74,18 @@ class TestScanRoster:
     # Bye weeks -- espn_api reports game_played 100 for these
     def test_scan_roster_flags_bye_starter(self):
         assert flagged([FakePlayer(position='TE', name='Bye Guy', on_bye_week=True, game_played=100)]) == \
-            ['TE Bye Guy - BYE']
+            ['* TE Bye Guy - #b#BYE#b#']
 
     def test_scan_roster_bye_flagged_even_though_game_played_is_100(self):
         # This is the whole reason the bye branch cannot be folded into the
         # other two, both of which require game_played == 0.
         player = FakePlayer(name='Bye Guy', on_bye_week=True, game_played=100)
-        assert flagged([player]) == ['WR Bye Guy - BYE']
+        assert flagged([player]) == ['* WR Bye Guy - #b#BYE#b#']
 
     # Zero projection
     def test_scan_roster_flags_zero_projection(self):
         assert flagged([FakePlayer(position='K', name='Zero', projected_points=0)]) == \
-            ['K Zero - Projected 0']
+            ['* K Zero - #b#0 points#b#']
 
     def test_scan_roster_zero_projection_ignored_once_game_started(self):
         assert flagged([FakePlayer(projected_points=0, game_played=100)]) == []
@@ -92,11 +93,11 @@ class TestScanRoster:
     # One line per player: the highest-priority reason wins
     def test_scan_roster_injury_beats_bye(self):
         assert flagged([FakePlayer(name='Both', injuryStatus='DOUBTFUL', on_bye_week=True)]) == \
-            ['WR Both - Doubtful']
+            ['* WR Both - #b#Doubtful#b#']
 
     def test_scan_roster_bye_beats_zero_projection(self):
         assert flagged([FakePlayer(name='Both', on_bye_week=True, game_played=100, projected_points=0)]) == \
-            ['WR Both - BYE']
+            ['* WR Both - #b#BYE#b#']
 
     # Bench players are excluded whatever their status
     def test_scan_roster_bench_player_ignored(self):
@@ -114,12 +115,12 @@ class TestScanRoster:
 
     def test_scan_roster_ineligible_ir_flagged(self):
         assert flagged([FakePlayer(position='RB', name='Back', slot_position='IR')]) == \
-            ['RB Back - Not IR eligible']
+            ['* RB Back - #b#Not IR eligible#b#, 10.0 points']
 
     # The report is headed with the team name
     def test_scan_roster_header_is_team_name(self):
-        report = espn.scan_roster([FakePlayer(injuryStatus='OUT')], FakeTeam('Some Team'))
-        assert report[0].splitlines()[0] == 'Some Team: '
+        report = espn.scan_roster([FakePlayer(injuryStatus='OUT')], FakeTeam('Some Team'), warning=3, emotes=['',''])
+        assert report[0].splitlines()[0] == '#b#Some Team#b# - #b#1#b#: '
 
     # Several flagged players come back in lineup order
     def test_scan_roster_multiple_players_in_order(self):
@@ -128,7 +129,7 @@ class TestScanRoster:
             FakePlayer(position='TE', name='Two', on_bye_week=True, game_played=100),
             FakePlayer(position='K', name='Three', projected_points=0),
         ]
-        assert flagged(lineup) == ['QB One - Out', 'TE Two - BYE', 'K Three - Projected 0']
+        assert flagged(lineup) == ['* QB One - #b#Out#b#', '* TE Two - #b#BYE#b#', '* K Three - #b#0 points#b#']
 
 
 class TestIsByeBox:
@@ -231,7 +232,7 @@ class TestGetCloseScores:
 
     def test_close_scores_header_present_when_any_match(self):
         boxes = [FakeBox('AAA', 100.0, 'BBB', 105.0)]
-        assert espn.get_close_scores(None, box_scores=boxes).splitlines()[0] == 'Projected Close Scores'
+        assert espn.get_close_scores(None, box_scores=boxes).splitlines()[0] == '#q##u##b#Projected Close Scores#b##u#'
 
 
 class FakeItem:
@@ -424,7 +425,7 @@ class TestGetWaiverReport:
     def test_waiver_report_header(self):
         txn = FakeTxn('Team A', [FakeItem('ADD', 1, 'One')], DAY_MS, bid_amount=1)
         out = espn.get_waiver_report(FakeLeague([txn], {1: 'RB'}), test_date=DAY)
-        assert out.splitlines()[0] == 'Waiver Report ' + DAY + ':'
+        assert out.splitlines()[0] == '#q##u##b#Waiver Report ' + DAY + '#b##u#'
 
 
 class TestFaabBidCallout:

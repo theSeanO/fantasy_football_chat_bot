@@ -71,7 +71,7 @@ def scheduler():
         timezone=my_timezone, replace_existing=True)
 
     if data['monitor_report']:
-        sched.add_job(espn_bot, 'cron', ['get_monitor'], id='_monitor',
+        sched.add_job(espn_bot, 'cron', ['get_monitor'], id='monitor',
             day_of_week='fri', hour=18, minute=30, start_date=ff_start_date, end_date=ff_end_date,
             timezone=my_timezone, replace_existing=True)
 
@@ -84,7 +84,7 @@ def scheduler():
         timezone=game_timezone, replace_existing=True)
         
     # jobs for final day    
-    sched.add_job(espn_bot, 'cron', ['final_final'], id='final_final',
+    sched.add_job(espn_bot, 'date', ['final_final'], id='final_final',
         run_date=datetime(end_date.year, end_date.month, end_date.day, 7, 30), 
         timezone=my_timezone, replace_existing=True)
 

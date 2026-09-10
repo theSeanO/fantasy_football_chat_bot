@@ -132,6 +132,8 @@ def get_env_vars():
 
 def split_emotes(league):
     emotes = ['']
+    if not league:
+        return emotes
     try:
         emotes += os.environ["EMOTES"].split(',')
     except KeyError:
