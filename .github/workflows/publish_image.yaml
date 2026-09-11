@@ -51,7 +51,7 @@ jobs:
               echo "${IMAGE}:${GITHUB_SHA}"
               echo "EOF"
             } >> "$GITHUB_ENV"
-          if [ "${{ github.event_name }}" = "release" ]; then
+          elif [ "${{ github.event_name }}" = "release" ]; then
             # A release cut by hand keeps whatever tag it was given.
             VERSION="${GITHUB_REF##*/}"
             echo "CREATE_RELEASE=false" >> "$GITHUB_ENV"
