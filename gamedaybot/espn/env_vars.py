@@ -1,4 +1,5 @@
 import os
+import gamedaybot.espn.functionality as espn
 import gamedaybot.utils.util as util
 
 
@@ -7,14 +8,14 @@ def get_env_vars():
     try:
         ff_start_date = os.environ["START_DATE"]
     except KeyError:
-        ff_start_date = '2025-09-03'
+        ff_start_date = '2026-09-08'
 
     data['ff_start_date'] = ff_start_date
 
     try:
         ff_end_date = os.environ["END_DATE"]
     except KeyError:
-        ff_end_date = '2026-01-04'
+        ff_end_date = '2027-01-10'
 
     data['ff_end_date'] = ff_end_date
 
@@ -39,35 +40,29 @@ def get_env_vars():
 
     data['monitor_report'] = monitor_report
 
-    str_limit = 40000  # slack char limit
-
     try:
-        bot_id = os.environ["BOT_ID"]
-        str_limit = 1000
-    except KeyError:
-        bot_id = 1
+        close_scores_threshold = int(os.environ["CLOSE_SCORES_THRESHOLD"])
+    except (KeyError, ValueError):
+        # Unset, or set to something that is not a whole number. A typo in one
+        # optional env var should not take down every scheduled message, so
+        # fall back to the default rather than raise.
+        close_scores_threshold = espn.CLOSE_SCORES_DEFAULT_THRESHOLD
 
-    try:
-        slack_webhook_url = os.environ["SLACK_WEBHOOK_URL"]
-    except KeyError:
-        slack_webhook_url = 1
+    data['close_scores_threshold'] = close_scores_threshold
+
+    str_limit = 2000  # discord char limit
 
     try:
         discord_webhook_url = os.environ["DISCORD_WEBHOOK_URL"]
-        str_limit = 2000
     except KeyError:
         discord_webhook_url = 1
 
-    if (len(str(bot_id)) <= 1 and
-        len(str(slack_webhook_url)) <= 1 and
-            len(str(discord_webhook_url)) <= 1):
+    if (len(str(discord_webhook_url)) <= 1):
         # Ensure that there's info for at least one messaging platform,
         # use length of str in case of blank but non null env variable
         raise Exception("No messaging platform info provided. Be sure one of BOT_ID, SLACK_WEBHOOK_URL, or DISCORD_WEBHOOK_URL env variables are set")
 
     data['str_limit'] = str_limit
-    data['bot_id'] = bot_id
-    data['slack_webhook_url'] = slack_webhook_url
     data['discord_webhook_url'] = discord_webhook_url
 
     data['league_id'] = os.environ["LEAGUE_ID"]
@@ -75,7 +70,7 @@ def get_env_vars():
     try:
         year = int(os.environ["LEAGUE_YEAR"])
     except KeyError:
-        year = 2025
+        year = 2026
 
     data['year'] = year
 
@@ -106,15 +101,6 @@ def get_env_vars():
     data['test'] = test
 
     try:
-        top_half_scoring = util.str_to_bool(os.environ["TOP_HALF_SCORING"])
-    except KeyError:
-        top_half_scoring = False
-
-    data['top_half_scoring'] = top_half_scoring
-
-    data['random_phrase'] = get_random_phrase()
-
-    try:
         waiver_report = util.str_to_bool(os.environ["WAIVER_REPORT"])
     except KeyError:
         waiver_report = False
@@ -131,7 +117,7 @@ def get_env_vars():
     try:
         score_warn = int(os.environ["SCORE_WARNING"])
     except KeyError:
-        score_warn = 0
+        score_warn = 3
 
     data['score_warn'] = score_warn
 
@@ -144,18 +130,10 @@ def get_env_vars():
     return data
 
 
-def get_random_phrase():
-    random_phrase = False
-    try:
-        random_phrase = util.str_to_bool(os.environ["RANDOM_PHRASE"])
-    except KeyError:
-        random_phrase = False
-
-    return random_phrase
-
-
 def split_emotes(league):
     emotes = ['']
+    if not league:
+        return emotes
     try:
         emotes += os.environ["EMOTES"].split(',')
     except KeyError:

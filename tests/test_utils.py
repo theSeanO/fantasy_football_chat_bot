@@ -168,7 +168,7 @@ class TestStringToDatetime:
             util.str_to_datetime("2022-09")
 
     def test_str_to_datetime_non_string_input(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             util.str_to_datetime(123)
 
     def test_str_to_datetime_whitespace_in_date_string(self):
@@ -226,9 +226,121 @@ class TestCurrentlyInSeason:
             util.currently_in_season("2022-09-01", "Dec 31, 2022", datetime(2022, 10, 15))
 
     def test_currently_in_season_non_string_start_date(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             util.currently_in_season(123, "2022-12-31", datetime(2022, 10, 15))
 
     def test_currently_in_season_non_string_end_date(self):
         with pytest.raises(ValueError):
             util.currently_in_season("2022-09-01", None, datetime(2022, 10, 15))
+
+
+class TestHasSendableContent:
+    ############ For `has_sendable_content`
+    # Real content is always sendable
+    def test_has_sendable_content_normal_text(self):
+        assert util.has_sendable_content("Score Update\n TEAM 100.00 - 90.00 OPP") == True
+
+    def test_has_sendable_content_single_word(self):
+        assert util.has_sendable_content("Trophies") == True
+
+    # Empty or whitespace-only messages are not
+    def test_has_sendable_content_empty_string(self):
+        assert util.has_sendable_content("") == False
+
+    def test_has_sendable_content_none(self):
+        assert util.has_sendable_content(None) == False
+
+    def test_has_sendable_content_whitespace(self):
+        assert util.has_sendable_content("   \n \t ") == False
+
+    # Known "nothing to report" placeholders are dropped
+    def test_has_sendable_content_no_matchup_data(self):
+        assert util.has_sendable_content(util.NO_MATCHUP_DATA) == False
+
+    def test_has_sendable_content_sentinel_with_surrounding_whitespace(self):
+        assert util.has_sendable_content("\n" + util.NO_MATCHUP_DATA + "  ") == False
+
+    # A sentinel is only dropped on an exact match, never as a substring
+    def test_has_sendable_content_sentinel_as_prefix(self):
+        assert util.has_sendable_content("Final " + util.NO_MATCHUP_DATA) == True
+
+    def test_has_sendable_content_sentinel_within_longer_message(self):
+        assert util.has_sendable_content(util.NO_MATCHUP_DATA + "\nBut here are the trophies") == True
+
+    # The empty monitor report is deliberately still sent
+    def test_has_sendable_content_empty_monitor_report(self):
+        assert util.has_sendable_content("No Players to Monitor this week. Good Luck!") == True
+
+    def test_has_sendable_content_no_trophy_data(self):
+        assert util.has_sendable_content(util.NO_TROPHY_DATA) == False
+
+    def test_has_sendable_content_sentinels_are_distinct(self):
+        assert util.NO_MATCHUP_DATA != util.NO_TROPHY_DATA
+
+
+class TestAlignScores:
+    ############ For `align_scores`
+    # A shorter score is padded to the widest one
+    def test_align_scores_pads_shorter(self):
+        assert util.align_scores(["99.99", "9.99"]) == ["99.99", " 9.99"]
+
+    def test_align_scores_pads_only_what_is_short(self):
+        assert util.align_scores(["100.00", "99.99", "9.99"]) == ["100.00", " 99.99", "  9.99"]
+
+    # Equal-width input comes back untouched
+    def test_align_scores_equal_widths_unchanged(self):
+        scores = ["99.99", "94.34", "47.29"]
+        assert util.align_scores(scores) == scores
+
+    # Order is preserved, not sorted
+    def test_align_scores_preserves_order(self):
+        assert util.align_scores(["9.99", "99.99", "5.00"]) == [" 9.99", "99.99", " 5.00"]
+
+    # Negative scores are the widest case
+    def test_align_scores_negative(self):
+        assert util.align_scores(["99.99", "-5.00"]) == ["99.99", "-5.00"]
+
+    def test_align_scores_negative_widest(self):
+        assert util.align_scores(["9.99", "-5.00"]) == [" 9.99", "-5.00"]
+
+    # Degenerate inputs
+    def test_align_scores_empty_list(self):
+        assert util.align_scores([]) == []
+
+    def test_align_scores_single(self):
+        assert util.align_scores(["99.99"]) == ["99.99"]
+
+
+class TestAlignRecords:
+    ############ For `align_records`
+    # Wins are right-justified so the hyphens line up
+    def test_align_records_two_digit_wins(self):
+        assert util.align_records(["10-4", "9-5"]) == ["10-4", " 9-5"]
+
+    # Losses are left-justified so the closing paren lines up
+    def test_align_records_two_digit_losses(self):
+        assert util.align_records(["0-14", "8-6"]) == ["0-14", "8-6 "]
+
+    # Both at once
+    def test_align_records_both_sides(self):
+        assert util.align_records(["10-4", "0-14", "9-5"]) == ["10-4 ", " 0-14", " 9-5 "]
+
+    # Equal-width input comes back untouched
+    def test_align_records_equal_widths_unchanged(self):
+        records = ["7-7", "6-8", "5-9"]
+        assert util.align_records(records) == records
+
+    # Order is preserved, not sorted
+    def test_align_records_preserves_order(self):
+        assert util.align_records(["9-5", "10-4"]) == [" 9-5", "10-4"]
+
+    # A record carrying ties keeps them on the left-justified side
+    def test_align_records_with_ties(self):
+        assert util.align_records(["9-4-1", "10-5"]) == [" 9-4-1", "10-5  "]
+
+    # Degenerate inputs
+    def test_align_records_empty_list(self):
+        assert util.align_records([]) == []
+
+    def test_align_records_single(self):
+        assert util.align_records(["9-5"]) == ["9-5"]

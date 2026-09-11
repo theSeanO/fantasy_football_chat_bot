@@ -193,7 +193,7 @@ def season_trophies(league, extra_trophies):
     smvp_str = ['👍 #c#Season Fuckass:#c# %s \n- %s, #b#%s#b# with %s' % (emotes[smvp_team.team_id], smvp, smvp_team.team_abbrev, smvp_score)]
     slvp_str = ['👎 #c#Season Suckass:#c# %s \n- %s, #b#%s#b# with %s' % (emotes[slvp_team.team_id], slvp, slvp_team.team_abbrev, slvp_score)]
  
-    text = ['#u##b#End of Season Awards#b##u# '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
+    text = ['#q##u##b#End of Season Awards#b##u# '] + moves_str + score_str + bsd_str + hpt_str + mvp_str + lvp_str + smvp_str + slvp_str + ['']
 
     return '\n'.join(text)
 
@@ -228,7 +228,7 @@ def win_matrix(league):
 
     team_record = dict(sorted(team_record.items(), key=lambda item: item[1][0] / item[1][1], reverse=True))
 
-    standings_txt = ["#u##b#Final Sim Records#b##u#"]
+    standings_txt = ["#q##u##b#Final Sim Records#b##u#"]
     pos = 1
     for team in team_record:
         standings_txt += ['%s. %s #c#%4s: [%d - %d]#c#' % (pos, emotes[team_record[team][2]], team, team_record[team][0], team_record[team][1])]

@@ -21,16 +21,18 @@ services:
       # TIMEZONE:
       # #The message that the bot will say when it is started (leave blank for no message)
       # INIT_MSG:
-      # #If set to True, when standings are posted on Wednesday it will also include top half scoring wins
-      # TOP_HALF_SCORING:
-      # #If set to True, random phrases will appear after certain bot messages
-      # RANDOM_PHRASE:
       # #If set to True, when extra trophies will be included when final score update runs
       # EXTRA_TROPHIES: 
-      # #Assign a score value for the Heads Up report to warn users about (default is 0)
+      # #If set to True, waiver reports will run (Wednesdays only by default)
+      # WAIVER_REPORT:
+      # #If set to True, waiver reports will run daily
+      # DAILY_WAIVER:
+      # #If set to True, monitor and inactive reports will run on Friday and Sunday morning, respectivvely
+      # MONITOR_REPORT: 
+      # #Assign a score value for the monitor report to warn users about (3 by default)
       # SCORE_WARNING:
-      # #If set to True, will provide Free-Agent Acquisition Budget (FAAB) dollars to the waiver report
-      # FAAB: 
+      # #Largest projected point difference that still counts as a close matchup (15 by default)
+      # CLOSE_SCORES_THRESHOLD:
       # #See User and Emote IDs section for documentation on these
       # USERS: ""
       # EMOTES: ""
