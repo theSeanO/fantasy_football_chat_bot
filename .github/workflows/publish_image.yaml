@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - main
-      - cfbot
+      - CFBOT-Discord
   release:
     types:
       - published
@@ -42,15 +42,13 @@ jobs:
         run: |
           IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
 
-          if [ "${{ github.ref_name }}" = "cfbot" ]; then
-            # Branch-specific tag for cfbot
+          if [ "${{ github.ref_name }}" = "CFBOT-Discord" ]; then
+            # Match CFBOT-Discord branch, but tag the image as :cfbot
             echo "CREATE_RELEASE=false" >> "$GITHUB_ENV"
-            {
-              echo "TAGS<<EOF"
-              echo "${IMAGE}:cfbot"
-              echo "${IMAGE}:${GITHUB_SHA}"
-              echo "EOF"
-            } >> "$GITHUB_ENV"
+            echo "TAGS<<EOF" >> "$GITHUB_ENV"
+            echo "${IMAGE}:cfbot" >> "$GITHUB_ENV"
+            echo "${IMAGE}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+            echo "EOF" >> "$GITHUB_ENV"
           elif [ "${{ github.event_name }}" = "release" ]; then
             # A release cut by hand keeps whatever tag it was given.
             VERSION="${GITHUB_REF##*/}"
