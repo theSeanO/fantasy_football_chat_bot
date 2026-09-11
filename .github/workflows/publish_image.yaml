@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - main
+      - cfbot
   release:
     types:
       - published
@@ -41,13 +42,32 @@ jobs:
         run: |
           IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
 
+          if [ "${{ github.ref_name }}" = "cfbot" ]; then
+            # Branch-specific tag for cfbot
+            echo "CREATE_RELEASE=false" >> "$GITHUB_ENV"
+            {
+              echo "TAGS<<EOF"
+              echo "${IMAGE}:cfbot"
+              echo "${IMAGE}:${GITHUB_SHA}"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
           if [ "${{ github.event_name }}" = "release" ]; then
             # A release cut by hand keeps whatever tag it was given.
             VERSION="${GITHUB_REF##*/}"
             echo "CREATE_RELEASE=false" >> "$GITHUB_ENV"
+            echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+            {
+              echo "TAGS<<EOF"
+              echo "${IMAGE}:${VERSION}"
+              echo "${IMAGE}:${GITHUB_SHA}"
+              if [ "${{ github.event.release.prerelease }}" != "true" ]; then
+                echo "${IMAGE}:latest"
+              fi
+              echo "EOF"
+            } >> "$GITHUB_ENV"
           else
-            # Every push to main becomes a dated release: v2026.09.10. A second
-            # push the same day takes v2026.09.10.1, a third .2, and so on, so
+            # Every push to main/master becomes a dated release: v2026.09.10. 
+            # A second push the same day takes v2026.09.10.1, a third .2, and so on, so
             # the tag is always free. Read from the remote rather than local
             # refs -- checkout does not fetch tags by default.
             BASE="v$(date -u +'%Y.%m.%d')"
@@ -59,6 +79,14 @@ jobs:
               N=$((N + 1))
             done
             echo "CREATE_RELEASE=true" >> "$GITHUB_ENV"
+            echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+            {
+              echo "TAGS<<EOF"
+              echo "${IMAGE}:${VERSION}"
+              echo "${IMAGE}:${GITHUB_SHA}"
+              echo "${IMAGE}:latest"
+              echo "EOF"
+            } >> "$GITHUB_ENV"
           fi
 
           echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
