@@ -1,25 +1,74 @@
-For troubleshooting, join the Discord!
-
-[![Discord Banner 2](https://discordapp.com/api/guilds/878995504225218620/widget.png?style=banner2)](https://discord.gg/bkShnqTTP8)
-
 # ESPN Fantasy Football Discord Chat Bot
+![GitHub last commit](https://img.shields.io/github/last-commit/theSeanO/fantasy_football_chat_bot)
+![GitHub Release](https://img.shields.io/github/v/release/theSeanO/fantasy_football_chat_bot)
+[![Tests](https://github.com/theseano/fantasy_football_chat_bot/actions/workflows/test.yml/badge.svg)](https://github.com/theseano/fantasy_football_chat_bot/actions/workflows/test.yml)
+[![Publish image](https://github.com/theseano/fantasy_football_chat_bot/actions/workflows/publish_image.yaml/badge.svg)](https://github.com/theseano/fantasy_football_chat_bot/actions/workflows/publish_image.yaml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-This package creates a docker container that runs a Discord chat bot to send ESPN Fantasy Football information to a Discord chat room.
+Automated league updates in your league's chat: scoreboards, standings, Power Rankings,
+weekly trophies, waiver reports, matchup previews, and Players to Monitor - posted on a
+schedule so nobody has to open the ESPN app to start an argument.
 
 Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
 
-**What are the differences from the main repo?**
+---
 
+## Table of Contents
+
+* [What it sends, and when](#what-it-sends-and-when)
+* [What's different from the main repo?](#whats-different-from-the-main-repo)
+* [Self-hosting](#self-hosting)
+  * [What you need](#what-you-need)
+  * [1. Set up your chat app](#1-set-up-your-chat-app)
+  * [2. Get your ESPN league info](#2-get-your-espn-league-info)
+  * [3. Configure](#3-configure)
+  * [4. Run it](#4-run-it)
+  * [Every season: the rollover checklist](#every-season-the-rollover-checklist)
+  * [Running functions on demand](#running-functions-on-demand)
+* [User and emote IDs](#user-and-emote-ids)
+* [Development](#development)
+* [FAQ](#faq)
+* [Support](#support)
+* [License](#license)
+
+---
+
+## What it sends, and when
+
+Times marked **local** use your `TIMEZONE` setting. Times marked **ET** are always
+Eastern, because they're pinned to kickoff windows. Nothing sends outside `START_DATE`
+to `END_DATE`, and the bot goes quiet once the league's matchup periods are over.
+
+| Message | Day | Time | What it is |
+|---|---|---|---|
+| Scoreboard + projections | Sun | 4:00 PM & 8:00 PM ET | Live scores as the afternoon and evening games land |
+| Scoreboard + projections | Mon & Fri | 7:30 AM local | Morning recap of Thursday and Sunday |
+| Close Scores | Sun & Mon | 6:30 PM ET | Games projected within `CLOSE_SCORES_THRESHOLD` points (15 by default) that still have players to play - the ones to watch on SNF & MNF |
+| Final scores + trophies | Tue | 7:30 AM local | Last week's finals plus weekly awards |
+| Standings | Tue | 6:30 PM local | Current standings + points for |
+| Power Rankings | Tue | 6:30 PM local | Two-step dominance rankings with week-over-week movement, plus Playoff Chance & Simulated Record |
+| Optimal Scores | Tue | 6:30 PM local | Each team's optimized score and the % of it that they managed, displayed per matchup |
+| Waiver Report | Wed | 7:31 AM local | Every add/drop from the day, with FAAB bids and the outbid rival in FAAB leagues |
+| Matchups + projections | Thu | 7:30 PM ET | Next week's matchups with records |
+| Monitor Report | Fri | 6:30 PM local | Starters carrying an injury status, on a bye, or projected for 0 - plus anyone parked in an IR slot who isn't IR-eligible |
+| Inactives Report | Sun | 12:05 PM ET | One more report of starters to watch, based on the real inactive reports for Sunday's early games |
+
+Optional: `DAILY_WAIVER` moves the Waiver Report to a daily send, and `MONITOR_REPORT`
+(on by default) controls the Monitor and Inactives Reports.
+
+---
+
+## What's different from the main repo?
+
+- Mainly, this fork is for **Discord ONLY**. It has custom formatting specifically for Discord, in addition to user tagging and emote support. It also only offers self-hosting options. Check out [GameDayBot.com](https://www.GameDayBot.com/) for hosting options and different subscription tiers. 
 - Adds an extra method of determining team dominance, Simulated Record, which calculates how many games a given team would have won had they faced each team every week
 - Adds a Waiver Report that provides a quick overview of the adds and drops that have taken place on waiver days *[ESPN_S2 and SWID variables are REQUIRED for this functionality]*
 - Adds a Monitor Report, which lets players know if they have any players that they might not want to start
 - Adds an Inactive Report, which lets players know when they have players that are designated Out, or would otherwise score them 0 points
 - Adds the Optimal Scores report, which tabulates how many points each team could have scored, and how much of that score they got
 - Adds another possible Environmental Variable, SCORE_WARNING, which is a number that can be set as a threshold for the Monitor Report
-- Adds extra places for the fun random phrases that can be activated with the variable RANDOM_PHRASE
 - When provided in the Environmental Variables USERS and EMOTES, bot will display them in the scheduled updates
 - Custom formatting changes
-- Custom forks and changes for my two leagues
 - Additional trophies, which will display when the Environmental Variable EXTRA_TROPHIES is set to 1:
   - Week MVP: Player with the highest score differential. Calculated with (actual score - projected score)/projected score
   - Week LVP: Player with the lowest score differential.
@@ -27,88 +76,127 @@ Main code forked from https://github.com/dtcarls/fantasy_football_chat_bot
   - Underachiever: Team with the lowest score under their projected score. Awarded when this is different from the lowest overall scorer.
   - Plus extra trophies for the end of the season: most moves, highest score, optimal benching, efficiency, best/worst performance, and season MVP/LVP
 
+---
+# Self-hosting
 
-**What does this do?**
-- Sends out the following messages on this schedule:
-- Scoreboard - Sun - 16:00, 20:00 east coast time (Current ESPN fantasy scoreboard)
-- Scoreboard - Mon,Fri - 7:30 local time (Current ESPN fantasy scoreboard)
-- Close Projected Scores - Sun,Mon - 18:30 east coast time (Games that are within 11 points to keep an eye on during the Sunday & Monday night games)
-- Final scores and Trophies- Tue - 7:30 local time
-- Current standings - Tue - 18:30 local time
-- Optimal scores - Tue - 18:30 local time
-- Power rankings - Tue - 18:30 local time
-- Waiver report - Wed - 7:30 local time (Can be every day with optional setting)
-- Monitor report - Wed - 18:30 local time (Players to monitor for possible replacement)
-- Matchups - Thu - 18:30 east coast time (Upcoming matchups before Thursday night game)
-- Inactive player report - Sun - 12:05 east coast time (Right after inactive reports for the first games on Sunday)
+> Don't run two copies of the bot in the same chat - you'll double every message. In
+> general, let the commissioner do the setup.
 
-Table of Contents
-=================
-  * [Environment Variables](#environment-variables)
-  * [User and Emote IDs](#user-and-emote-ids)
-  * [Private Leagues](#private-leagues)
-  * [Troubleshooting / FAQ](#troubleshooting--faq)
-  * [Self Hosting, Development and Testing](#self-hosting-development-and-testing)
+## What you need
 
-**Do not deploy 2 of the same bot in the same chat. In general, you should let your commissioner do the setup**
+* **An ESPN fantasy football league** - public, or private with cookies (see below). The
+  league must be full for ESPN's API to return usable data.
+* **A chat destination** - a GroupMe bot ID, a Slack incoming webhook, and/or a Discord
+  webhook. Set as many as you want; each configured platform gets every message.
+* **Somewhere to run it 24/7.** The bot is a long-lived process with an internal cron
+  scheduler - it has to stay running to send anything. A Raspberry Pi, a VPS, a
+  home server, or any container host works.
+* **Docker**, or **Python 3.9+** if you'd rather run it directly. The image and CI both
+  use 3.11, so that's the best-tested version.
 
-### Environment Variables
+## 1. Set up your chat app
 
 <details>
-  <summary><b>Slack</b></summary>
+  <summary><b>Discord</b></summary>
 
-- DISCORD_WEBHOOK_URL: This is your Webhook URL from the Discord Settings page (REQUIRED)
-- LEAGUE_ID: This is your ESPN league id (REQUIRED)
-- START_DATE: This is when the bot will start paying attention and sending messages to your chat.
-- END_DATE: This is when the bot will stop paying attention and stop sending messages to your chat.
-- LEAGUE_YEAR: ESPN League year to look at
-- TIMEZONE: The timezone that the messages will look to send in. (America/New_York by default)
-- INIT_MSG: The message that the bot will say when it is started (“Hi” by default, leave blank for no message)
-- TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
-- RANDOM_PHRASE: If set to True, when matchups, heads up report, inactive report, waiver report, and final scores are posted, will include a random phrase from a list
-- WAIVER_REPORT: If set to True, bot will use ESPN_S2 and SWID to scan for recent waiver activity and print a summary
-- DAILY_WAIVER: If set to True, bot will send Waiver Report every morning, instead of just Wednesday
-- EXTRA_TROPHIES: If set to True, extra trophies will be included when final scores are posted
-- SCORE_WARNING: Assign a score value for the Heads Up report to warn users about (default is 0)
-- ESPN_S2: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
-- SWID: **Required** for private leagues. See [Private Leagues Section](#private-leagues) for documentation
-- USERS: List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\> ,\<@[-ID 2 HERE-]\> ,etc.
-- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[-Emote shortcut-]:[-Emote ID-]\> ,\<:[-Emote shortcut-]:[-Emote ID-]\> ,etc.
-- TEST: Used for troubleshooting--set to 1 so bot will provide test output instead
+Log in to Discord and open your server's settings.
 
+![](https://i.imgur.com/bDk2ttJ.png)
+
+Go to **Integrations → Webhooks**.
+
+![](https://i.imgur.com/mfFHGbT.png)
+
+Create a webhook, name it, and pick the channel it posts to.
+
+![](https://i.imgur.com/NAJLv6D.png)
+
+Copy the **Webhook URL** - that's `DISCORD_WEBHOOK_URL`.
+
+![](https://i.imgur.com/U4MKZSY.png)
 </details>
 
-### User and Emote IDs
+## 2. Get your ESPN league info
+
+**League ID** - open your league on [fantasy.espn.com](https://fantasy.espn.com) and take
+the `leagueId` value out of the URL.
 
 <details>
-  <summary>Click to expand!</summary>
+  <summary><b>Private leagues: ESPN_S2 and SWID</b></summary>
 
-If you're using Discord and would like to go to the effort, you can provide lists of your Discord user and emote IDs in the Environment Variables.
+Private leagues need two cookies. Public leagues don't - including for the Waiver
+Report, which reads ESPN's transactions endpoint and works unauthenticated.
 
-- USERS: List of Discord user IDs, comma separated, in the format of \<@[ID 1 HERE]\> ,\<@[ID 2 HERE]\> ,etc.
-- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[Emote shortcut]:[Emote ID]\> ,\<:[Emote shortcut]:[Emote ID]\> ,etc.
+**The easy way - a Chrome extension.** Install
+[ESPN Private League Setup](https://chromewebstore.google.com/detail/espn-private-league-setup/bjmalaafoepfooflcnhjejnopgefjgia),
+log in to ESPN, and it reads out your `ESPN_S2` and `SWID` for you. It's published by
+gamedaybot.com, and the values work anywhere - here, or on the hosted service.
 
-Replace the [ ] and the content within with the IDs.
+**By hand, if you'd rather not install anything:**
 
-To get IDs, first enable Developer Mode in Discord's Advanced settings.
+1. Log in to [fantasy.espn.com](https://fantasy.espn.com) in Chrome or Firefox.
+2. Right-click anywhere → **Inspect**.
+3. **Application → Storage → Cookies → http://fantasy.espn.com**.
+4. Copy the values of `espn_s2` and `SWID`.
 
-For Users, just right click the user in the server list and select "Copy ID". User IDs must go in the order of the teams in the league.
+`SWID` can be given with or without the surrounding `{}` - the bot adds them if missing.
 
-Emotes MUST be from the server-specific list. To get the ID, say '\\:[Emote shortcut]:' in any text channel and copy the text that appears.
-
-Both the Users and Emotes lists need to go in order that the teams joined your league. On your league page, go to League -> Members, which will give you a list of teams in this order. Additionally, each team has a team ID that reflects this order. You can visit each team page to make sure your order is correct. If you have deleted a team in the past, then that number does not get reused and you will need to leave their entry in the list blank, with nothing between the commas. For instance, if Team 2 was deleted your list would look like: "ID1 ,,ID3 ,..."
-
-Make sure to include a space before the comma before each user and emote ID, it's important for formatting messages. 
-
+These cookies expire (and are invalidated when you change your ESPN password). If the bot
+suddenly can't see a private league, refresh them first before assuming something worse.
 </details>
 
-### Private Leagues
+## 3. Configure
+
+Everything is environment variables. Set at least one chat destination and `LEAGUE_ID`;
+the rest have defaults.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `LEAGUE_ID` | **Yes** | - | Your ESPN league ID |
+| `DISCORD_WEBHOOK_URL` | **Yes** | - | Webhook URL from your Discord channel |
+| `LEAGUE_YEAR` | Recommended | `2026` | Season year. **Set it every season** - the default only tracks whichever season this release was cut for, and goes stale the moment the next one starts |
+| `START_DATE` | Recommended | `2026-09-10` | Bot stays silent before this date (`YYYY-MM-DD`) |
+| `END_DATE` | Recommended | `2027-01-10` | Bot stays silent after this date (`YYYY-MM-DD`) |
+| `TIMEZONE` | No | `America/New_York` | [TZ identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) for the "local" sends |
+| `ESPN_S2` | Private leagues | - | ESPN cookie |
+| `SWID` | Private leagues | - | ESPN cookie |
+| `MONITOR_REPORT` | No | `True` | Friday afternoon & Sunday morning Players to Monitor messages |
+| `SCORE_WARNING` | No | 0 | Sets a lower score threshold for the Monitor message |
+| `DAILY_WAIVER` | No | `False` | Send the Waiver Report daily rather than only on Wednesday |
+| `CLOSE_SCORES_THRESHOLD` | No | `15` | Largest projected point gap that still counts as a close matchup. Lower it for fewer, tighter games. A value that isn't a whole number is ignored |
+| `INIT_MSG` | No | - | Message posted on startup. Leave unset for a silent start - the process restarts more often than you'd think |
+| `EXTRA_TROPHIES` | No | `False` | Extra trophies will be included when final scores are posted |
+| `USERS` | No | - | List of Discord user IDs, comma separated, in the format of \<@[-ID 1 HERE-]\> ,\<@[-ID 2 HERE-]\> ,etc. |
+| `EMOTES` | No | - | List of Discord emote IDs, comma separated, in the format of \<:[-Emote shortcut-]:[-Emote ID-]\> ,\<:[-Emote shortcut-]:[-Emote ID-]\> ,etc. |
+| `TEST` | No | `False` | Used for troubleshooting -- set to 1 so bot will provide test output instead |
+
+Two older variables, `WAIVER_REPORT` and `TEST`, are still read but no longer do
+anything - leave them unset. `RANDOM_PHRASE` and `TOP_HALF_SCORING` have been removed
+entirely; if either is still in your config, drop it. If you use `TEST` to troubleshoot, remember to set it back to `False` or `0` when you're finished. 
+
+## 4. Run it
+
+<details open>
+  <summary><b>Docker Compose</b> (easiest to keep running)</summary>
+
+Edit the `environment:` block in [`docker-compose.yml`](docker-compose.yml) with your
+values, then:
+
+```bash
+git clone https://github.com/theseano/fantasy_football_chat_bot
+cd fantasy_football_chat_bot
+docker compose up -d
+```
+
+`restart: always` is already set, so it comes back after a reboot. Logs:
+`docker compose logs -f`.
+</details>
 
 <details>
   <summary><b>Docker</b></summary>
 
 ```bash
-git clone https://github.com/dtcarls/fantasy_football_chat_bot
+git clone https://github.com/theseano/fantasy_football_chat_bot
 cd fantasy_football_chat_bot
 docker build -t fantasy_football_chat_bot .
 
@@ -126,14 +214,14 @@ Prebuilt images are published to GHCR, so you can skip the build:
 
 | Tag | What it points at |
 |---|---|
-| `ghcr.io/dtcarls/fantasy_football_chat_bot:latest` | The newest release |
-| `ghcr.io/dtcarls/fantasy_football_chat_bot:v2026.09.10` | One specific release |
-| `ghcr.io/dtcarls/fantasy_football_chat_bot:<commit-sha>` | One specific commit |
+| `ghcr.io/theseano/fantasy_football_chat_bot:latest` | The newest release |
+| `ghcr.io/theseano/fantasy_football_chat_bot:v2026.09.10` | One specific release |
+| `ghcr.io/theseano/fantasy_football_chat_bot:<commit-sha>` | One specific commit |
 
 Every merge to `main` is built, tested, and released automatically under a dated tag -
 `v2026.09.10`, and `v2026.09.10.1` for a second release the same day - which also moves
 `latest`. Releases are listed on the
-[releases page](https://github.com/dtcarls/fantasy_football_chat_bot/releases) with
+[releases page](https://github.com/theseano/fantasy_football_chat_bot/releases) with
 generated notes.
 
 Use `latest` if you'd rather `docker pull` and restart than track version numbers. Pin a
@@ -144,7 +232,7 @@ dated tag if you want to choose when you move: `latest` changes whenever `main` 
   <summary><b>Python, no Docker</b></summary>
 
 ```bash
-git clone https://github.com/dtcarls/fantasy_football_chat_bot
+git clone https://github.com/theseano/fantasy_football_chat_bot
 cd fantasy_football_chat_bot
 pip install -r requirements.txt
 
@@ -195,12 +283,31 @@ Valid names: `get_scoreboard_short`, `get_projected_scoreboard`, `get_matchups`,
 `trophy_recap` (season-long trophy tally) aren't on the schedule - they're on-demand
 only, and they read best at the end of a season.
 
+### User and Emote IDs
+
+If you're using Discord and would like to go to the effort, you can provide lists of your Discord user and emote IDs in the Environment Variables.
+
+- USERS: List of Discord user IDs, comma separated, in the format of \<@[ID 1 HERE]\> ,\<@[ID 2 HERE]\> ,etc.
+- EMOTES: List of Discord emote IDs, comma separated, in the format of \<:[Emote shortcut]:[Emote ID]\> ,\<:[Emote shortcut]:[Emote ID]\> ,etc.
+
+Replace the [ ] and the content within with the IDs.
+
+To get IDs, first enable Developer Mode in Discord's Advanced settings.
+
+For Users, just right click the user in the server list and select "Copy ID". User IDs must go in the order of the teams in the league.
+
+Emotes MUST be from the server-specific list. To get the ID, say '\\:[Emote shortcut]:' in any text channel and copy the text that appears.
+
+Both the Users and Emotes lists need to go in order that the teams joined your league. On your league page, go to League -> Members, which will give you a list of teams in this order. Additionally, each team has a team ID that reflects this order. You can visit each team page to make sure your order is correct. If you have deleted a team in the past, then that number does not get reused and you will need to leave their entry in the list blank, with nothing between the commas. For instance, if Team 2 was deleted your list would look like: "ID1 ,,ID3 ,..."
+
+Make sure to include a space before the comma before each user and emote ID, it's important for formatting messages. 
+
 ---
 
 ## Development
 
 ```bash
-git clone https://github.com/dtcarls/fantasy_football_chat_bot
+git clone https://github.com/theseano/fantasy_football_chat_bot
 cd fantasy_football_chat_bot
 
 pip install -r requirements.txt
@@ -216,36 +323,37 @@ predates Python 3.11 and won't start on it - install a current flake8 to lint.
 `tests/dry_run_all_functions.py` prints every message against a real league - handy for
 eyeballing formatting changes before they hit a chat full of people.
 
-Or manually:
-You can find these two values after logging into your espn fantasy football account on espn's website.
-(Chrome Browser)
-Right click anywhere on the website and click inspect option.
-From there click Application on the top bar.
-On the left under Storage section click Cookies then http://fantasy.espn.com.
-From there you should be able to find your swid and espn_s2 variables and values.
+Pull requests are welcome, especially fixes to ESPN parsing and support for additional
+chat platforms.
 
-</details>
+## FAQ
 
-## Troubleshooting / FAQ
-
-<details>
-  <summary>Click to expand!</summary>
-
-**League must be full.**
+**The bot isn't sending anything.**
+Check, in order: the process is still running; today is between `START_DATE` and
+`END_DATE`; `LEAGUE_YEAR` is the current season; your league is full; the webhook still
+works (set `INIT_MSG` and restart). If you're still stuck, open an
+[issue](https://github.com/theseano/fantasy_football_chat_bot/issues) or ask in the
+[Discord](https://discord.gg/VFXSkcgjxh) so the answer helps the next person too. Maybe check the [main repo](https://github.com/dtcarls/fantasy_football_chat_bot/issues) for help as well. 
 
 **The Waiver Report is always empty.**
-It only reports transactions from that same day, so a quiet waiver wire produces no
+It only reports waiver transactions from that same day, so a quiet waiver wire produces no
 message at all - that's normal, not a failure. It does not need `ESPN_S2`/`SWID`; it
 works on public leagues.
 
-* Did you miss a step in the instructions? Try doing it from scratch again. If still no luck, open an issue (https://github.com/dtcarls/fantasy_football_chat_bot/issues) so the answer can be shared with others.
+**How are Power Rankings calculated?**
+Two-step dominance, weighted 80% dominance / 15% average points scored / 5% average
+margin of victory. Watch the gaps between teams rather than the raw number.
+[Algorithm source](https://github.com/cwendt94/espn-api/pull/12/files) ·
+[dominance matrix explainer](https://www.youtube.com/watch?v=784TmwaHPOw).
 
 **How do I change the timezone?**
 Set `TIMEZONE` to a [TZ identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List),
 e.g. `America/Chicago`. The Sunday scoreboards, Monday Close Scores and Thursday Matchups
 stay on Eastern - they're tied to kickoff times, not to your league.
 
-* They are calculated using 2 step dominance, as well as a combination of points scored and margin of victory. Weighted 80/15/5 respectively. I wouldn't so much pay attention to the actual number but more of the gap between teams. Full source of the calculations can be seen here: https://github.com/cwendt94/ff-espn-api/commit/61f8a34de5c42196ba0b1552aa25282297f070c5
+**Is there a version for Yahoo / CBS / NFL.com?**
+Not in this repo. [GameDayBot.com](https://www.GameDayBot.com/) supports Sleeper
+alongside ESPN.
 
 **Is there a version for Messenger / WhatsApp / Teams?**
 No, but pull requests adding a chat platform are welcome - see
@@ -256,87 +364,18 @@ Run a second instance with its own config. One process serves one league. On
 [GameDayBot.com](https://www.GameDayBot.com/) a second league is a second subscription in
 the same server, with no second anything to deploy.
 
-**What does the managed version do that this doesn't?**
-Sleeper leagues, Discord slash commands (this repo is a one-way webhook - it can't be
-talked to), Trade Announcements, team @mentions, and the Elite analytics pack: trend
-charts, Bad Management, Fortune Index, a weekly Win Matrix and Trophy Case, and an AI
-weekly recap. The [comparison above](#what-you-get-side-by-side) has the full split.
-
 ## Support
 
-* [GitHub issues](https://github.com/dtcarls/fantasy_football_chat_bot/issues) - bugs and
+* [GitHub issues](https://github.com/theseano/fantasy_football_chat_bot/issues) - bugs and
   feature requests
+  * [Main repo issues](https://github.com/dtcarls/fantasy_football_chat_bot/issues) - for more help
 * [Discord](https://discord.gg/VFXSkcgjxh) - troubleshooting and release notifications
-* [GameDayBot on the Discord App Directory](https://discord.com/discovery/applications/1274439910077763728) -
-  add the managed bot to a server
-* support@gamedaybot.com - managed subscriptions
 
-[![Discord Banner 2](https://discordapp.com/api/guilds/878995504225218620/widget.png?style=banner2)](https://discord.gg/VFXSkcgjxh)
-
-* TOP_HALF_SCORING: If set to True, when standings are posted on Wednesday it will also include top half scoring wins
-* Top half wins is being in the top half of your league for points and you receive an additional "win" for it. The number in parenthesis (+1) tells you how many added wins over the season for top half wins.
-
-</details>
-
-## Self Hosting, Development, and Testing
-
-<details>
-  <summary>Click to expand!</summary>
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Clone the repo
-First and foremost, clone a copy of this repo to your machine:
-``` bash 
-git clone https://github.com/sdvgallardo/fantasy_football_chat_bot-vS.git ff_bot
-```
-
-### With Docker:
-
-To host with Docker, fill in `docker-compose.yml` with your [Environment Variables](#environment-variables). Variables with "" *must* be wrapped in quotes.
-
-If you are running Docker on a Raspberry Pi, you will need to change the Python image in the Dockerfile to `slim-buster`
-```bash
-cd ff_bot
-docker compose up -d
-```
-
-#### Restarting Docker
-If changes are made to the bot, or you adjust your environment variables, you will need to stop and recompose the container:
-```bash
-cd ff_bot
-docker stop [container name]
-docker compose up -d
-```
+[![Discord Banner 2](https://discordapp.com/api/guilds/878995504225218620/widget.png?style=banner2)](https://discord.gg/bkShnqTTP8)
 
 
-### Without Docker:
-You can also directly run just the Python script.
 
-Start by running the install:
-```bash
-cd ff_bot
-python3 setup.py install
-```
-You may also need to install the required dependencies with `pip install -r requirements.txt`.
+## License
 
-Then, export your environment variables and run `ff_bot.py`.
-
-```bash
-export DISCORD_WEBHOOK_URL=[enter your Webhook URL]
-export LEAGUE_ID=[enter ESPN league ID]
-export LEAGUE_YEAR=[enter league year]
-cd ff_bot
-python3 ff_bot/ff_bot.py
-```
-
-### Running the tests
-
-Automated tests for this package are included in the `tests` directory. After installation, you can run these tests by changing the directory to the `ff_bot` directory and running the following:
-
-```python3
-pip install -r requirements-test.txt
-pytest
-```
-</details>
+[GPL-3.0](LICENSE).
 
