@@ -671,7 +671,9 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         # Only include transactions matching the report date that went through
         if transaction_date(txn) != today or txn.status != TXN_STATUS_EXECUTED:
             continue
-        team_name = f"{emotes[txn.team.team_id]}#b#{txn.team.team_name}#b#"
+        team_name = txn.team.team_name
+        team_id = txn.team.team_id
+        
         # espn_api always sets bid_amount but leaves it None for a non-FAAB
         # claim, which would render "$None" and break the descending sort.
         faab_amount = getattr(txn, 'bid_amount', None) or 0
@@ -701,8 +703,7 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
                     runner_up[1] if runner_up else None,
                 )
                 adds.append(f"#p# ADDED {position} - {item.player} (${faab_amount}{callout})")
-
-        block = f"{team_name} \n" + ''.join(f"{move}\n" for move in adds + drops)
+        block = f"{emotes[team_id]}#b#{team_name}#b# \n" + ''.join(f"{move}\n" for move in adds + drops)
         entries.append((faab_amount, block.lstrip()))
 
     # Sort by faab_amount descending (or date if not faab)
