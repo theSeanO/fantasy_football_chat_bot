@@ -261,7 +261,8 @@ class FakeTxn:
 class FakeLeague:
     """League stub exposing only what get_waiver_report touches."""
 
-    def __init__(self, transactions, positions=None, raise_on_transactions=None):
+    def __init__(self, transactions, positions=None, raise_on_transactions=None, teams=[FakeTeam("fake")]):
+        self.teams = teams
         self.scoringPeriodId = 5
         self._transactions = transactions
         self._positions = positions or {}

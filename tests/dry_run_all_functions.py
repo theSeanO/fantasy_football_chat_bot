@@ -5,7 +5,6 @@ sys.path.insert(1, os.path.abspath('.'))
 from espn_api.football import League
 import gamedaybot.espn.season_recap as recap
 import gamedaybot.espn.functionality as espn
-from gamedaybot.chat.discord import Discord
 from gamedaybot.chat.discord import replace_formatting
 from gamedaybot.espn.env_vars import get_env_vars
 
