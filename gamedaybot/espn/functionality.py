@@ -615,7 +615,7 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         A formatted string containing the waiver report.
     """
 
-
+    emotes = env_vars.split_emotes(league)
     # Allow testing with a specific scoring period and date
     if scoring_period is None:
         scoring_period = league.scoringPeriodId
@@ -671,7 +671,7 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         # Only include transactions matching the report date that went through
         if transaction_date(txn) != today or txn.status != TXN_STATUS_EXECUTED:
             continue
-        team_name = txn.team.team_name
+        team_name = f"{emotes[txn.team.team_id]}#b#{txn.team.team_name}#b#"
         # espn_api always sets bid_amount but leaves it None for a non-FAAB
         # claim, which would render "$None" and break the descending sort.
         faab_amount = getattr(txn, 'bid_amount', None) or 0
@@ -684,9 +684,10 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
             # returns None for those and None.position would crash the report.
             position = positions.get(getattr(item, 'playerId', None), 'N/A')
             if item.type == TXN_ITEM_DROP:
-                drops.append(f"#p# DROPPED {position} - {item.player}")
+                drops.append(f"\u0009#p# DROPPED {position} - {item.player}")
             elif item.type == TXN_ITEM_ADD:
                 if not faab:
+                    faab_amount = datetime.fromtimestamp(txn.date / 1000)  # Set faab_amount to date so transactions get sorted by waiver order
                     adds.append(f"#p# ADDED {position} - {item.player}")
                     continue
                 # Only a *rival's* losing bid is competition: a team that also
@@ -704,9 +705,11 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         block = f"{team_name} \n" + ''.join(f"{move}\n" for move in adds + drops)
         entries.append((faab_amount, block.lstrip()))
 
+    # Sort by faab_amount descending (or date if not faab)
     if faab:
-        # Sort by faab_amount descending
         entries.sort(key=lambda entry: entry[0], reverse=True)
+    else:
+        entries.sort(key=lambda entry: entry[0])
         
     # Only return a report if there are transactions
     if not entries:
@@ -1100,7 +1103,7 @@ def optimal_team_scores(league, week=None):
     if not results:
         return ('')
 
-    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results + ['\u200e']
+    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results
     return '\n'.join(text)
 
 
