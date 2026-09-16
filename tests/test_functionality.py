@@ -115,7 +115,7 @@ class TestScanRoster:
 
     def test_scan_roster_ineligible_ir_flagged(self):
         assert flagged([FakePlayer(position='RB', name='Back', slot_position='IR')]) == \
-            ['* RB Back - #b#Not IR eligible#b#, 10.0 points']
+            ['* RB Back - #b#Not IR eligible#b#, Active: 10.0 points']
 
     # The report is headed with the team name
     def test_scan_roster_header_is_team_name(self):
