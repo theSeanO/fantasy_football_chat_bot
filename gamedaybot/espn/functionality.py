@@ -101,9 +101,14 @@ def get_scoreboard_short(league, week=None, box_scores=None):
     if not box_scores:
         return util.NO_MATCHUP_DATA
 
-    score = ['%s#c#%4s %6.2f - %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
-                                    i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
-             if i.away_team]
+    score = []
+    for i in box_scores:
+        if i.away_team:
+            center = '➖'
+            if all_played(i.away_lineup) and all_played(i.home_lineup):
+                center = '☑️'
+            score += ['%s#c#%4s %6.2f %s %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_score,
+                                    center, i.away_score, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
 
     if week == league.current_week - 1 or week == len(league.settings.matchup_periods):
         text = ['#q##u##b#Final Score Update#b##u# ']
@@ -139,7 +144,7 @@ def get_projected_scoreboard(league, week=None, box_scores=None):
     if not box_scores:
         return util.NO_MATCHUP_DATA
 
-    score = ['%s#c#%4s %6.2f - %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, get_projected_total(i.home_lineup),
+    score = ['%s#c#%4s %6.2f ➖ %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, get_projected_total(i.home_lineup),
                                     get_projected_total(i.away_lineup), i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team and not (all_played(i.away_lineup) and all_played(i.home_lineup))]
 
@@ -507,7 +512,7 @@ def get_close_scores(league, week=None, box_scores=None, threshold=CLOSE_SCORES_
                 # matchup-period aggregates during a 2-week playoff matchup --
                 # so the printed gap could disagree with the threshold that
                 # selected this matchup in the first place.
-                score += ['%s#c#%4s %6.2f - %6.2f %4s#c#%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, home_projected,
+                score += ['%s#c#%4s %6.2f ➖ %6.2f %4s#c#%s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, home_projected,
                                                     away_projected, i.away_team.team_abbrev, emotes[i.away_team.team_id])]
 
     if not score:
