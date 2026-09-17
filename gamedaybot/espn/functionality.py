@@ -171,16 +171,22 @@ def get_standings(league):
         A string containing the current standings, formatted as a list of teams with their records and positions.
     """
 
-    emotes = env_vars.split_emotes(league)    
+    emotes = env_vars.split_emotes(league)
+    standings_txt = []
     standings = league.standings()
 
-    records = util.align_records([f"{team.wins}-{team.losses} | {team.points_for:.2f}" for team in standings])
-    standings_txt = [f"{pos + 1:2}: {emotes[team.team_id]} {team.team_name} #c#[{record}]#c#" for
-                     pos, (team, record) in enumerate(zip(standings, records))]
+    for i in range(4):
+        division = [team for team in standings if team.division_id == i]
+        if len(division) > 0:
+            div_name = division[0].division_name
+            standings_txt += ['**%s**' % (div_name)]
+            standings_txt += [f"{pos + 1:2}: {emotes[team.team_id]}{team.team_name} #c#[{team.wins}-{team.losses} | {team.points_for:.2f}]#c#" for \
+                pos, team in enumerate(division)]
+            standings_txt += ['\u200e']
         
     title = ['#q##u##b#Current Standings#b##u# [Record | Points for]']
 
-    text = title + standings_txt + ['\u200e']
+    text = title + standings_txt
     return "\n".join(text)
 
 
@@ -1265,8 +1271,8 @@ def get_mvp_trophy(league, week=None):
     mvp_score = f"{best['points']} points ({best['projected']} proj, {best['proj_diff']} diff ratio)"
     lvp_score = f"{worst['points']} points ({worst['projected']} proj, {worst['proj_diff']} diff ratio)"
 
-    mvp_str = ['👍 #c#Week MVP:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[best['fantasy_team'].team_id], best['position'], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
-    lvp_str = ['👎 #c#Week LVP:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[worst['fantasy_team'].team_id], worst['position'], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
+    mvp_str = ['👍 #c#Mr. Fuckass:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[best['fantasy_team'].team_id], best['position'], best['name'], best['fantasy_team'].team_abbrev, mvp_score)]
+    lvp_str = ['👎 #c#Mr. Suckass:#c# %s \n#p# %s %s, #b#%s#b# with %s' % (emotes[worst['fantasy_team'].team_id], worst['position'], worst['name'], worst['fantasy_team'].team_abbrev, lvp_score)]
     return (mvp_str + lvp_str)
 
 

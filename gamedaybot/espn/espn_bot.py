@@ -167,15 +167,16 @@ def espn_bot(function):
         text = espn.get_standings(league)
     elif function == "get_optimal_scores":
         text = espn.optimal_team_scores(league)
-    elif function == "get_final":
+    elif function == "get_final_scores":
         # on Tuesday we need to get the scores of last week
         week = league.current_week - 1
         box_scores = espn.fetch_box_scores(league, week=week)
         scores = espn.get_scoreboard_short(league, week=week, box_scores=box_scores)
-        if scores == util.NO_MATCHUP_DATA:
-            text = scores
-        else:
-            text = scores + "\n\n" + espn.get_trophies(league, extra_trophies, week=week, box_scores=box_scores)
+        text = scores
+    elif function == "get_final_trophies":
+        week = league.current_week - 1
+        box_scores = espn.fetch_box_scores(league, week=week)
+        text = espn.get_trophies(league, extra_trophies, week=week, box_scores=box_scores)
     elif function == "get_waiver_report":
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
