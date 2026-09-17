@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - main
-      - CFBOT-Discord
+      - cfbot
   release:
     types:
       - published
@@ -43,7 +43,7 @@ jobs:
           IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
 
           if [ "${{ github.ref_name }}" = "cfbot" ]; then
-            # Match CFBOT-Discord branch, but tag the image as :cfbot
+            # Match cfbot branch, but tag the image as :cfbot
             echo "CREATE_RELEASE=false" >> "$GITHUB_ENV"
             
             # Set single TAG for the local build/test step
