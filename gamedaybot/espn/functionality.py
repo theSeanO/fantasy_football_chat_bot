@@ -152,7 +152,7 @@ def get_projected_scoreboard(league, week=None, box_scores=None):
         logger.info('No games still being played, no projected scores to report.')
         return ''
 
-    text = ['#q##u##b#Approximate Projected Scores#b##u#'] + score
+    text = ['#q##u##b#Approximate Projected Scores#b##u#'] + score + ['\u200e']
     return '\n'.join(text)
 
 
@@ -449,24 +449,20 @@ def get_matchups(league, week=None, box_scores=None):
     emotes = env_vars.split_emotes(league)
     if box_scores is None:
         box_scores = fetch_box_scores(league, week=week)
-    matchups = box_scores
 
-    if not any(i.away_team for i in matchups):
+    if not any(i.away_team for i in box_scores):
         # Nothing to pair up: every slot is a bye, or the week has no data.
         return util.NO_MATCHUP_DATA
 
-    played = [i for i in matchups if i.away_team]
+    played = [i for i in box_scores if i.away_team]
+    matchups = []
 
-    full_names = ['%s#b#%s#b# vs %s#b#%s#b#' % (emotes[i.home_team.team_id], i.home_team.team_name, emotes[i.away_team.team_id], i.away_team.team_name) for i in played]
+    for i in played:
+        away_team = f"{emotes[i.away_team.team_id]}#b#{i.away_team.team_name}#b# ({i.away_team.wins}-{i.away_team.losses})"
+        home_team = f"{emotes[i.home_team.team_id]}#b#{i.home_team.team_name}#b# ({i.home_team.wins}-{i.home_team.losses})"
+        matchups += [f"{home_team.lstrip()} vs {away_team.lstrip()}"]
 
-    # Every record in the message is padded against the widest one, home and
-    # away together, so the "vs" and the away abbreviation stay in one column.
-    records = util.align_records(
-        [f"{team.wins}-{team.losses}" for i in played for team in (i.home_team, i.away_team)])
-    abbrevs = ['%4s (%s) vs (%s) %s' % (i.home_team.team_abbrev, home, away, i.away_team.team_abbrev)
-               for i, home, away in zip(played, records[::2], records[1::2])]
-
-    text = ['#q##u##b#Matchups#b##u# '] + full_names + [''] + abbrevs
+    text = ['#q##u##b#Matchups#b##u# '] + matchups + ['\u200e']
 
     return '\n'.join(text)
 
