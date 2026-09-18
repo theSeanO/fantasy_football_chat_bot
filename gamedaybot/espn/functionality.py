@@ -152,7 +152,7 @@ def get_projected_scoreboard(league, week=None, box_scores=None):
         logger.info('No games still being played, no projected scores to report.')
         return ''
 
-    text = ['#q##u##b#Approximate Projected Scores#b##u#'] + score
+    text = ['#q##u##b#Approximate Projected Scores#b##u#'] + score + ['\u200e']
     return '\n'.join(text)
 
 
@@ -450,7 +450,7 @@ def get_matchups(league, week=None, box_scores=None):
     if box_scores is None:
         box_scores = fetch_box_scores(league, week=week)
 
-    if not any(i.away_team for i in matchups):
+    if not any(i.away_team for i in box_scores):
         # Nothing to pair up: every slot is a bye, or the week has no data.
         return util.NO_MATCHUP_DATA
 
@@ -462,7 +462,7 @@ def get_matchups(league, week=None, box_scores=None):
         home_team = f"{emotes[i.home_team.team_id]}#b#{i.home_team.team_name}#b# ({i.home_team.wins}-{i.home_team.losses})"
         matchups += [f"{home_team.lstrip()} vs {away_team.lstrip()}"]
 
-    text = ['#q##u##b#Matchups#b##u# '] + matchups + ['']
+    text = ['#q##u##b#Matchups#b##u# '] + matchups + ['\u200e']
 
     return '\n'.join(text)
 
