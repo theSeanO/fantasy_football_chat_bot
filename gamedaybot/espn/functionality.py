@@ -631,7 +631,7 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         # WAIVER_ERROR comes along so the losing claims on a contested player
         # are available for the outbid callout below. Only EXECUTED claims are
         # ever reported.
-        transactions = league.transactions(scoring_period, types={'WAIVER', 'WAIVER_ERROR'})
+        transactions = league.transactions(scoring_period, types={'WAIVER', 'WAIVER_ERROR', 'FREEAGENT'})
     except Exception as exc:
         # espn_api raises instead of returning an empty list when a scoring
         # period has no transactions at all (league.py: `raise Exception('No
@@ -697,7 +697,7 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
             elif item.type == TXN_ITEM_ADD:
                 if not faab:
                     faab_amount = datetime.fromtimestamp(txn.date / 1000)  # Set faab_amount to date so transactions get sorted by waiver order
-                    adds.append(f"#p# ADDED {position} - {item.player}")
+                    adds.append(f"#p# {txn.type if txn.type == 'WAIVER' else ''} ADDED {position} - {item.player}")
                     continue
                 # Only a *rival's* losing bid is competition: a team that also
                 # outbid its own failed claim on the same player beat nobody.
@@ -721,10 +721,10 @@ def get_waiver_report(league, faab=False, scoring_period=None, test_date=None):
         
     # Only return a report if there are transactions
     if not entries:
-        logger.info('No waiver transactions to report.')
+        logger.info('No transactions to report.')
         return ''
 
-    return '\n'.join([f'#q##u##b#Waiver Report {today}#b##u#'] + [block for _, block in entries])
+    return '\n'.join([f'#q##u##b#Transaction Report {today}#b##u#'] + [block for _, block in entries])
 
 
 def combined_power_rankings(league, week=None):
