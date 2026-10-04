@@ -144,8 +144,8 @@ def get_projected_scoreboard(league, week=None, box_scores=None):
     if not box_scores:
         return util.NO_MATCHUP_DATA
 
-    score = ['%s#c#%4s %6.2f ➖ %6.2f %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, get_projected_total(i.home_lineup),
-                                    get_projected_total(i.away_lineup), i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
+    score = ['%s#c#%4s (%2.0f%%) %6.2f ➖ %6.2f (%2.0f%%) %4s#c# %s' % (emotes[i.home_team.team_id], i.home_team.team_abbrev, i.home_probability, get_projected_total(i.home_lineup),
+                                    get_projected_total(i.away_lineup), i.away_probability, i.away_team.team_abbrev, emotes[i.away_team.team_id]) for i in box_scores
              if i.away_team and not (all_played(i.away_lineup) and all_played(i.home_lineup))]
 
     if not score:
