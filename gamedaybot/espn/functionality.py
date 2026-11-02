@@ -759,7 +759,7 @@ def combined_power_rankings(league, week=None):
     if week > league.settings.reg_season_count:
         is_playoffs = True
 
-    p_rank_up_emoji = "🟢"
+    p_rank_up_emoji = "⬆️"
     p_rank_down_emoji = "🔻"
     p_rank_same_emoji = "🟰"
 
@@ -783,6 +783,7 @@ def combined_power_rankings(league, week=None):
 
     # Convert normalized previous rankings to a dictionary for easy lookup
     previous_rankings_dict = {team.team_abbrev: score for score, team in normalized_previous_rankings}
+    previous_rank_list = list(previous_rankings_dict.keys())
 
     sr = sim_record(league, week)
 
@@ -800,10 +801,10 @@ def combined_power_rankings(league, week=None):
 
         # Check if the team was present in the normalized previous rankings
         if team_abbrev in previous_rankings_dict:
-            previous_score = previous_rankings_dict[team_abbrev]
-            rank_change_percent = ((float(normalized_current_score) - float(previous_score)) / float(previous_score)) * 100
-            rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
-            rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):4.1f}%)"
+            previous_rank = previous_rank_list.index(team_abbrev) + 1
+            rank_change = previous_rank - pos
+            rank_change_emoji = p_rank_up_emoji if rank_change > 0 else p_rank_down_emoji if rank_change < 0 else p_rank_same_emoji
+            rank_change_text = f" ({rank_change_emoji} {abs(rank_change) if abs(rank_change) > 0 else ' '})"
 
         formatted_pos = '%2s' % pos
         if (is_playoffs):
