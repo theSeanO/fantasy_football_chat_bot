@@ -115,7 +115,7 @@ def get_scoreboard_short(league, week=None, box_scores=None):
     else:
         text = ['#q##u##b#Score Update#b##u#']
     
-    text += score
+    text += score + ['\u200e']
     return '\n'.join(text)
 
 
@@ -239,15 +239,19 @@ def all_played(lineup):
     return True
 
 
-def get_monitor(league, warning, box_scores=None):
+def get_monitor_reports(league, mode, warning, box_scores=None):
     """
     Retrieve a list of players from a given fantasy football league that should be monitored during a game.
 
     Parameters
     ----------
-    league: object
+    league : object
         The league object for which to retrieve the monitor players.
-    box_scores: list, optional
+    mode : string
+        "monitor" for Friday monitor report, "inactive" for Sunday morning inactives report
+    warning : number
+        How many points the report should warn about. Set to 0 for inactives report.
+    box_scores : list, optional
         Pre-fetched box scores for the current week, to avoid a duplicate API call.
 
     Returns
@@ -257,61 +261,34 @@ def get_monitor(league, warning, box_scores=None):
     """
 
     emotes = env_vars.split_emotes(league)
-    if box_scores is None:
-        box_scores = fetch_box_scores(league)
-    monitor = []
-    text = ''
-
-    for i in box_scores:
-        monitor += scan_roster(i.home_lineup, i.home_team, warning, emotes)
-        monitor += scan_roster(i.away_lineup, i.away_team, warning, emotes)
-    
-    if not monitor:
-        return ('')
-    
-    text = ['#q##u##b#Players to Monitor#b##u# '] + monitor
-    
-    return '\n'.join(text)
-
-
-def get_inactives(league, box_scores=None):
-    """
-    Retrieve a list of players from a given fantasy football league that are likely inactive and need to be replaced.
-
-    Parameters
-    ----------
-    league: object
-        The league object for which to retrieve the inactive players.
-
-    Returns
-    -------
-    str
-        A string containing the list of inactive players, formatted as a list of player names and status.
-    """
-    
     users = env_vars.split_users(league)
-    emotes = env_vars.split_emotes(league)
+
     if box_scores is None:
         box_scores = fetch_box_scores(league)
     if not box_scores:
         return util.NO_MATCHUP_DATA
 
-    inactives = []
-    text = ''
+    title = ''
+    if mode == "monitor":
+        title = '#q##u##b#Players to Monitor#b##u# '
+        warning = warning
+    elif mode == "inactive":
+        title = '#q##u##b#Inactive Players#b##u# '
+        warning = 0
 
+    report = []
     for i in box_scores:
-        inactives += scan_inactives(i.home_lineup, i.home_team, users, emotes)
-        inactives += scan_inactives(i.away_lineup, i.away_team, users, emotes)
-
-    if not inactives:
+        report += scan_roster(i.home_lineup, i.home_team, mode, warning, emotes[i.home_team.team_id], users[i.home_team.team_id])
+        report += scan_roster(i.away_lineup, i.away_team, mode, warning, emotes[i.away_team.team_id], users[i.away_team.team_id])
+    
+    if not report:
         return ('')
-
-    text = ['#q##u##b#Inactive Players#b##u# '] + inactives
-
+    
+    text = [title] + report
     return '\n'.join(text)
 
 
-def scan_roster(lineup, team, warning, emotes):
+def scan_roster(lineup, team, mode, warning, emote, user):
     """
     Retrieve a list of players from a given fantasy football league that have a status.
 
@@ -323,8 +300,10 @@ def scan_roster(lineup, team, warning, emotes):
         The team object for which to retrieve the monitor players
     warning : int
         The threshold at which to warn an owner to replace a player
-    emotes : list
-        A list of the server's team emotes
+    emote : string
+        The team's emote
+    user : string
+        The team's user tag
 
     Returns
     -------
@@ -332,18 +311,29 @@ def scan_roster(lineup, team, warning, emotes):
         A list of strings containing the list of players to monitor, formatted as a list of player names and statuses.
     """
 
+    # No @'s if in the monitor report
+    if mode == 'monitor':
+        user = None
+
     count = 0
     players = []
     for i in lineup:
         # exclude bench and injured players and active or normal players
-        if i.slot_position not in ['BE', 'IR'] \
-            and i.position not in ['D/ST', 'P']:
-            
-            if i.injuryStatus not in ['ACTIVE', 'NORMAL'] \
-                and i.game_played == 0:
+        if i.slot_position not in ['BE', 'IR']:
+            # Game not played yet, not a defense or punter
+            if i.game_played == 0 and i.position not in ['D/ST', 'P']:
+                # If running monitor report and status is anything but playing
+                # Or if running inactives and status is not playing or doubtful
+                if (mode == 'monitor' and i.injuryStatus not in ['ACTIVE', 'NORMAL']) \
+                    or (mode == 'inactive' and i.injuryStatus in ['OUT', 'DOUBTFUL', 'DAY_TO_DAY', 'INJURY_RESERVE']):
+                        count += 1
+                        players += [f"{i.position} {i.name} - #b#{i.injuryStatus.title().replace('_', ' ')}#b#"]
 
-                count += 1
-                players += [f"{i.position} {i.name} - #b#{i.injuryStatus.title().replace('_', ' ')}#b#"]
+                # If projected points are under the league's configured warning threshold
+                # On inactives report, this is set to 0
+                elif i.projected_points <= warning:
+                    count += 1
+                    players += [f"{i.position} {i.name} - #b#{str(i.projected_points)} points#b#"]
 
             elif i.on_bye_week:
                 # espn_api leaves game_played at 100 for a bye (it is only set
@@ -356,82 +346,23 @@ def scan_roster(lineup, team, warning, emotes):
                 else:
                     players += [f"{i.position} {i.name} - #b#BYE#b#"]
 
-            elif i.projected_points <= warning and i.game_played == 0:
-                count += 1
-                players += [f"{i.position} {i.name} - #b#{str(i.projected_points)} points#b#"]
+        # If player is no longer eligible for IR and can be played
+        # Does not run for inactives report
+        if mode != 'inactive' and i.slot_position == 'IR' and \
+            i.injuryStatus not in ['INJURY_RESERVE', 'OUT', 'DAY_TO_DAY'] and \
+                i.projected_points > 0:
+                    count += 1
+                    players += [f"{i.position} {i.name} - #b#Not IR eligible#b#, {i.injuryStatus.title().replace('_', ' ')}: {str(i.projected_points)} points"]
 
-        if i.slot_position == 'IR' and \
-            i.injuryStatus not in ['INJURY_RESERVE', 'OUT', 'DAY_TO_DAY']:
-
-            count += 1
-            players += [f"{i.position} {i.name} - #b#Not IR eligible#b#, {i.injuryStatus.title().replace('_', ' ')}: {str(i.projected_points)} points"]
-                
-    list = ""
-    report = ""
-
-    for p in players:
-        list += "* " + p + "\n"
-
-    if count > 0:
-        s = '%s#b#%s#b# - #b#%d#b#: \n%s \n' % (emotes[team.team_id], team.team_name, count, list[:-1])
-        report =  [s.lstrip()]
-
-    return report
-
-
-def scan_inactives(lineup, team, users, emotes):
-    """
-    Retrieve a list of players from a given fantasy football league that have a status that indicates they're not playing 
-    or if a player is on a team's IR but is eligible for play.
-
-    Parameters
-    ----------
-    lineup : list
-        A list of player objects that represents the lineup
-    team : object
-        The team object for which to retrieve the inactive players
-    users : list
-        A list of the server's user tags
-
-    Returns
-    -------
-    list
-        A list of strings containing the list of inactive, formatted as a list of player names and statuses.
-    """
-
-    count = 0
-    players = []
-    for i in lineup:
-        if i.game_played <= 0:
-            if i.slot_position not in ['BE', 'IR'] and i.position != 'P':
-                if i.on_bye_week:
-                    count +=1
-                    if i.position == 'D/ST':
-                        players += [f"{i.name} - #b#BYE#b#"]
-                    else:
-                        players += [f"{i.position} {i.name} - #b#BYE#b#"]
-                elif i.game_played == 0 and (i.injuryStatus in ['OUT, DOUBTFUL, INJURY_RESERVE, DAY_TO_DAY'] or i.projected_points <= 0):
-                    count +=1
-                    players += [f"{i.position} {i.name} - #b#{i.injuryStatus.title().replace('_', ' ')}#b#, {i.projected_points} points"]
-
-            if i.slot_position == 'IR' and \
-                i.injuryStatus not in ['INJURY_RESERVE', 'OUT'] and \
-                    i.projected_points > 0:
-
-                count += 1
-                players += [f"{i.position} {i.name} - #b#Not on IR#b#, {i.injuryStatus.title().replace('_', ' ')}: {str(i.projected_points)} points"]
-
-    inactive_list = ""
-    inactives = ""
-
-    for p in players:
-        inactive_list += "#p# " + p + "\n"
-
-    if count > 0:
-        inactives = ['%s%s#b#%s#b# - #b#%d#b#: \n%s \n' % (users[team.team_id], emotes[team.team_id], team.team_name, count, inactive_list[:-1])]
+    if count == 0:
+        return ''
     
-    return inactives
+    prefix = f"{user if user else ''}{emote}"
 
+    formatted_list = "\n".join(["#p# " + p for p in players])
+    report = '%s#b#%s#b# - #b#%d#b#: \n%s \n' % (prefix, team.team_name, count, formatted_list)
+  
+    return [report.lstrip()]
 
 def get_matchups(league, week=None, box_scores=None):
     """
