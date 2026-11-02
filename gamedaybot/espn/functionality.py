@@ -115,7 +115,7 @@ def get_scoreboard_short(league, week=None, box_scores=None):
     else:
         text = ['#q##u##b#Score Update#b##u#']
     
-    text += score
+    text += score + ['\u200e']
     return '\n'.join(text)
 
 

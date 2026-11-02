@@ -143,7 +143,7 @@ def espn_bot(function):
         box_scores = espn.fetch_box_scores(league)
         text = espn.get_matchups(league, box_scores=box_scores)
         if text != util.NO_MATCHUP_DATA:
-            text = text + "\n\n" + espn.get_projected_scoreboard(league, box_scores=box_scores)
+            text = text + espn.get_projected_scoreboard(league, box_scores=box_scores)
     elif function == "get_monitor":
         box_scores = espn.fetch_box_scores(league)
         text = espn.get_monitor(league, warning, box_scores=box_scores)
@@ -154,7 +154,7 @@ def espn_bot(function):
         box_scores = espn.fetch_box_scores(league)
         text = espn.get_scoreboard_short(league, box_scores=box_scores)
         if text != util.NO_MATCHUP_DATA:
-            text = text + "\n\n" + espn.get_projected_scoreboard(league, box_scores=box_scores)
+            text = text + espn.get_projected_scoreboard(league, box_scores=box_scores)
     elif function == "get_projected_scoreboard":
         text = espn.get_projected_scoreboard(league)
     elif function == "get_close_scores":
