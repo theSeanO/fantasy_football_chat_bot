@@ -146,10 +146,10 @@ def espn_bot(function):
             text = text + espn.get_projected_scoreboard(league, box_scores=box_scores)
     elif function == "get_monitor":
         box_scores = espn.fetch_box_scores(league)
-        text = espn.get_monitor(league, warning, box_scores=box_scores)
+        text = espn.get_monitor_reports(league, mode='monitor', warning=warning, box_scores=box_scores)
     elif function == "get_inactives":
         box_scores = espn.fetch_box_scores(league)
-        text = espn.get_inactives(league, box_scores=box_scores)
+        text = espn.get_monitor_reports(league, mode='inactive', warning=0, box_scores=box_scores)
     elif function == "get_scoreboard_short":
         box_scores = espn.fetch_box_scores(league)
         text = espn.get_scoreboard_short(league, box_scores=box_scores)
