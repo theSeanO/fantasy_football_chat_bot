@@ -175,7 +175,7 @@ def get_standings(league):
     standings = league.standings()
 
     records = util.align_records([f"{team.wins}-{team.losses} | {team.points_for:.2f}" for team in standings])
-    standings_txt = [f"{pos + 1:2}: {emotes[team.team_id]} {team.team_name} #c#[{record}]#c#" for
+    standings_txt = [f"#c#{pos + 1:>2}:#c# {emotes[team.team_id]} {team.team_name} #c#[{record}]#c#" for
                      pos, (team, record) in enumerate(zip(standings, records))]
         
     title = ['#q##u##b#Current Standings#b##u# [Record | Points for]']
@@ -690,9 +690,9 @@ def combined_power_rankings(league, week=None):
     if week > league.settings.reg_season_count:
         is_playoffs = True
 
-    p_rank_up_emoji = "🟢"
-    p_rank_down_emoji = "🔻"
-    p_rank_same_emoji = "🟰"
+    up_emoji = "🟢".replace("\uFE0F", "")
+    down_emoji = "🔻".replace("\uFE0F", "")
+    equal_emoji = " 🟰".replace("\uFE0F", "")
 
     # Get the power rankings for the previous 2 weeks
     current_rankings = league.power_rankings(week=week)
@@ -714,15 +714,16 @@ def combined_power_rankings(league, week=None):
 
     # Convert normalized previous rankings to a dictionary for easy lookup
     previous_rankings_dict = {team.team_abbrev: score for score, team in normalized_previous_rankings}
+    previous_rank_list = list(previous_rankings_dict.keys())
 
     sr = sim_record(league, week)
 
     # Prepare the output string
     title = '#q##u##b#Power Rankings#b##u#'
     if (is_playoffs):
-        rankings_text = [title + ' PR Pts (%Δ) [Sim Record]']
+        rankings_text = [title + ' PR Pts (Δ Rank) [Sim Record]']
     else:
-        rankings_text = [title + ' PR Pts (%Δ) [PO Chance | Sim Record]']
+        rankings_text = [title + ' PR Pts (Δ Rank) [PO Chance | Sim Record]']
 
     pos = 1
     for normalized_current_score, current_team in normalized_current_rankings:
@@ -731,23 +732,24 @@ def combined_power_rankings(league, week=None):
 
         # Check if the team was present in the normalized previous rankings
         if team_abbrev in previous_rankings_dict:
-            previous_score = previous_rankings_dict[team_abbrev]
-            rank_change_percent = ((float(normalized_current_score) - float(previous_score)) / float(previous_score)) * 100
-            rank_change_emoji = p_rank_up_emoji if rank_change_percent > 0 else p_rank_down_emoji if rank_change_percent < 0 else p_rank_same_emoji
-            rank_change_text = f" ({rank_change_emoji} {abs(rank_change_percent):4.1f}%)"
+            previous_rank = previous_rank_list.index(team_abbrev) + 1
+            rank_change = previous_rank - pos
+            rank_str = f"{abs(rank_change):2}" if rank_change != 0 else " "
+            rank_change_emoji = up_emoji if rank_change > 0 else down_emoji if rank_change < 0 else equal_emoji
+            rank_change_text = f" ({rank_change_emoji} {rank_str})"
 
-        formatted_pos = '%2s' % pos
+        formatted_pos = f"{pos:>2}"
         if (is_playoffs):
-            s = '%2s: %s #c#%4s: %s%-2s [%s]#c#' % (
-                formatted_pos.replace(' ', '\u2002'), 
+            s = '#c#%2s:#c# %s #c#%4s: %s%-2s [%s]#c#' % (
+                formatted_pos,
                 emotes[current_team.team_id], 
                 current_team.team_abbrev, 
                 normalized_current_score, 
                 rank_change_text, 
                 sr[current_team][0])
         else:
-            s = '%2s: %s #c#%4s: %s%-2s [%4.1f%% | %s]#c#' % (
-                formatted_pos.replace(' ', '\u2002'), 
+            s = '#c#%2s:#c# %s #c#%4s: %s%-2s [%4.1f%% | %s]#c#' % (
+                formatted_pos,
                 emotes[current_team.team_id], 
                 current_team.team_abbrev, 
                 normalized_current_score, 
@@ -1035,7 +1037,7 @@ def optimal_team_scores(league, week=None):
         home_optimal = optimal_lineup_score(i.home_lineup, starter_counts)
         away_optimal = optimal_lineup_score(i.away_lineup, starter_counts)
 
-        s = ['%s #c#%4s: %6.2f [%6.2f - %.2f%%]#c# \n%s #c#%4s: %6.2f [%6.2f - %.2f%%]#c#'
+        s = ['%s #c#%4s: %6.2f [%6.2f - %6.2f%%]#c# \n%s #c#%4s: %6.2f [%6.2f - %6.2f%%]#c#'
                 % (emotes[home.team_id], home.team_abbrev, home_optimal[0], home_optimal[1], home_optimal[3],
                     emotes[away.team_id], away.team_abbrev, away_optimal[0], away_optimal[1], away_optimal[3])]
         results += s + ['\u200e']
@@ -1043,7 +1045,7 @@ def optimal_team_scores(league, week=None):
     if not results:
         return ('')
 
-    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of optimal]'] + results
+    text = ['#q##u##b#Best Possible Scores#b##u#  [Actual - % of possible]'] + results
     return '\n'.join(text)
 
 
