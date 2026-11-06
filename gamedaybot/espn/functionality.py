@@ -152,7 +152,7 @@ def get_projected_scoreboard(league, week=None, box_scores=None):
         logger.info('No games still being played, no projected scores to report.')
         return ''
 
-    text = ['#q##u##b#Approximate Projected Scores#b##u#'] + score + ['\u200e']
+    text = ['\u200e'] + ['#q##u##b#Approximate Projected Scores#b##u#'] + score
     return '\n'.join(text)
 
 
@@ -444,7 +444,7 @@ def get_close_scores(league, week=None, box_scores=None, threshold=CLOSE_SCORES_
 
     if not score:
         return('')
-    text = ['#q##u##b#Projected Close Scores#b##u#'] + score
+    text = ['\u200e'] + ['\u200e'] + ['#q##u##b#Projected Close Scores#b##u#'] + score
     return '\n'.join(text)
 
 
