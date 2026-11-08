@@ -37,8 +37,12 @@ def scheduler():
     #waiver report:                      wed-sun morning at 7:30am local time.
     #season end trophies:                on the End Date provided at 7:30am local time.
 
-    sched.add_job(espn_bot, 'cron', ['get_close_scores'], id='close_scores',
-        day_of_week='sun,mon', hour=20, minute=0, second=5, start_date=ff_start_date, end_date=ff_end_date,
+    sched.add_job(espn_bot, 'cron', ['get_close_scores'], id='close_scores1',
+        day_of_week='sun', hour=20, minute=0, second=5, start_date=ff_start_date, end_date=ff_end_date,
+        timezone=game_timezone, replace_existing=True)
+
+    sched.add_job(espn_bot, 'cron', ['get_close_scores'], id='close_scores2',
+        day_of_week='mon', hour=7, minute=30, second=5, start_date=ff_start_date, end_date=ff_end_date,
         timezone=game_timezone, replace_existing=True)
     
     sched.add_job(espn_bot, 'cron', ['get_final_scores'], id='final_scores',
