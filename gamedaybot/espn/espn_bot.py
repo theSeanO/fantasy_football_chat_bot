@@ -175,14 +175,19 @@ def espn_bot(function):
         if scores == util.NO_MATCHUP_DATA:
             text = scores
         else:
-            text = scores + "\n\n" + espn.get_trophies(league, extra_trophies, week=week, box_scores=box_scores)
+            text = scores + espn.get_trophies(league, extra_trophies, week=week, box_scores=box_scores)
     elif function == "get_waiver_report":
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
     elif function == "final_final":
         week = len(league.settings.matchup_periods)
-        text = espn.get_scoreboard_short(league, week=week)
-        text += "\n\n" + espn.get_trophies(league, extra_trophies, week=week)
+        week = league.current_week - 1
+        box_scores = espn.fetch_box_scores(league, week=week)
+        scores = espn.get_scoreboard_short(league, week=week, box_scores=box_scores)
+        if scores == util.NO_MATCHUP_DATA:
+            text = scores
+        else:
+            text = scores + espn.get_trophies(league, extra_trophies, week=week, box_scores=box_scores)
     elif function == "win_matrix":
         text = recap.win_matrix(league)
     elif function == "season_trophies":
