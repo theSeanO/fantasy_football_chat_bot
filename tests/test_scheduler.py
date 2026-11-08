@@ -84,7 +84,7 @@ class TestScheduleShape:
         monkeypatch.delenv('DAILY_WAIVER', raising=False)
         monkeypatch.delenv('MONITOR_REPORT', raising=False)
         assert set(jobs()) == {
-            'close_scores', 'power_rankings', 'final', 'standings',
+            'close_scores1', 'close_scores2', 'power_rankings', 'final', 'standings',
             'waiver_report', 'matchups', 'scoreboard1', 'monitor', 'inactives',
             'scoreboard2', 'optimal_scores', 'season_trophies',
             'win_matrix', 'final_final'
@@ -95,7 +95,8 @@ class TestScheduleShape:
         assert 'monitor' not in jobs()
 
     @pytest.mark.parametrize('job_id,expected_day', [
-        ('close_scores', 'sun,mon'),
+        ('close_scores1', 'sun'),
+        ('close_scores2', 'mon'),
         ('power_rankings', 'tue'),
         ('final', 'tue'),
         ('standings', 'tue'),
