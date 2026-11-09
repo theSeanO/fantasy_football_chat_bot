@@ -232,7 +232,7 @@ class TestGetCloseScores:
 
     def test_close_scores_header_present_when_any_match(self):
         boxes = [FakeBox('AAA', 100.0, 'BBB', 105.0)]
-        assert espn.get_close_scores(None, box_scores=boxes).splitlines()[2] == '#q##u##b#Projected Close Scores#b##u#'
+        assert espn.get_close_scores(None, box_scores=boxes).splitlines()[1] == '#q##u##b#Projected Close Scores#b##u#'
 
 
 class FakeItem:
