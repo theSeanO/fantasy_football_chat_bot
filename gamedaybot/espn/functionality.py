@@ -450,7 +450,7 @@ def get_close_scores(league, week=None, box_scores=None, threshold=CLOSE_SCORES_
 
     if not score:
         return('')
-    text = ['\u200e'] + ['\u200e'] + ['#q##u##b#Projected Close Scores#b##u#'] + score
+    text = ['\u200e'] + ['#q##u##b#Projected Close Scores#b##u#'] + score
     return '\n'.join(text)
 
 
