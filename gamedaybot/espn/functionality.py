@@ -1291,7 +1291,7 @@ def get_trophies(league, extra_trophies, week=None, box_scores=None):
     close_score_str = ['🧊 #c#Closest Win:#c# %s \n#p# #b#%s#b# barely beat #b#%s#b# by a margin of %.2f' % (close_emotes, close_winner.team_name, close_loser.team_name, closest_score)]
     blowout_str = ['💥 #c#Biggest Loss:#c# %s \n#p# #b#%s#b# got blown out by #b#%s#b# by a margin of %.2f' % (blowout_emotes, blown_out_team.team_name, ownerer_team.team_name, biggest_blowout)]
 
-    text = ['\u200e'] + ['#q##u##b#Trophies of the week#b##u# '] + high_score_str + low_score_str + close_score_str + blowout_str
+    text = ['#q##u##b#Trophies of the week#b##u# '] + high_score_str + low_score_str + close_score_str + blowout_str
 
     if extra_trophies == True:
         text += get_achievers_trophy(league, low_team.team_id, high_team.team_id, week) + get_lucky_trophy(league, week) + get_mvp_trophy(league, week)
